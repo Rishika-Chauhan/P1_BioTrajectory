@@ -57,7 +57,7 @@ export default function QrProfilePage() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // Secure URL - does NOT encode raw medical information inside the image!
+  // Secure URL - does NOT encode raw medical information inside the image
   const secureShareUrl = `https://biotrajectory.health/access/patient?token=${token}&scope=selected`;
 
   const handleRevoke = () => {
@@ -78,7 +78,7 @@ export default function QrProfilePage() {
       
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-cyan-500 text-slate-950 font-bold text-[16px] shadow-2xl animate-fade-in">
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-cyan-400 text-slate-950 font-bold text-[15px] shadow-2xl animate-fade-in">
           <CheckCircle2 className="w-5 h-5 shrink-0" />
           <span>{toastMessage}</span>
         </div>
@@ -89,13 +89,13 @@ export default function QrProfilePage() {
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
           My QR
         </h1>
-        <p className="text-[17px] text-slate-600 dark:text-slate-400 mt-2">
+        <p className="text-[16px] text-slate-600 dark:text-slate-400 mt-2">
           Show this code to a doctor or paramedic in an emergency to share your blood type and vital signs.
         </p>
       </div>
 
       {/* Strict Privacy Rule Notice */}
-      <div className="p-5 rounded-3xl bg-cyan-500/10 border border-cyan-500/25 flex items-start sm:items-center gap-4 text-[16px] text-slate-700 dark:text-slate-300">
+      <div className="p-5 rounded-3xl bg-cyan-500/10 border border-cyan-500/25 flex items-start sm:items-center gap-4 text-[15px] text-slate-700 dark:text-slate-300 shadow-xs">
         <ShieldCheck className="w-6 h-6 text-cyan-600 dark:text-cyan-400 shrink-0 mt-0.5 sm:mt-0" />
         <span>
           <strong className="text-cyan-700 dark:text-cyan-300">Your privacy is protected:</strong> This code creates a temporary, safe link. Your personal records are never permanently stored inside the image, and you can stop sharing at any time.
@@ -106,24 +106,24 @@ export default function QrProfilePage() {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         
         {/* Left Col: QR Display (5 cols) */}
-        <div className="md:col-span-5 p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-6 text-center flex flex-col items-center">
+        <div className="md:col-span-5 p-6 sm:p-8 rounded-3xl glass-card space-y-6 text-center flex flex-col items-center">
           <div className="space-y-1">
             <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Your Medical QR Code</h3>
-            <p className="text-[16px] text-slate-500 dark:text-slate-400">Scan with any smartphone camera</p>
+            <p className="text-[15px] text-slate-500 dark:text-slate-400">Scan with any smartphone camera</p>
           </div>
 
           {/* QR Code Container */}
-          <div className="p-5 rounded-3xl bg-white shadow-md border-4 border-cyan-400/30">
+          <div className="p-5 rounded-3xl bg-white shadow-md border-4 border-cyan-400/40">
             <QRCodeSVG
               value={secureShareUrl}
-              size={220}
+              size={210}
               level="H"
               includeMargin={false}
             />
           </div>
 
           {/* Profile Summary Badge */}
-          <div className="w-full p-4 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-800 text-[16px] text-left space-y-2.5">
+          <div className="w-full p-4 rounded-2xl bg-slate-50/80 dark:bg-[#070B14]/80 border border-slate-200 dark:border-slate-800 text-[15px] text-left space-y-2.5">
             <div className="flex justify-between items-center">
               <span className="text-slate-500 dark:text-slate-400">Name:</span>
               <span className="text-slate-900 dark:text-white font-bold">{currentUser?.name || 'Pranjal Sharma'}</span>
@@ -142,14 +142,14 @@ export default function QrProfilePage() {
           <div className="w-full flex flex-col sm:flex-row items-center gap-3 pt-2">
             <button
               onClick={handleRevoke}
-              className="w-full sm:w-1/2 py-3.5 px-4 rounded-2xl text-[16px] font-bold bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-500/20 transition-all flex items-center justify-center gap-2"
+              className="w-full sm:w-1/2 py-3 px-4 rounded-2xl text-[14px] font-bold bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
             >
               <RefreshCw className="w-4 h-4" />
               <span>Make New Code</span>
             </button>
             <button
               onClick={handleCopyLink}
-              className="w-full sm:w-1/2 py-3.5 px-4 rounded-2xl text-[16px] font-bold bg-cyan-500 text-slate-950 hover:bg-cyan-400 transition-all flex items-center justify-center gap-2 shadow-sm"
+              className="w-full sm:w-1/2 py-3 px-4 rounded-2xl text-[14px] font-bold bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 hover:from-cyan-300 hover:to-blue-400 transition-all flex items-center justify-center gap-2 shadow-xs active:scale-95 cursor-pointer"
             >
               <Copy className="w-4 h-4" />
               <span>{copied ? 'Copied!' : 'Copy Link'}</span>
@@ -161,12 +161,12 @@ export default function QrProfilePage() {
         <div className="md:col-span-7 space-y-6">
           
           {/* Permission Scopes Card */}
-          <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+          <div className="p-6 sm:p-8 rounded-3xl glass-card space-y-5">
             <div>
               <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                 Choose What You Share
               </h3>
-              <p className="text-[16px] text-slate-500 dark:text-slate-400 mt-1">
+              <p className="text-[15px] text-slate-500 dark:text-slate-400 mt-1">
                 Pick only the health information you want doctors or paramedics to see:
               </p>
             </div>
@@ -180,7 +180,7 @@ export default function QrProfilePage() {
               ].map(item => (
                 <label
                   key={item.key}
-                  className="flex items-start gap-3.5 p-4 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-800 cursor-pointer hover:border-cyan-400/50 transition-colors"
+                  className="flex items-start gap-3.5 p-4 rounded-2xl bg-slate-50/80 dark:bg-[#070B14]/80 border border-slate-200 dark:border-slate-800 cursor-pointer hover:border-cyan-400/50 transition-colors"
                 >
                   <input
                     type="checkbox"
@@ -189,8 +189,8 @@ export default function QrProfilePage() {
                     className="w-5 h-5 mt-0.5 rounded border-slate-300 dark:border-slate-700 text-cyan-600 focus:ring-cyan-500"
                   />
                   <div>
-                    <p className="text-[17px] font-bold text-slate-900 dark:text-white">{item.label}</p>
-                    <p className="text-[15px] text-slate-500 dark:text-slate-400 leading-relaxed mt-0.5">{item.desc}</p>
+                    <p className="text-[16px] font-bold text-slate-900 dark:text-white">{item.label}</p>
+                    <p className="text-[14px] text-slate-500 dark:text-slate-400 leading-relaxed mt-0.5">{item.desc}</p>
                   </div>
                 </label>
               ))}
@@ -198,11 +198,11 @@ export default function QrProfilePage() {
           </div>
 
           {/* Expiration Settings Card */}
-          <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+          <div className="p-6 sm:p-8 rounded-3xl glass-card space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">How Long This Code Works</h3>
-                <p className="text-[16px] text-slate-500 dark:text-slate-400 mt-1">The link automatically stops working after this time:</p>
+                <p className="text-[15px] text-slate-500 dark:text-slate-400 mt-1">The link automatically stops working after this time:</p>
               </div>
               <Clock className="w-6 h-6 text-cyan-500 shrink-0" />
             </div>
@@ -220,10 +220,10 @@ export default function QrProfilePage() {
                     setExpiration(opt.id);
                     showToast(`Code will work for: ${opt.label}`);
                   }}
-                  className={`py-3 px-3 rounded-2xl text-[16px] font-bold text-center transition-all ${
+                  className={`py-2.5 px-3 rounded-2xl text-[15px] font-bold text-center transition-all cursor-pointer ${
                     expiration === opt.id
-                      ? 'bg-cyan-500 text-slate-950 shadow-md'
-                      : 'bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-slate-700'
+                      ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 shadow-md active:scale-95'
+                      : 'bg-slate-50/80 dark:bg-[#070B14]/80 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
                   {opt.label}
@@ -235,16 +235,16 @@ export default function QrProfilePage() {
       </div>
 
       {/* Sharing History Log */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+      <div className="p-6 sm:p-8 rounded-3xl glass-card space-y-5">
         <div>
           <h3 className="text-xl font-bold text-slate-900 dark:text-white">Who Has Viewed Your Code</h3>
-          <p className="text-[16px] text-slate-500 dark:text-slate-400 mt-1">A simple history of doctors and clinics that received temporary access.</p>
+          <p className="text-[15px] text-slate-500 dark:text-slate-400 mt-1">A simple history of doctors and clinics that received temporary access.</p>
         </div>
         
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-[16px] border-collapse">
+          <table className="w-full text-left text-[15px] border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-[15px] font-semibold">
+              <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-[14px] font-semibold">
                 <th className="py-3.5 px-4">Doctor or Clinic</th>
                 <th className="py-3.5 px-4">Date</th>
                 <th className="py-3.5 px-4">What Was Shared</th>
@@ -253,12 +253,12 @@ export default function QrProfilePage() {
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
               {sharingHistory.map(row => (
-                <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                <tr key={row.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
                   <td className="py-4 px-4 font-bold text-slate-900 dark:text-white">{row.recipient}</td>
                   <td className="py-4 px-4 text-slate-500 dark:text-slate-400">{row.date}</td>
                   <td className="py-4 px-4 text-cyan-600 dark:text-cyan-400 font-medium">{row.scope}</td>
                   <td className="py-4 px-4">
-                    <span className={`text-[14px] font-bold px-3 py-1 rounded-full border ${
+                    <span className={`text-[13px] font-bold px-3 py-1 rounded-full border ${
                       row.status === 'Active'
                         ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
                         : 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/30'

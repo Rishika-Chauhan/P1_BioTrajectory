@@ -7,35 +7,43 @@
     --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
-    /* Light Theme Palette */
+    /* Light Theme Palette - Clean Medical Technology SaaS */
     --bg-main: #F5F8FC;
     --bg-card: #FFFFFF;
+    --bg-card-glass: rgba(255, 255, 255, 0.85);
     --bg-secondary: #EDF2F7;
     --bg-accent: #008FAE;
-    --text-head: #172033;
+    --text-head: #0F172A;
     --text-body: #334155;
     --text-muted: #64748B;
     --border-subtle: #E2E8F0;
+    --border-glass: rgba(0, 143, 174, 0.15);
     --color-cyan: #008FAE;
     --color-blue: #3B82F6;
-    --cyan-glow: rgba(0, 143, 174, 0.15);
-    --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+    --color-teal: #0D9488;
+    --cyan-glow: rgba(0, 143, 174, 0.12);
+    --card-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+    --card-shadow-hover: 0 12px 30px -4px rgba(0, 143, 174, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
   }
 
   .dark {
-    /* Dark Theme Palette (Futuristic BioTrajectory Healthcare) */
+    /* Dark Theme Palette - Deep Futuristic BioTrajectory Healthcare */
     --bg-main: #070B14;
     --bg-card: #101827;
+    --bg-card-glass: rgba(16, 24, 39, 0.75);
     --bg-secondary: #131E30;
     --bg-accent: #00D9FF;
     --text-head: #F4F7FB;
     --text-body: #CBD5E1;
     --text-muted: #8292A6;
     --border-subtle: #1E293B;
+    --border-glass: rgba(0, 217, 255, 0.16);
     --color-cyan: #00D9FF;
     --color-blue: #5479FF;
-    --cyan-glow: rgba(0, 217, 255, 0.2);
-    --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7), 0 0 15px rgba(0, 217, 255, 0.05);
+    --color-teal: #14B8A6;
+    --cyan-glow: rgba(0, 217, 255, 0.22);
+    --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7), 0 0 15px rgba(0, 217, 255, 0.04);
+    --card-shadow-hover: 0 20px 40px -12px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 217, 255, 0.14);
   }
 
   body {
@@ -49,19 +57,40 @@
 
 /* Glassmorphism & Cybernetic Glow Effects */
 .glass-panel {
-  background: rgba(16, 24, 39, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-card-glass);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border-glass);
 }
 
-.light .glass-panel {
+.glass-card {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: var(--card-shadow);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.dark .glass-card {
+  background: rgba(16, 24, 39, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: var(--card-shadow);
+}
+
+.glass-card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--card-shadow-hover);
+  border-color: rgba(0, 143, 174, 0.4);
+}
+
+.dark .glass-card-hover:hover {
+  border-color: rgba(0, 217, 255, 0.4);
+}
+
+/* Brand Glows */
 .glow-cyan {
   box-shadow: 0 0 25px -3px rgba(0, 217, 255, 0.35);
 }
@@ -74,6 +103,11 @@
   box-shadow: 0 0 20px -2px rgba(0, 217, 255, 0.15);
 }
 
+.light .glow-cyan {
+  box-shadow: 0 0 20px -2px rgba(0, 143, 174, 0.25);
+}
+
+/* Gradient Text */
 .text-gradient-cyan-blue {
   background: linear-gradient(135deg, #00D9FF 0%, #5479FF 100%);
   -webkit-background-clip: text;
@@ -84,6 +118,31 @@
   background: linear-gradient(135deg, #007A94 0%, #2563EB 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+/* Medical Technical Grid Patterns */
+.bg-grid-medical {
+  background-image: 
+    linear-gradient(to right, rgba(0, 143, 174, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 143, 174, 0.06) 1px, transparent 1px);
+  background-size: 3rem 3rem;
+}
+
+.dark .bg-grid-medical {
+  background-image: 
+    linear-gradient(to right, rgba(0, 217, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 217, 255, 0.05) 1px, transparent 1px);
+  background-size: 3rem 3rem;
+}
+
+.bg-dots-pattern {
+  background-image: radial-gradient(rgba(0, 143, 174, 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.dark .bg-dots-pattern {
+  background-image: radial-gradient(rgba(0, 217, 255, 0.1) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
 /* Scrollbar styles */
@@ -102,18 +161,72 @@
   background: #5479FF;
 }
 
-/* Pulse animation */
+/* Ambient Floating Animations */
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes floatGentleDelayed {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(8px);
+  }
+}
+
 @keyframes pulseGlow {
   0%, 100% {
-    opacity: 0.4;
+    opacity: 0.35;
     transform: scale(1);
   }
   50% {
-    opacity: 0.8;
-    transform: scale(1.03);
+    opacity: 0.75;
+    transform: scale(1.04);
   }
+}
+
+@keyframes orbDrift {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -20px) scale(1.05);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.animate-float-gentle {
+  animation: floatGentle 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: floatGentleDelayed 7s ease-in-out 1s infinite;
 }
 
 .animate-pulse-glow {
   animation: pulseGlow 4s ease-in-out infinite;
+}
+
+.animate-orb-drift {
+  animation: orbDrift 16s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float-gentle,
+  .animate-float-delayed,
+  .animate-pulse-glow,
+  .animate-orb-drift {
+    animation: none !important;
+  }
 }

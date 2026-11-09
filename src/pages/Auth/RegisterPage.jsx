@@ -13,6 +13,7 @@ import {
   Check
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import BrandLogo from '../../components/common/BrandLogo';
 import DisclaimerBanner from '../../components/common/DisclaimerBanner';
 
 export default function RegisterPage() {
@@ -69,24 +70,18 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="w-full min-h-[85vh] flex items-center justify-center px-4 py-12 relative overflow-hidden">
+    <div className="w-full min-h-[85vh] flex items-center justify-center px-4 py-12 relative overflow-hidden bg-grid-medical">
       {/* Background Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500/10 blur-[120px] pointer-events-none rounded-full" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/15 blur-[130px] pointer-events-none rounded-full animate-orb-drift" />
+      <div className="absolute top-1/3 left-1/4 w-72 h-72 bg-blue-500/10 blur-[100px] pointer-events-none rounded-full" />
 
       <div className="w-full max-w-md space-y-6 relative z-10">
         
         {/* Brand Card Header */}
         <div className="text-center space-y-2">
-          <Link to="/" className="inline-flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-400 p-[1.5px] shadow-md shadow-cyan-500/20">
-              <div className="w-full h-full bg-[#070B14] rounded-[10px] flex items-center justify-center">
-                <Activity className="w-5 h-5 text-cyan-400" />
-              </div>
-            </div>
-            <span className="font-extrabold text-2xl tracking-tight text-slate-900 dark:text-white">
-              Bio<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Trajectory</span>
-            </span>
-          </Link>
+          <div className="flex justify-center pb-1">
+            <BrandLogo size="lg" />
+          </div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">Create Your Health Account</h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             Start continuous personal biological trajectory tracking
@@ -94,9 +89,9 @@ export default function RegisterPage() {
         </div>
 
         {/* Register Form Box */}
-        <div className="p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-2xl space-y-6">
+        <div className="p-8 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 shadow-2xl space-y-6">
           {error && (
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
@@ -155,7 +150,7 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 cursor-pointer"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -187,10 +182,10 @@ export default function RegisterPage() {
                   type="checkbox"
                   checked={privacyConsent}
                   onChange={(e) => setPrivacyConsent(e.target.checked)}
-                  className="w-4 h-4 mt-0.5 rounded bg-slate-800 border-slate-700 text-cyan-500 focus:ring-cyan-400 focus:ring-offset-0 shrink-0"
+                  className="w-4 h-4 mt-0.5 rounded border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-cyan-500 focus:ring-cyan-400 focus:ring-offset-0 shrink-0"
                 />
                 <label htmlFor="privacyConsent" className="ml-2.5 text-xs text-slate-600 dark:text-slate-400 leading-snug">
-                  I agree to the <span className="text-cyan-400 font-medium">Privacy Policy</span> and acknowledge that BioTrajectory is a preventive trend monitoring platform and does not furnish formal clinical medical diagnoses.
+                  I agree to the <span className="text-cyan-600 dark:text-cyan-400 font-medium">Privacy Policy</span> and acknowledge that BioTrajectory is a preventive trend monitoring platform and does not furnish formal clinical medical diagnoses.
                 </label>
               </div>
             </div>
@@ -199,27 +194,26 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 transition-all shadow-md shadow-cyan-500/20 active:scale-95 flex items-center justify-center gap-2 pt-3"
+              className="w-full py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 transition-all shadow-md shadow-cyan-500/20 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
             >
-              <span>{isLoading ? 'Creating Account...' : 'Complete Registration'}</span>
+              <span>{isLoading ? 'Creating Your Account...' : 'Complete Registration'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
+
+            {/* Back to Login */}
+            <div className="pt-2 text-center">
+              <Link
+                to="/login"
+                className="text-xs text-slate-600 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400"
+              >
+                Already have an account? <span className="text-cyan-600 dark:text-cyan-400 font-semibold">Sign in</span>
+              </Link>
+            </div>
           </form>
-
-          {/* Login Link */}
-          <p className="text-center text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-800">
-            Already registered?{' '}
-            <Link to="/login" className="font-bold text-cyan-400 hover:underline">
-              Log in to your account
-            </Link>
-          </p>
         </div>
 
-        {/* Security badge */}
-        <div className="flex items-center justify-center gap-2 text-xs text-slate-400">
-          <ShieldCheck className="w-4 h-4 text-emerald-400" />
-          <span>Patient Registration strictly enforces Zero-Knowledge Encryption</span>
-        </div>
+        {/* Security Notice */}
+        <DisclaimerBanner text="Notice: Your health information is stored securely. BioTrajectory does not share personal medical information with third parties." />
       </div>
     </div>
   );

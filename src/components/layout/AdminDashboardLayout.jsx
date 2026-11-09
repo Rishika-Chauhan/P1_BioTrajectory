@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../common/ThemeToggle';
+import BrandLogo from '../common/BrandLogo';
 
 export default function AdminDashboardLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -65,27 +66,21 @@ export default function AdminDashboardLayout() {
       >
         {/* Admin Header */}
         <div className="flex items-center justify-between h-20 px-5 border-b border-slate-200 dark:border-slate-800">
-          {!collapsed && (
-            <Link to="/admin/dashboard" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-500 p-[1.5px] shadow-sm">
-                <div className="w-full h-full bg-[#070B14] rounded-[14px] flex items-center justify-center">
-                  <Shield className="w-5 h-5 text-purple-400" />
-                </div>
-              </div>
-              <div>
-                <span className="font-extrabold text-[17px] tracking-tight text-slate-900 dark:text-white block">
-                  BioTrajectory
-                </span>
-                <span className="text-xs text-purple-600 dark:text-purple-400 font-bold uppercase tracking-wider">
-                  Admin Panel
-                </span>
-              </div>
-            </Link>
-          )}
-
-          {collapsed && (
+          {!collapsed ? (
+            <BrandLogo
+              to="/admin/dashboard"
+              icon={Shield}
+              subtitle="Admin Panel"
+              size="md"
+            />
+          ) : (
             <div className="w-full flex justify-center">
-              <Shield className="w-7 h-7 text-purple-400" />
+              <BrandLogo
+                to="/admin/dashboard"
+                icon={Shield}
+                size="sm"
+                showText={false}
+              />
             </div>
           )}
 

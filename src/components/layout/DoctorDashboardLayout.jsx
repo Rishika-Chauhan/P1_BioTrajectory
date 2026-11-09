@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { useDoctorAuth, DOCTOR_ROLES } from '../../context/DoctorAuthContext';
 import ThemeToggle from '../common/ThemeToggle';
+import BrandLogo from '../common/BrandLogo';
 
 export default function DoctorDashboardLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -73,27 +74,21 @@ export default function DoctorDashboardLayout() {
       >
         {/* Doctor Header */}
         <div className="flex items-center justify-between h-20 px-5 border-b border-slate-200 dark:border-slate-800">
-          {!collapsed && (
-            <Link to="/doctor/dashboard" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 p-[1.5px] shadow-sm">
-                <div className="w-full h-full bg-[#070B14] rounded-[14px] flex items-center justify-center">
-                  <Stethoscope className="w-5 h-5 text-cyan-400" />
-                </div>
-              </div>
-              <div>
-                <span className="font-extrabold text-[17px] tracking-tight text-slate-900 dark:text-white block">
-                  BioTrajectory
-                </span>
-                <span className="text-xs text-cyan-600 dark:text-cyan-400 font-bold uppercase tracking-wider">
-                  Doctor Portal
-                </span>
-              </div>
-            </Link>
-          )}
-
-          {collapsed && (
+          {!collapsed ? (
+            <BrandLogo
+              to="/doctor/dashboard"
+              icon={Stethoscope}
+              subtitle="Doctor Portal"
+              size="md"
+            />
+          ) : (
             <div className="w-full flex justify-center">
-              <Stethoscope className="w-7 h-7 text-cyan-400" />
+              <BrandLogo
+                to="/doctor/dashboard"
+                icon={Stethoscope}
+                size="sm"
+                showText={false}
+              />
             </div>
           )}
 

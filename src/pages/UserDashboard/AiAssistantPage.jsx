@@ -141,11 +141,11 @@ export default function AiAssistantPage() {
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
               Ask AI
             </h1>
-            <span className="text-sm font-bold px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">
+            <span className="text-xs font-bold px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-500/20">
               Simple Explanations
             </span>
           </div>
-          <p className="text-[17px] text-slate-600 dark:text-slate-400 mt-1">
+          <p className="text-[16px] text-slate-600 dark:text-slate-400 mt-1">
             Ask questions and understand your health results in simple everyday language.
           </p>
         </div>
@@ -154,10 +154,10 @@ export default function AiAssistantPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setVoiceEnabled(!voiceEnabled)}
-            className={`px-4 py-2.5 rounded-2xl border text-[16px] font-semibold flex items-center gap-2 transition-all ${
+            className={`px-4 py-2.5 rounded-2xl border text-[15px] font-semibold flex items-center gap-2 transition-all cursor-pointer ${
               voiceEnabled
-                ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-700 dark:text-cyan-300'
-                : 'bg-white dark:bg-[#101827] border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400'
+                ? 'bg-cyan-500/15 border-cyan-500/35 text-cyan-700 dark:text-cyan-300 shadow-xs'
+                : 'glass-card text-slate-600 dark:text-slate-400'
             }`}
             title="Toggle read aloud voice"
           >
@@ -167,7 +167,7 @@ export default function AiAssistantPage() {
 
           <button
             onClick={clearChat}
-            className="p-2.5 rounded-2xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+            className="p-2.5 rounded-2xl glass-card text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors cursor-pointer"
             title="Clear Chat"
           >
             <Trash2 className="w-5 h-5" />
@@ -176,42 +176,41 @@ export default function AiAssistantPage() {
       </div>
 
       {/* Document Sharing Consent Status Bar */}
-      <div className="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[16px] shrink-0">
+      <div className="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[15px] shrink-0">
         <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
           <ShieldCheck className="w-5 h-5 text-cyan-600 dark:text-cyan-400 shrink-0" />
           <span>
-            Permission to read reports:{' '}
-            <strong className={hasDocConsent ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}>
-              {hasDocConsent ? 'Granted (Private & Secure)' : 'Not granted (Your permission needed)'}
-            </strong>
+            {hasDocConsent
+              ? 'Medical Report Access is active. The AI can explain your uploaded reports.'
+              : 'Medical report sharing is currently off. Turn it on to explain uploaded PDFs.'}
           </span>
         </div>
         <button
           onClick={() => setConsentModalOpen(true)}
-          className="text-[16px] font-bold text-cyan-600 dark:text-cyan-400 hover:underline shrink-0 text-left sm:text-right"
+          className="text-xs font-bold px-3.5 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-cyan-500/30 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
         >
-          {hasDocConsent ? 'Change Settings' : 'Give Permission'}
+          {hasDocConsent ? 'Review Permissions' : 'Enable Report Access'}
         </button>
       </div>
 
-      {/* Chat Messages Container */}
-      <div className="flex-1 overflow-y-auto p-5 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 space-y-5 shadow-sm">
+      {/* Chat Messages Scrolling Container */}
+      <div className="flex-1 overflow-y-auto p-5 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-5">
         {messages.map((msg) => (
           <div
             key={msg.id}
-            className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'} space-y-2`}
+            className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'} space-y-1.5`}
           >
-            <div className="flex items-center gap-2 text-[15px] text-slate-500 dark:text-slate-400 px-1 font-medium">
+            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 px-1 font-medium">
               <span>{msg.sender === 'user' ? 'You' : 'BioTrajectory Assistant'}</span>
               <span>•</span>
               <span>{msg.timestamp}</span>
             </div>
 
             <div
-              className={`p-5 rounded-3xl max-w-[90%] sm:max-w-[85%] text-[17px] leading-relaxed space-y-3 ${
+              className={`p-5 rounded-3xl max-w-[90%] sm:max-w-[85%] text-[15px] leading-relaxed space-y-3 ${
                 msg.sender === 'user'
-                  ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-medium rounded-tr-none shadow-md'
-                  : 'bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-tl-none'
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-medium rounded-tr-none shadow-md'
+                  : 'bg-white/90 dark:bg-[#070B14]/90 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-tl-none shadow-xs'
               }`}
             >
               {/* Message text with friendly formatting */}
@@ -223,7 +222,7 @@ export default function AiAssistantPage() {
               {msg.attachments && msg.attachments.length > 0 && (
                 <div className="pt-3 border-t border-white/20 flex flex-wrap gap-2">
                   {msg.attachments.map((file, i) => (
-                    <div key={i} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/20 text-[15px]">
+                    <div key={i} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/20 text-xs">
                       <FileText className="w-4 h-4" />
                       <span>{file.name}</span>
                     </div>
@@ -235,23 +234,23 @@ export default function AiAssistantPage() {
               {msg.warningCard && (
                 <div className={`p-4 rounded-2xl border mt-3 space-y-3 ${
                   msg.warningCard.level === 'critical'
-                    ? 'bg-red-500/10 border-red-500/40 text-red-900 dark:text-red-200'
-                    : 'bg-amber-500/10 border-amber-500/40 text-amber-900 dark:text-amber-200'
+                    ? 'bg-rose-500/10 border-rose-500/40 text-rose-900 dark:text-rose-200'
+                    : 'bg-cyan-500/10 border-cyan-500/40 text-cyan-900 dark:text-cyan-200'
                 }`}>
-                  <div className="flex items-center gap-2 font-bold text-[18px]">
-                    <AlertTriangle className={`w-5 h-5 ${msg.warningCard.level === 'critical' ? 'text-red-500' : 'text-amber-500'}`} />
+                  <div className="flex items-center gap-2 font-bold text-base">
+                    <AlertTriangle className={`w-5 h-5 ${msg.warningCard.level === 'critical' ? 'text-rose-500' : 'text-cyan-500'}`} />
                     <span>{msg.warningCard.title}</span>
                   </div>
-                  <p className="text-[16px] font-semibold">
+                  <p className="text-sm font-semibold">
                     Measurement: {msg.warningCard.measurement}
                   </p>
-                  <p className="text-[16px] leading-relaxed">
+                  <p className="text-sm leading-relaxed">
                     {msg.warningCard.recommendation}
                   </p>
                   <div className="pt-1">
                     <a
                       href="/dashboard/consultation"
-                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-400 text-slate-950 font-bold text-[16px] hover:bg-amber-300 transition-all shadow-sm"
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-400 text-slate-950 font-bold text-sm hover:bg-cyan-300 transition-all shadow-sm"
                     >
                       <span>{msg.warningCard.actionText}</span>
                       <ArrowRight className="w-4 h-4" />
@@ -264,7 +263,7 @@ export default function AiAssistantPage() {
         ))}
 
         {isLoading && (
-          <div className="flex items-center gap-3 text-[17px] text-cyan-600 dark:text-cyan-400 p-3">
+          <div className="flex items-center gap-3 text-[15px] text-cyan-600 dark:text-cyan-400 p-3">
             <Bot className="w-5 h-5 animate-bounce" />
             <span>Thinking and preparing a simple explanation...</span>
           </div>
@@ -275,14 +274,14 @@ export default function AiAssistantPage() {
 
       {/* Suggested Questions Chips */}
       <div className="flex items-center gap-2.5 overflow-x-auto pb-1 scrollbar-none shrink-0">
-        <span className="text-[16px] font-bold text-slate-500 dark:text-slate-400 shrink-0 flex items-center gap-1.5 pl-1">
+        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 shrink-0 flex items-center gap-1.5 pl-1">
           <Sparkles className="w-4 h-4 text-cyan-500" /> Ideas:
         </span>
         {suggestedQuestions.map((q, idx) => (
           <button
             key={idx}
             onClick={() => handleSend(q)}
-            className="px-4 py-2 rounded-2xl text-[15px] sm:text-[16px] font-medium bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-400 whitespace-nowrap transition-colors shadow-sm"
+            className="px-4 py-2 rounded-2xl text-[14px] font-medium glass-card text-slate-700 dark:text-slate-300 hover:border-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-400 whitespace-nowrap transition-colors shadow-xs cursor-pointer active:scale-95"
           >
             {q}
           </button>
@@ -291,12 +290,12 @@ export default function AiAssistantPage() {
 
       {/* Attachments Pending Bar */}
       {attachedFiles.length > 0 && (
-        <div className="flex items-center gap-3 p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-[16px] shrink-0">
+        <div className="flex items-center gap-3 p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-sm shrink-0">
           <FileText className="w-5 h-5 text-cyan-500" />
           <span className="text-cyan-700 dark:text-cyan-300 font-medium">{attachedFiles[0].name}</span>
           <button
             onClick={() => setAttachedFiles([])}
-            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white ml-auto"
+            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white ml-auto cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -304,12 +303,12 @@ export default function AiAssistantPage() {
       )}
 
       {/* Chat Input Bar */}
-      <div className="relative shrink-0">
-        <div className="flex items-center gap-2 p-2.5 rounded-2xl bg-white dark:bg-[#101827] border border-slate-300 dark:border-slate-800 shadow-md">
-          {/* File Attachment Button */}
+      <div className="p-2.5 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 shadow-xl shrink-0">
+        <div className="flex items-center gap-2">
+          {/* File Upload Button */}
           <button
             onClick={handleAttachMock}
-            className="p-3 text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-3 text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             title="Attach a report for simple explanation"
           >
             <Paperclip className="w-5 h-5" />
@@ -318,9 +317,9 @@ export default function AiAssistantPage() {
           {/* Voice Input Button */}
           <button
             onClick={handleMicToggle}
-            className={`p-3 rounded-xl transition-all ${
+            className={`p-3 rounded-xl transition-all cursor-pointer ${
               isRecording
-                ? 'bg-red-500 text-white animate-pulse'
+                ? 'bg-rose-500 text-white animate-pulse'
                 : 'text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
             title="Speak your question"
@@ -335,17 +334,17 @@ export default function AiAssistantPage() {
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             placeholder={isRecording ? 'Listening to your voice...' : 'Ask about your blood pressure, steps, or health questions...'}
-            className="flex-1 py-2 px-3 bg-transparent text-[17px] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none"
+            className="flex-1 py-2 px-3 bg-transparent text-[16px] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none"
           />
 
           {/* Send Button */}
           <button
             onClick={() => handleSend()}
             disabled={!inputText.trim() && attachedFiles.length === 0}
-            className="px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold hover:from-cyan-400 hover:to-blue-500 disabled:opacity-40 transition-all shadow-md active:scale-95 flex items-center gap-2 text-[17px]"
+            className="px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold hover:from-cyan-300 hover:to-blue-400 disabled:opacity-40 transition-all shadow-md shadow-cyan-500/20 active:scale-95 flex items-center gap-2 text-[15px] cursor-pointer"
           >
             <span>Send</span>
-            <Send className="w-5 h-5" />
+            <Send className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -353,60 +352,58 @@ export default function AiAssistantPage() {
       {/* Explicit Document Consent Interface Modal */}
       {consentModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm">
-          <div className="w-full max-w-lg p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5">
+          <div className="w-full max-w-lg p-6 sm:p-8 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-3">
                 <ShieldCheck className="w-6 h-6 text-cyan-500" />
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">Allow Assistant to Read Reports</h3>
               </div>
-              <button onClick={() => setConsentModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white">
+              <button
+                onClick={() => setConsentModalOpen(false)}
+                className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-xl cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <p className="text-[17px] text-slate-600 dark:text-slate-300 leading-relaxed">
-              To allow the AI assistant to summarize and explain your uploaded health records in simple words, please give your permission.
+            <p className="text-[15px] text-slate-600 dark:text-slate-300 leading-relaxed">
+              When you upload a medical report or test result, our AI Assistant summarizes the text into everyday language.
             </p>
 
-            <div className="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-[16px] text-slate-800 dark:text-slate-200 space-y-2">
-              <p className="font-bold text-cyan-700 dark:text-cyan-300">How we protect your privacy:</p>
-              <ul className="list-disc pl-5 space-y-1.5 text-slate-600 dark:text-slate-300">
-                <li>Your uploaded reports are kept private and confidential.</li>
-                <li>Your personal information is never sold or used to train general AI.</li>
-                <li>You can turn this off at any time in settings.</li>
+            <div className="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 space-y-2 text-xs text-slate-600 dark:text-slate-300">
+              <p className="font-bold text-cyan-700 dark:text-cyan-300">Your Privacy Assurances:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Your data is never sold or used for commercial advertising.</li>
+                <li>You can turn off report access or clear your chat anytime.</li>
+                <li>Summaries are educational and do not replace a doctor.</li>
               </ul>
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-3">
+            <div className="flex items-center justify-end gap-3 pt-2">
               <button
-                type="button"
                 onClick={() => {
                   setHasDocConsent(false);
                   setConsentModalOpen(false);
                 }}
-                className="px-5 py-3 rounded-2xl text-[17px] font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                className="px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold cursor-pointer text-sm"
               >
-                No, Keep Private
+                Deny Access
               </button>
               <button
-                type="button"
                 onClick={() => {
                   setHasDocConsent(true);
                   setConsentModalOpen(false);
+                  const mockFile = { name: 'Recent_Health_Report.pdf', size: '1.2 MB' };
+                  setAttachedFiles([...attachedFiles, mockFile]);
                 }}
-                className="px-6 py-3 rounded-2xl text-[17px] font-bold bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-md transition-all"
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold hover:from-cyan-300 hover:to-blue-400 transition-all cursor-pointer text-sm"
               >
-                Yes, Give Permission
+                I Agree & Upload
               </button>
             </div>
           </div>
         </div>
       )}
-
-      {/* Safety Notice */}
-      <div className="shrink-0">
-        <DisclaimerBanner text="Notice: The BioTrajectory Assistant is an informational tool and does not provide clinical medical diagnoses or prescriptions. If you experience severe symptoms or emergencies, call your local emergency service or see a doctor immediately." />
-      </div>
     </div>
   );
 }

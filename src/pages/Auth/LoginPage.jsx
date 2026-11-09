@@ -13,6 +13,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { useAuth, getDashboardPath, USER_ROLES } from '../../context/AuthContext';
+import BrandLogo from '../../components/common/BrandLogo';
 import DisclaimerBanner from '../../components/common/DisclaimerBanner';
 
 export default function LoginPage() {
@@ -90,24 +91,18 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="w-full min-h-[85vh] flex items-center justify-center px-4 py-12 relative overflow-hidden">
+    <div className="w-full min-h-[85vh] flex items-center justify-center px-4 py-12 relative overflow-hidden bg-grid-medical">
       {/* Background Ambient Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/10 blur-[120px] pointer-events-none rounded-full" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/15 blur-[130px] pointer-events-none rounded-full animate-orb-drift" />
+      <div className="absolute top-1/3 right-1/4 w-72 h-72 bg-blue-500/10 blur-[100px] pointer-events-none rounded-full" />
 
       <div className="w-full max-w-md space-y-6 relative z-10">
         
         {/* Brand Header */}
         <div className="text-center space-y-2">
-          <Link to="/" className="inline-flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-400 p-[1.5px] shadow-md shadow-cyan-500/20">
-              <div className="w-full h-full bg-[#070B14] rounded-[10px] flex items-center justify-center">
-                <Activity className="w-5 h-5 text-cyan-400" />
-              </div>
-            </div>
-            <span className="font-extrabold text-2xl tracking-tight text-slate-900 dark:text-white">
-              Bio<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Trajectory</span>
-            </span>
-          </Link>
+          <div className="flex justify-center pb-1">
+            <BrandLogo size="lg" />
+          </div>
           <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white">
             Sign In to BioTrajectory
           </h1>
@@ -117,9 +112,9 @@ export default function LoginPage() {
         </div>
 
         {/* Common Login Card */}
-        <div className="p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-2xl space-y-6">
+        <div className="p-8 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 shadow-2xl space-y-6">
           {error && (
-            <div className="flex items-center gap-2 p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-xs">
+            <div className="flex items-center gap-2 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
@@ -191,7 +186,7 @@ export default function LoginPage() {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 rounded bg-slate-800 border-slate-700 text-cyan-500 focus:ring-cyan-400 focus:ring-offset-0"
+                className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-cyan-500 focus:ring-cyan-400 focus:ring-offset-0"
               />
               <label htmlFor="rememberMe" className="ml-2 text-xs text-slate-600 dark:text-slate-400">
                 Remember this device for 30 days
@@ -202,7 +197,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 transition-all shadow-md shadow-cyan-500/20 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 transition-all shadow-md shadow-cyan-500/20 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
             >
               <span>{isLoading ? 'Authenticating & Verifying Claims...' : 'Login'}</span>
               <ArrowRight className="w-4 h-4" />
@@ -212,7 +207,7 @@ export default function LoginPage() {
             <div className="pt-2 text-center">
               <Link
                 to="/register"
-                className="w-full inline-block py-2.5 px-4 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-cyan-500 dark:hover:text-cyan-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all"
+                className="w-full inline-block py-2.5 px-4 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all"
               >
                 Don't have an account? Register as Patient
               </Link>
@@ -221,19 +216,19 @@ export default function LoginPage() {
 
           {/* Quick Credential Test Helper for Evaluation */}
           <div className="pt-4 border-t border-slate-200 dark:border-slate-800/80 space-y-2">
-            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400">
+            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-slate-400">
               <span className="flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                <Sparkles className="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400" />
                 Quick-Fill Test Accounts:
               </span>
-              <span className="text-[10px] text-slate-500">Auto-fills input fields</span>
+              <span className="text-[10px] text-slate-400">Auto-fills input fields</span>
             </div>
 
             <div className="flex flex-wrap gap-1.5">
               <button
                 type="button"
                 onClick={() => handleAutoFill('patient@biotrajectory.health')}
-                className="px-2 py-1 rounded-lg text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-cyan-50 dark:hover:bg-cyan-950/30 hover:text-cyan-600 transition-colors"
+                className="px-2 py-1 rounded-lg text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-cyan-50 dark:hover:bg-cyan-950/30 hover:text-cyan-600 transition-colors cursor-pointer"
                 title="Tests role: USER -> /dashboard"
               >
                 Patient
@@ -241,7 +236,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => handleAutoFill('dr.thorne@biotrajectory.health')}
-                className="px-2 py-1 rounded-lg text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-600 transition-colors"
+                className="px-2 py-1 rounded-lg text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-600 transition-colors cursor-pointer"
                 title="Tests role: DOCTOR -> /doctor/dashboard"
               >
                 Doctor (Verified)
@@ -249,7 +244,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => handleAutoFill('dr.pending@biotrajectory.health')}
-                className="px-2 py-1 rounded-lg text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-amber-50 dark:hover:bg-amber-950/30 hover:text-amber-600 transition-colors"
+                className="px-2 py-1 rounded-lg text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-amber-50 dark:hover:bg-amber-950/30 hover:text-amber-600 transition-colors cursor-pointer"
                 title="Tests role: DOCTOR_PENDING -> /doctor/pending"
               >
                 Doctor (Pending)
@@ -257,7 +252,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => handleAutoFill('dr.suspended@biotrajectory.health')}
-                className="px-2 py-1 rounded-lg text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-rose-950/30 hover:text-rose-600 transition-colors"
+                className="px-2 py-1 rounded-lg text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-rose-950/30 hover:text-rose-600 transition-colors cursor-pointer"
                 title="Tests role: DOCTOR_SUSPENDED -> /doctor/suspended"
               >
                 Doctor (Suspended)
@@ -265,7 +260,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => handleAutoFill('admin@biotrajectory.health')}
-                className="px-2 py-1 rounded-lg text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-purple-950/30 hover:text-purple-600 transition-colors"
+                className="px-2 py-1 rounded-lg text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-purple-950/30 hover:text-purple-600 transition-colors cursor-pointer"
                 title="Tests role: ADMIN -> /admin/dashboard"
               >
                 Admin
@@ -273,7 +268,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => handleAutoFill('unknown@biotrajectory.health')}
-                className="px-2 py-1 rounded-lg text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                className="px-2 py-1 rounded-lg text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                 title="Tests role: UNKNOWN -> /account-setup"
               >
                 Unknown Role
@@ -282,7 +277,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Security & Non-diagnostic disclaimer */}
+        {/* Security disclaimer */}
         <DisclaimerBanner text="Protected by Firebase Authentication and trusted token custom claims. Zero unauthorized cross-role access permitted." />
       </div>
     </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Activity, Mail, ArrowRight, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { Mail, ArrowRight, CheckCircle2, ArrowLeft } from 'lucide-react';
+import BrandLogo from '../../components/common/BrandLogo';
 import { firebaseService } from '../../services/firebase';
 
 export default function ForgotPasswordPage() {
@@ -24,16 +25,9 @@ export default function ForgotPasswordPage() {
         
         {/* Brand Header */}
         <div className="text-center space-y-2">
-          <Link to="/" className="inline-flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-400 p-[1.5px] shadow-md shadow-cyan-500/20">
-              <div className="w-full h-full bg-[#070B14] rounded-[10px] flex items-center justify-center">
-                <Activity className="w-5 h-5 text-cyan-400" />
-              </div>
-            </div>
-            <span className="font-extrabold text-2xl tracking-tight text-slate-900 dark:text-white">
-              Bio<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Trajectory</span>
-            </span>
-          </Link>
+          <div className="flex justify-center pb-1">
+            <BrandLogo size="lg" />
+          </div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">Reset Account Password</h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             Enter your verified email to receive cryptographic recovery instructions

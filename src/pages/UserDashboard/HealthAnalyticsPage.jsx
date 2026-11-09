@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import {
   ResponsiveContainer,
   LineChart,
@@ -16,25 +17,31 @@ import {
   Footprints,
   Clock,
   Droplet,
-  Info
+  Info,
+  TrendingUp,
+  Activity
 } from 'lucide-react';
-import {
-  SAMPLE_DAILY_VITALS_7D
-} from '../../data/vitalsData';
+import { useTheme } from '../../context/ThemeContext';
+import { SAMPLE_DAILY_VITALS_7D } from '../../data/vitalsData';
 import DisclaimerBanner from '../../components/common/DisclaimerBanner';
 
 export default function HealthAnalyticsPage() {
   const [timeRange, setTimeRange] = useState('7d');
+  const { isDark } = useTheme();
 
-  // Custom Recharts Tooltip with 15px+ readable text
+  const gridStroke = isDark ? 'rgba(51, 65, 85, 0.35)' : 'rgba(226, 232, 240, 0.8)';
+  const textStroke = isDark ? '#8292A6' : '#64748B';
+
+  // Custom Recharts Tooltip adapting to light and dark theme
   const CustomTooltip = ({ active, payload, label, unit = '' }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="p-4 rounded-2xl bg-[#070B14] border border-slate-700 shadow-2xl text-[15px] space-y-1">
-          <p className="font-bold text-slate-200">{label}</p>
+        <div className="p-4 rounded-2xl glass-card border border-slate-200 dark:border-slate-700 shadow-2xl text-[14px] space-y-1.5 backdrop-blur-md">
+          <p className="font-bold text-slate-900 dark:text-slate-100">{label}</p>
           {payload.map((entry, index) => (
-            <p key={index} style={{ color: entry.color }} className="font-mono font-semibold">
-              {entry.name}: {entry.value} {unit}
+            <p key={index} style={{ color: entry.color }} className="font-mono font-bold flex items-center justify-between gap-4">
+              <span>{entry.name}:</span>
+              <span>{entry.value} {unit}</span>
             </p>
           ))}
         </div>
@@ -52,13 +59,13 @@ export default function HealthAnalyticsPage() {
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
             My Health
           </h1>
-          <p className="text-[17px] text-slate-600 dark:text-slate-400 mt-1">
+          <p className="text-[16px] text-slate-600 dark:text-slate-400 mt-1">
             See how your numbers change over days, weeks, and months in simple charts
           </p>
         </div>
 
         {/* Time Range Filter Buttons */}
-        <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white dark:bg-[#101827] border border-slate-300 dark:border-slate-800 text-[16px] font-semibold shadow-sm">
+        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 text-[15px] font-semibold shadow-xs">
           {[
             { id: '7d', label: '7-Day View' },
             { id: '30d', label: '30-Day View' },
@@ -67,10 +74,10 @@ export default function HealthAnalyticsPage() {
             <button
               key={btn.id}
               onClick={() => setTimeRange(btn.id)}
-              className={`px-5 py-2 rounded-xl transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${
                 timeRange === btn.id
-                  ? 'bg-cyan-500 text-slate-950 font-bold shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold shadow-xs active:scale-95'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             >
               {btn.label}
@@ -80,131 +87,193 @@ export default function HealthAnalyticsPage() {
       </div>
 
       {/* Helpful Friendly Principle Banner */}
-      <div className="p-5 rounded-3xl bg-blue-500/10 border border-blue-500/20 flex items-start gap-4 text-[16px] text-slate-700 dark:text-slate-300 leading-relaxed">
-        <Info className="w-5 h-5 text-cyan-500 shrink-0 mt-0.5" />
+      <div className="p-5 rounded-3xl bg-cyan-500/10 border border-cyan-500/20 flex items-start gap-4 text-[15px] text-slate-700 dark:text-slate-300 leading-relaxed shadow-xs">
+        <Info className="w-5 h-5 text-cyan-600 dark:text-cyan-400 shrink-0 mt-0.5" />
         <p>
           <strong>Why separate charts?</strong> We believe your health is too important to compress into a fake "single score." Each signal — like your blood pressure, steps, and water intake — tells its own honest story.
         </p>
       </div>
 
-      {/* Grid of Separate Analytical Charts */}
+      {/* Grid of Separate Analytical Charts with Smooth Transitions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
         {/* 1. Top Number (Systolic) */}
-        <div className="p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.05 }}
+          whileHover={{ y: -4, transition: { duration: 0.2 } }}
+          className="p-8 rounded-3xl glass-card glass-card-hover space-y-5"
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-cyan-500/15 text-cyan-500 flex items-center justify-center font-bold">
+              <div className="w-10 h-10 rounded-2xl bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 flex items-center justify-center font-bold">
                 <Heart className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Blood Pressure (Top Number)</h3>
-                <p className="text-[15px] text-slate-500 dark:text-slate-400">Target: Under 120 mmHg</p>
+                <p className="text-[14px] text-slate-500 dark:text-slate-400">Target: Under 120 mmHg</p>
               </div>
             </div>
-            <span className="text-[17px] font-mono font-bold text-cyan-600 dark:text-cyan-400">121 Latest</span>
+            <span className="text-[16px] font-mono font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-xl">121 Latest</span>
           </div>
 
           <div className="h-64 w-full pt-4">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={SAMPLE_DAILY_VITALS_7D}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} vertical={false} />
-                <XAxis dataKey="dayName" stroke="#64748B" fontSize={13} />
-                <YAxis domain={[100, 150]} stroke="#64748B" fontSize={13} />
+                <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} vertical={false} />
+                <XAxis dataKey="dayName" stroke={textStroke} fontSize={13} />
+                <YAxis domain={[100, 150]} stroke={textStroke} fontSize={13} />
                 <Tooltip content={<CustomTooltip unit="mmHg" />} />
                 <ReferenceLine y={120} stroke="#10B981" strokeDasharray="4 4" label={{ value: 'Target (<120)', fill: '#10B981', fontSize: 13, position: 'insideTopRight' }} />
-                <Line type="monotone" dataKey="systolic" name="Top Number" stroke="#00D9FF" strokeWidth={3.5} dot={{ r: 5, fill: '#00D9FF' }} activeDot={{ r: 7 }} />
+                <Line
+                  type="monotone"
+                  dataKey="systolic"
+                  name="Top Number"
+                  stroke={isDark ? "#00D9FF" : "#008FAE"}
+                  strokeWidth={3.5}
+                  dot={{ r: 5, fill: isDark ? '#00D9FF' : '#008FAE' }}
+                  activeDot={{ r: 7 }}
+                  isAnimationActive={true}
+                  animationDuration={1100}
+                  animationEasing="ease-out"
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </motion.div>
 
         {/* 2. Bottom Number (Diastolic) */}
-        <div className="p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.12 }}
+          whileHover={{ y: -4, transition: { duration: 0.2 } }}
+          className="p-8 rounded-3xl glass-card glass-card-hover space-y-5"
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-blue-500/15 text-blue-500 flex items-center justify-center font-bold">
+              <div className="w-10 h-10 rounded-2xl bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
                 <Heart className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Blood Pressure (Bottom Number)</h3>
-                <p className="text-[15px] text-slate-500 dark:text-slate-400">Target: Under 80 mmHg</p>
+                <p className="text-[14px] text-slate-500 dark:text-slate-400">Target: Under 80 mmHg</p>
               </div>
             </div>
-            <span className="text-[17px] font-mono font-bold text-blue-500">78 Latest</span>
+            <span className="text-[16px] font-mono font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-3 py-1 rounded-xl">78 Latest</span>
           </div>
 
           <div className="h-64 w-full pt-4">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={SAMPLE_DAILY_VITALS_7D}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} vertical={false} />
-                <XAxis dataKey="dayName" stroke="#64748B" fontSize={13} />
-                <YAxis domain={[60, 100]} stroke="#64748B" fontSize={13} />
+                <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} vertical={false} />
+                <XAxis dataKey="dayName" stroke={textStroke} fontSize={13} />
+                <YAxis domain={[60, 100]} stroke={textStroke} fontSize={13} />
                 <Tooltip content={<CustomTooltip unit="mmHg" />} />
                 <ReferenceLine y={80} stroke="#10B981" strokeDasharray="4 4" label={{ value: 'Target (<80)', fill: '#10B981', fontSize: 13, position: 'insideTopRight' }} />
-                <Line type="monotone" dataKey="diastolic" name="Bottom Number" stroke="#5479FF" strokeWidth={3.5} dot={{ r: 5, fill: '#5479FF' }} activeDot={{ r: 7 }} />
+                <Line
+                  type="monotone"
+                  dataKey="diastolic"
+                  name="Bottom Number"
+                  stroke={isDark ? "#5479FF" : "#3B82F6"}
+                  strokeWidth={3.5}
+                  dot={{ r: 5, fill: isDark ? '#5479FF' : '#3B82F6' }}
+                  activeDot={{ r: 7 }}
+                  isAnimationActive={true}
+                  animationDuration={1100}
+                  animationEasing="ease-out"
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </motion.div>
 
         {/* 3. Daily Walking Steps */}
-        <div className="p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.18 }}
+          whileHover={{ y: -4, transition: { duration: 0.2 } }}
+          className="p-8 rounded-3xl glass-card glass-card-hover space-y-5"
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 text-emerald-500 flex items-center justify-center font-bold">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
                 <Footprints className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Daily Walking Steps</h3>
-                <p className="text-[15px] text-slate-500 dark:text-slate-400">Target: 8,000 steps a day</p>
+                <p className="text-[14px] text-slate-500 dark:text-slate-400">Target: 8,000 steps a day</p>
               </div>
             </div>
-            <span className="text-[17px] font-mono font-bold text-emerald-500">11,200 Steps</span>
+            <span className="text-[16px] font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-xl">11,200 Steps</span>
           </div>
 
           <div className="h-64 w-full pt-4">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={SAMPLE_DAILY_VITALS_7D}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} vertical={false} />
-                <XAxis dataKey="dayName" stroke="#64748B" fontSize={13} />
-                <YAxis stroke="#64748B" fontSize={13} />
+                <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} vertical={false} />
+                <XAxis dataKey="dayName" stroke={textStroke} fontSize={13} />
+                <YAxis stroke={textStroke} fontSize={13} />
                 <Tooltip content={<CustomTooltip unit="steps" />} />
                 <ReferenceLine y={8000} stroke="#10B981" strokeDasharray="4 4" label={{ value: 'Goal (8,000)', fill: '#10B981', fontSize: 13 }} />
-                <Bar dataKey="steps" name="Steps" fill="#10B981" radius={[8, 8, 0, 0]} />
+                <Bar
+                  dataKey="steps"
+                  name="Steps"
+                  fill="#10B981"
+                  radius={[8, 8, 0, 0]}
+                  isAnimationActive={true}
+                  animationDuration={1100}
+                  animationEasing="ease-out"
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </motion.div>
 
         {/* 4. Active Exercise Duration */}
-        <div className="p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.24 }}
+          whileHover={{ y: -4, transition: { duration: 0.2 } }}
+          className="p-8 rounded-3xl glass-card glass-card-hover space-y-5"
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-cyan-500/15 text-cyan-500 flex items-center justify-center font-bold">
+              <div className="w-10 h-10 rounded-2xl bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 flex items-center justify-center font-bold">
                 <Clock className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Active Exercise Time</h3>
-                <p className="text-[15px] text-slate-500 dark:text-slate-400">Target: 30 minutes a day</p>
+                <p className="text-[14px] text-slate-500 dark:text-slate-400">Target: 30 minutes a day</p>
               </div>
             </div>
-            <span className="text-[17px] font-mono font-bold text-cyan-500">55 Mins Latest</span>
+            <span className="text-[16px] font-mono font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-xl">55 Mins Latest</span>
           </div>
 
           <div className="h-64 w-full pt-4">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={SAMPLE_DAILY_VITALS_7D}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} vertical={false} />
-                <XAxis dataKey="dayName" stroke="#64748B" fontSize={13} />
-                <YAxis domain={[0, 70]} stroke="#64748B" fontSize={13} />
+                <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} vertical={false} />
+                <XAxis dataKey="dayName" stroke={textStroke} fontSize={13} />
+                <YAxis domain={[0, 70]} stroke={textStroke} fontSize={13} />
                 <Tooltip content={<CustomTooltip unit="mins" />} />
-                <ReferenceLine y={30} stroke="#06B6D4" strokeDasharray="4 4" label={{ value: 'Daily Goal (30m)', fill: '#06B6D4', fontSize: 13 }} />
-                <Bar dataKey="exerciseMins" name="Exercise Minutes" fill="#06B6D4" radius={[8, 8, 0, 0]} />
+                <ReferenceLine y={30} stroke={isDark ? "#00D9FF" : "#008FAE"} strokeDasharray="4 4" label={{ value: 'Daily Goal (30m)', fill: isDark ? '#00D9FF' : '#008FAE', fontSize: 13 }} />
+                <Bar
+                  dataKey="exerciseMins"
+                  name="Exercise Minutes"
+                  fill={isDark ? "#00D9FF" : "#008FAE"}
+                  radius={[8, 8, 0, 0]}
+                  isAnimationActive={true}
+                  animationDuration={1100}
+                  animationEasing="ease-out"
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Safety Notice */}
