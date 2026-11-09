@@ -1,135 +1,119 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   :root {
-    --font-cinzel: 'Cinzel', serif;
-    --font-serif: 'Cormorant Garamond', Georgia, serif;
-    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
-    /* Light Theme Palette: High-End Swiss Longevity Clinic Aesthetic */
-    --bg-main: #fbfaf8;
-    --bg-secondary: #f4efe8;
-    --bg-card: #ffffff;
-    --bg-subpanel: #f7f5f0;
-    --bg-input: #ffffff;
-    --text-head: #0a0f1d;
-    --text-body: #1e293b;
-    --text-muted: #576375;
-    --text-sub: #7a889b;
-    --border-light: rgba(0, 0, 0, 0.08);
-    --border-gold: rgba(180, 145, 95, 0.35);
-    --gold-primary: #946f2c;
-    --gold-glow: rgba(180, 145, 95, 0.15);
-    --emerald-primary: #059669;
-    --emerald-bg: #ecfdf5;
-    --emerald-border: #a7f3d0;
-    --amber-bg: #fffbeb;
-    --amber-border: #fde68a;
-    --rose-bg: #fff1f2;
-    --rose-border: #fecdd3;
-    --card-shadow: 0 10px 30px -5px rgba(25, 20, 15, 0.05), 0 0 1px 1px rgba(180, 145, 95, 0.15);
-    --card-shadow-hover: 0 20px 40px -10px rgba(25, 20, 15, 0.1), 0 0 20px rgba(180, 145, 95, 0.2);
+    /* Light Theme Palette */
+    --bg-main: #F5F8FC;
+    --bg-card: #FFFFFF;
+    --bg-secondary: #EDF2F7;
+    --bg-accent: #008FAE;
+    --text-head: #172033;
+    --text-body: #334155;
+    --text-muted: #64748B;
+    --border-subtle: #E2E8F0;
+    --color-cyan: #008FAE;
+    --color-blue: #3B82F6;
+    --cyan-glow: rgba(0, 143, 174, 0.15);
+    --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
   }
 
   .dark {
-    /* Dark Theme Palette: Obsidian Luxury Aesthetic */
-    --bg-main: #05070c;
-    --bg-secondary: #070b14;
-    --bg-card: #090e18;
-    --bg-subpanel: #0f1523;
-    --bg-input: #05070c;
-    --text-head: #ffffff;
-    --text-body: #e2e8f0;
-    --text-muted: #94a3b8;
-    --text-sub: #64748b;
-    --border-light: rgba(255, 255, 255, 0.08);
-    --border-gold: rgba(197, 168, 128, 0.3);
-    --gold-primary: #c5a880;
-    --gold-glow: rgba(197, 168, 128, 0.2);
-    --emerald-primary: #10b981;
-    --emerald-bg: rgba(16, 185, 129, 0.12);
-    --emerald-border: rgba(16, 185, 129, 0.25);
-    --amber-bg: rgba(245, 158, 11, 0.12);
-    --amber-border: rgba(245, 158, 11, 0.25);
-    --rose-bg: rgba(244, 63, 94, 0.12);
-    --rose-border: rgba(244, 63, 94, 0.25);
-    --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
-    --card-shadow-hover: 0 25px 60px rgba(0, 0, 0, 0.95), 0 0 25px -5px rgba(197, 168, 128, 0.18);
+    /* Dark Theme Palette (Futuristic BioTrajectory Healthcare) */
+    --bg-main: #070B14;
+    --bg-card: #101827;
+    --bg-secondary: #131E30;
+    --bg-accent: #00D9FF;
+    --text-head: #F4F7FB;
+    --text-body: #CBD5E1;
+    --text-muted: #8292A6;
+    --border-subtle: #1E293B;
+    --color-cyan: #00D9FF;
+    --color-blue: #5479FF;
+    --cyan-glow: rgba(0, 217, 255, 0.2);
+    --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7), 0 0 15px rgba(0, 217, 255, 0.05);
   }
 
   body {
     background-color: var(--bg-main);
-    color: var(--text-body);
+    color: var(--text-head);
     font-family: var(--font-sans);
     overflow-x: hidden;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 }
 
-.font-cinzel {
-  font-family: var(--font-cinzel);
+/* Glassmorphism & Cybernetic Glow Effects */
+.glass-panel {
+  background: rgba(16, 24, 39, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.font-serif-lux {
-  font-family: var(--font-serif);
+.light .glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.font-mono-code {
-  font-family: var(--font-mono);
+.glow-cyan {
+  box-shadow: 0 0 25px -3px rgba(0, 217, 255, 0.35);
 }
 
-/* Custom luxury scrollbars */
+.glow-blue {
+  box-shadow: 0 0 25px -3px rgba(84, 121, 255, 0.35);
+}
+
+.glow-subtle {
+  box-shadow: 0 0 20px -2px rgba(0, 217, 255, 0.15);
+}
+
+.text-gradient-cyan-blue {
+  background: linear-gradient(135deg, #00D9FF 0%, #5479FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.light .text-gradient-cyan-blue {
+  background: linear-gradient(135deg, #007A94 0%, #2563EB 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Scrollbar styles */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
 }
 ::-webkit-scrollbar-track {
   background: var(--bg-main);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border-gold);
+  background: var(--border-subtle);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--gold-primary);
+  background: #5479FF;
 }
 
-/* Gradient typography */
-.luxury-gradient-text {
-  background: linear-gradient(135deg, var(--text-head) 20%, var(--gold-primary) 70%, #d4af37 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* Pulse animation */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.03);
+  }
 }
 
-.gold-gradient-text {
-  background: linear-gradient(135deg, #dfc08f 0%, var(--gold-primary) 50%, #75551c 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Luxury surface classes */
-.lux-card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-gold);
-  box-shadow: var(--card-shadow);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.lux-card:hover {
-  box-shadow: var(--card-shadow-hover);
-}
-
-.lux-subpanel {
-  background-color: var(--bg-subpanel);
-  border: 1px solid var(--border-light);
-}
-
-/* Subtle animation pulses */
-@keyframes ambientPulse {
-  0%, 100% { opacity: 0.12; transform: scale(1); }
-  50% { opacity: 0.22; transform: scale(1.06); }
-}
-
-.animate-ambient {
-  animation: ambientPulse 8s ease-in-out infinite;
+.animate-pulse-glow {
+  animation: pulseGlow 4s ease-in-out infinite;
 }

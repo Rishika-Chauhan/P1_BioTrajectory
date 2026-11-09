@@ -3,36 +3,54 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
-  // Default to 'light' per user's request
   const [theme, setTheme] = useState(() => {
     const saved = localStorage.getItem('biotrajectory-theme');
-    return saved ? saved : 'light';
+    if (saved === 'light' || saved === 'dark') return saved;
+    return 'dark'; // Default to futuristic SaaS dark theme
   });
 
   const isDark = theme === 'dark';
 
+  // Apply theme to document element and HTML style
   useEffect(() => {
-    localStorage.setItem('biotrajectory-theme', theme);
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-      document.documentElement.classList.remove('light');
-    } else {
-      document.documentElement.classList.add('light');
-      document.documentElement.classList.remove('dark');
+    try {
+      localStorage.setItem('biotrajectory-theme', theme);
+      const root = document.documentElement;
+      if (theme === 'dark') {
+        root.classList.add('dark');
+        root.classList.remove('light');
+        root.style.colorScheme = 'dark';
+      } else {
+        root.classList.add('light');
+        root.classList.remove('dark');
+        root.style.colorScheme = 'light';
+      }
+    } catch (e) {
+      console.error('Failed to persist theme:', e);
     }
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+    setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
+  const setThemeMode = (mode) => {
+    if (mode === 'dark' || mode === 'light') {
+      setTheme(mode);
+    }
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, isDark, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, isDark, toggleTheme, setThemeMode }}>
       {children}
     </ThemeContext.Provider>
   );
 }
 
 export function useTheme() {
-  return useContext(ThemeContext);
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+  return context;
 }
