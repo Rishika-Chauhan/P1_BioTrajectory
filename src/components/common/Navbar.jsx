@@ -34,7 +34,8 @@ export default function Navbar() {
           {/* Desktop Navigation Links — Strictly Home, Explore, About */}
           <div className="hidden md:flex items-center gap-8">
             {[
-              { label: 'Home', path: '/' },
+              { label: 'Trajectory Console', path: '/' },
+              { label: 'Home', path: '/home' },
               { label: 'Explore', path: '/explore' },
               { label: 'About', path: '/about' }
             ].map((item) => {

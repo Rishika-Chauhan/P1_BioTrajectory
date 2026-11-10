@@ -403,6 +403,7 @@ export default function AttractiveLineChart({
                     fill={d.flagged ? '#ef4444' : '#f59e0b'}
                     stroke={isDark ? '#090e18' : '#ffffff'}
                     strokeWidth="2"
+                    pointerEvents="none"
                     className="transition-all"
                   />
                 )}
@@ -416,6 +417,7 @@ export default function AttractiveLineChart({
                     fill={bleMeta.color}
                     stroke={isDark ? '#090e18' : '#ffffff'}
                     strokeWidth="1.8"
+                    pointerEvents="none"
                     className="transition-all"
                   />
                 )}

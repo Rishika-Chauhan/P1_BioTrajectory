@@ -326,6 +326,49 @@ export default function LiveDemo({ onOpenReportModal }) {
     ? `${primaryPathStr} L ${primaryPoints[primaryPoints.length - 1].x} ${chartHeight - padding.bottom} L ${primaryPoints[0].x} ${chartHeight - padding.bottom} Z`
     : '';
 
+  // Rock-solid SVG Scrubber & Proximity Tracker (Zero-Flicker & Zero Layout Thrashing)
+  const handleChartMouseMove = (e) => {
+    if (!primaryPoints || primaryPoints.length === 0) return;
+    const svg = e.currentTarget;
+    const rect = svg.getBoundingClientRect();
+    if (!rect.width) return;
+    const clientX = e.clientX - rect.left;
+    const svgX = (clientX / rect.width) * chartWidth;
+
+    let closest = primaryPoints[0];
+    let minDist = Math.abs(svgX - primaryPoints[0].x);
+    for (let i = 1; i < primaryPoints.length; i++) {
+      const dist = Math.abs(svgX - primaryPoints[i].x);
+      if (dist < minDist) {
+        minDist = dist;
+        closest = primaryPoints[i];
+      }
+    }
+
+    // Stable proximity activation threshold: 38px
+    if (minDist <= 38) {
+      if (hoveredPoint?.day !== closest.data.day) {
+        setHoveredPoint(closest.data);
+      }
+    } else {
+      if (hoveredPoint !== null) {
+        setHoveredPoint(null);
+      }
+    }
+  };
+
+  const handleChartMouseLeave = () => {
+    if (hoveredPoint !== null) {
+      setHoveredPoint(null);
+    }
+  };
+
+  const handleChartClick = () => {
+    if (hoveredPoint) {
+      setInspectedSession(hoveredPoint);
+    }
+  };
+
   return (
     <section
       className={`relative pt-24 pb-16 border-b transition-colors overflow-hidden ${isDark ? 'bg-[#05070c] border-white/[0.08]' : 'bg-[#faf9f6] border-amber-900/10'
@@ -1208,6 +1251,9 @@ export default function LiveDemo({ onOpenReportModal }) {
                   <svg
                     viewBox={`0 0 ${chartWidth} ${chartHeight}`}
                     className="w-full h-auto min-w-[700px] select-none"
+                    onMouseMove={handleChartMouseMove}
+                    onMouseLeave={handleChartMouseLeave}
+                    onClick={handleChartClick}
                   >
                     <defs>
                       <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
@@ -1332,49 +1378,63 @@ export default function LiveDemo({ onOpenReportModal }) {
                       />
                     )}
 
+                    {/* Vertical Scrubber Guideline on Hover */}
+                    {hoveredPoint && (
+                      <line
+                        x1={primaryPoints.find((p) => p.data.day === hoveredPoint.day)?.x ?? 0}
+                        y1={padding.top}
+                        x2={primaryPoints.find((p) => p.data.day === hoveredPoint.day)?.x ?? 0}
+                        y2={chartHeight - padding.bottom}
+                        stroke={isDark ? '#fbbf24' : '#b45309'}
+                        strokeWidth="1.5"
+                        strokeDasharray="3 3"
+                        opacity="0.85"
+                        pointerEvents="none"
+                      />
+                    )}
+
                     {/* Data Points and Interactivity */}
-                    {primaryPoints.map((pt, i) => {
+                    {primaryPoints.map((pt) => {
                       const isHovered = hoveredPoint?.day === pt.data.day;
                       const isFlagged = pt.data.flagged;
                       const val = pt.data[selectedBiomarker] ?? 0;
                       return (
                         <g
                           key={pt.data.day}
-                          onMouseEnter={() => setHoveredPoint(pt.data)}
-                          onMouseLeave={() => setHoveredPoint(null)}
-                          onClick={() => setInspectedSession(pt.data)}
-                          className="cursor-pointer"
+                          pointerEvents="none"
                         >
-                          {/* Pulsing ring if flagged */}
+                          {/* Pulsing halo if flagged */}
                           {isFlagged && (
                             <circle
                               cx={pt.x}
                               cy={pt.y}
-                              r="9"
+                              r="10"
                               fill="none"
                               stroke="#ef4444"
                               strokeWidth="1.5"
-                              className="animate-ping"
+                              opacity="0.75"
+                              pointerEvents="none"
                             />
                           )}
 
-                          {/* Outer ring on hover */}
-                          {isHovered && (
-                            <circle
-                              cx={pt.x}
-                              cy={pt.y}
-                              r="8"
-                              fill="none"
-                              stroke={isDark ? '#ffffff' : '#000000'}
-                              strokeWidth="2"
-                            />
-                          )}
+                          {/* Outer ring on hover - always present in DOM, controlled via opacity for zero DOM mutation */}
+                          <circle
+                            cx={pt.x}
+                            cy={pt.y}
+                            r={isHovered ? 8 : 4}
+                            fill="none"
+                            stroke={isDark ? '#ffffff' : '#0f172a'}
+                            strokeWidth="2"
+                            opacity={isHovered ? 1 : 0}
+                            pointerEvents="none"
+                            style={{ transition: 'opacity 120ms ease, r 120ms ease' }}
+                          />
 
                           {/* Point Dot */}
                           <circle
                             cx={pt.x}
                             cy={pt.y}
-                            r={isHovered ? 5 : 4}
+                            r={isHovered ? 6 : 4}
                             fill={
                               isFlagged
                                 ? '#ef4444'
@@ -1384,6 +1444,8 @@ export default function LiveDemo({ onOpenReportModal }) {
                             }
                             stroke={isDark ? '#090e18' : '#ffffff'}
                             strokeWidth="1.5"
+                            pointerEvents="none"
+                            style={{ transition: 'r 120ms ease' }}
                           />
 
                           {/* X-Axis Date / Day Labels */}
@@ -1391,6 +1453,7 @@ export default function LiveDemo({ onOpenReportModal }) {
                             x={pt.x}
                             y={chartHeight - padding.bottom + 18}
                             textAnchor="middle"
+                            pointerEvents="none"
                             className={`text-[9px] font-mono-code ${isHovered
                               ? isDark ? 'fill-amber-400 font-bold' : 'fill-amber-700 font-bold'
                               : isDark ? 'fill-slate-500' : 'fill-slate-600'
@@ -1401,58 +1464,83 @@ export default function LiveDemo({ onOpenReportModal }) {
                         </g>
                       );
                     })}
+
+                    {/* Seamless Invisible Interaction Tracking Surface */}
+                    <rect
+                      x={padding.left}
+                      y={padding.top}
+                      width={chartWidth - padding.left - padding.right}
+                      height={chartHeight - padding.top - padding.bottom + 25}
+                      fill="none"
+                      pointerEvents="all"
+                      style={{ cursor: hoveredPoint ? 'pointer' : 'default' }}
+                    />
                   </svg>
                 </div>
 
-                {/* Rich Floating Tooltip on Hover */}
-                {hoveredPoint && (
-                  <div className={`mt-3 p-4 rounded-xl border flex flex-wrap items-center justify-between gap-4 transition-all shadow-lg ${hoveredPoint.flagged
+                {/* Fixed-Height Inspection HUD Dock (Zero Layout Shifts & Screen Shaking) */}
+                <div className={`mt-3 min-h-[82px] rounded-xl border p-4 transition-all duration-200 flex flex-wrap items-center justify-between gap-4 shadow-sm ${hoveredPoint
+                  ? hoveredPoint.flagged
                     ? isDark ? 'bg-rose-950/40 border-rose-500/40' : 'bg-rose-50 border-rose-300'
-                    : isDark ? 'bg-slate-900/90 border-white/10' : 'bg-white border-slate-200'
-                    }`}>
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-3.5 h-3.5 rounded-full ${hoveredPoint.flagged ? 'bg-rose-500 animate-ping' : 'bg-emerald-500'
-                        }`}></div>
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <span className={`font-mono-code text-xs font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                            Day {hoveredPoint.day} ({hoveredPoint.date} at {hoveredPoint.time})
-                          </span>
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-mono-code border ${hoveredPoint.flagged
-                            ? 'bg-rose-500/20 text-rose-400 border-rose-500/30 font-bold'
-                            : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                            }`}>
-                            {hoveredPoint.flagged ? 'Review Flagged (+3.8σ)' : 'Within Baseline'}
-                          </span>
+                    : isDark ? 'bg-slate-900/90 border-amber-400/30 shadow-[0_0_20px_rgba(245,158,11,0.1)]' : 'bg-white border-amber-300 shadow-md'
+                  : isDark ? 'bg-slate-950/40 border-white/[0.06] text-slate-400' : 'bg-slate-50/80 border-slate-200 text-slate-500'
+                  }`}>
+                  {hoveredPoint ? (
+                    <>
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-3.5 h-3.5 rounded-full ${hoveredPoint.flagged ? 'bg-rose-500 animate-ping' : 'bg-emerald-500'}`} />
+                        <div>
+                          <div className="flex items-center space-x-2">
+                            <span className={`font-mono-code text-xs font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                              Day {hoveredPoint.day} ({hoveredPoint.date} at {hoveredPoint.time})
+                            </span>
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-mono-code border ${hoveredPoint.flagged
+                              ? 'bg-rose-500/20 text-rose-400 border-rose-500/30 font-bold'
+                              : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                              }`}>
+                              {hoveredPoint.flagged ? 'Review Flagged (+3.8σ)' : 'Within Baseline'}
+                            </span>
+                          </div>
+                          <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                            <strong>Notes: </strong>{hoveredPoint.notes || 'No contextual notes recorded.'}
+                          </p>
                         </div>
-                        <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                          <strong>Notes: </strong>{hoveredPoint.notes || 'No contextual notes recorded.'}
-                        </p>
                       </div>
-                    </div>
 
-                    <div className="flex items-center space-x-4 text-xs font-mono-code">
-                      <div>
-                        <span className="block text-[10px] text-slate-400 uppercase">Protein</span>
-                        <strong className={hoveredPoint.protein > 20 ? 'text-rose-500' : isDark ? 'text-white' : 'text-slate-900'}>
-                          {hoveredPoint.protein} mg/dL
-                        </strong>
+                      <div className="flex items-center space-x-4 text-xs font-mono-code">
+                        <div>
+                          <span className="block text-[10px] text-slate-400 uppercase">Protein</span>
+                          <strong className={hoveredPoint.protein > 20 ? 'text-rose-500' : isDark ? 'text-white' : 'text-slate-900'}>
+                            {hoveredPoint.protein} mg/dL
+                          </strong>
+                        </div>
+                        <div>
+                          <span className="block text-[10px] text-slate-400 uppercase">Spec. Gravity</span>
+                          <strong className={isDark ? 'text-white' : 'text-slate-900'}>{hoveredPoint.specificGravity}</strong>
+                        </div>
+                        <div>
+                          <span className="block text-[10px] text-slate-400 uppercase">pH</span>
+                          <strong className={isDark ? 'text-white' : 'text-slate-900'}>{hoveredPoint.pH}</strong>
+                        </div>
+                        <div>
+                          <span className="block text-[10px] text-slate-400 uppercase">Ketones</span>
+                          <strong className={isDark ? 'text-white' : 'text-slate-900'}>{hoveredPoint.ketones} mg/dL</strong>
+                        </div>
                       </div>
-                      <div>
-                        <span className="block text-[10px] text-slate-400 uppercase">Spec. Gravity</span>
-                        <strong className={isDark ? 'text-white' : 'text-slate-900'}>{hoveredPoint.specificGravity}</strong>
+                    </>
+                  ) : (
+                    <div className="flex items-center justify-between w-full text-xs font-mono-code">
+                      <div className="flex items-center space-x-2.5">
+                        <Activity className="w-4 h-4 text-amber-500 animate-pulse" />
+                        <span>Hover over any daily marker dot to inspect telemetry readings & clinical notes</span>
                       </div>
-                      <div>
-                        <span className="block text-[10px] text-slate-400 uppercase">pH</span>
-                        <strong className={isDark ? 'text-white' : 'text-slate-900'}>{hoveredPoint.pH}</strong>
-                      </div>
-                      <div>
-                        <span className="block text-[10px] text-slate-400 uppercase">Ketones</span>
-                        <strong className={isDark ? 'text-white' : 'text-slate-900'}>{hoveredPoint.ketones} mg/dL</strong>
-                      </div>
+                      <span className={`text-[11px] px-2.5 py-1 rounded border hidden sm:inline-block ${isDark ? 'bg-white/5 border-white/10 text-slate-400' : 'bg-white border-slate-200 text-slate-600'
+                        }`}>
+                        Click marker to inspect full record
+                      </span>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             )}
 
