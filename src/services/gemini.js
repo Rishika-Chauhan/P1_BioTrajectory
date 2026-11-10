@@ -1,92 +1,186 @@
 /**
- * BioTrajectory AI Assistant Service
+ * BioTrajectory AI Assistant Client Service
  * 
- * Communicates in clear, simple everyday English.
- * Avoids medical jargon and explains terms simply.
- * Clearly refers users to licensed doctors for diagnoses.
+ * Securely proxies user questions and health queries to the FastAPI backend.
+ * API keys and clinical intelligence reside strictly on the server.
  */
 
-export const GEMINI_CONFIG = {
-  apiKey: import.meta.env.VITE_GEMINI_API_KEY || '',
-  model: 'gemini-1.5-flash',
-  endpoint: 'https://generativelanguage.googleapis.com/v1beta/models'
+const BACKEND_BASE_URL = (
+  (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_BACKEND_URL) ||
+  'http://localhost:8000'
+).replace(/\/$/, '');
+
+let activeConversationId = null;
+
+export const resetConversation = () => {
+  activeConversationId = null;
 };
 
 export class GeminiAssistantService {
   /**
-   * Generates helpful, plain-language health explanations
+   * Resets active conversation session ID on client
    */
-  static async queryAssistant({ query, attachments = [], userConsentGiven = true, recentVitals = {} }) {
-    await new Promise(r => setTimeout(r, 700));
+  static resetConversation() {
+    activeConversationId = null;
+  }
 
-    const lowerQuery = query.toLowerCase();
+  /**
+   * Retrieves active conversation ID
+   */
+  static getConversationId() {
+    return activeConversationId;
+  }
 
-    // Emergency check
-    if (
-      lowerQuery.includes('chest pain') ||
-      lowerQuery.includes('stroke') ||
-      lowerQuery.includes('heart attack') ||
-      lowerQuery.includes('cannot breathe') ||
-      lowerQuery.includes('shortness of breath')
-    ) {
+  /**
+   * Dispatches chat request to FastAPI backend (POST /api/chat)
+   * 
+   * @param {Object} params
+   * @param {string} params.query - User message text
+   * @param {Array} params.attachments - Optional file attachments
+   * @param {boolean} params.userConsentGiven - Consent for document explanation
+   * @param {Object} params.recentVitals - Optional vitals context
+   * @returns {Promise<{text: string, warningCard: Object|null, isEmergency: boolean, conversationId: string}>}
+   */
+  static async queryAssistant({ query, attachments = [], userConsentGiven = true, recentVitals = {}, conversationHistory = [] }) {
+    if (!query || !query.trim()) {
       return {
-        text: `⚠️ **EMERGENCY WARNING**:\n\nThe symptoms you mentioned require urgent, in-person emergency care.\n\nPlease call your local emergency number (like 911 or 112) or go to the nearest emergency room immediately. Do not wait.`,
-        isEmergency: true,
-        warningCard: {
-          level: 'critical',
-          title: 'Emergency Doctor Visit Needed',
-          measurement: 'Severe symptoms reported',
-          recommendation: 'Please seek urgent emergency medical care immediately.',
-          actionText: 'Call Emergency Services Now'
-        }
+        text: 'Please type a health question or topic you would like me to explain.',
+        warningCard: null,
+        isEmergency: false
       };
     }
 
-    if (
-      lowerQuery.includes('blood pressure') ||
-      lowerQuery.includes('bp') ||
-      lowerQuery.includes('hypertension') ||
-      lowerQuery.includes('pressure')
-    ) {
+    // Retrieve auth token if user is signed in
+    let authToken = null;
+    try {
+      const savedUserStr = localStorage.getItem('biotrajectory-auth-user') || sessionStorage.getItem('biotrajectory-auth-user');
+      if (savedUserStr) {
+        const parsed = JSON.parse(savedUserStr);
+        authToken = parsed?.token || parsed?.tokenResult?.token || null;
+      }
+    } catch (e) {
+      // In development or guest session, proceed without token
+    }
+
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    if (authToken) {
+      headers['Authorization'] = `Bearer ${authToken}`;
+    }
+
+    const payload = {
+      message: query.trim(),
+      conversation_id: activeConversationId,
+      conversation_history: (conversationHistory || []).slice(-8).map(msg => ({
+        id: msg.id || `history_${Date.now()}`,
+        sender: msg.sender || 'user',
+        text: msg.text || '',
+        timestamp: msg.timestamp || null,
+        attachments: (msg.attachments || []).map(file => ({
+          name: file.name || 'document.pdf',
+          size: file.size || null,
+          type: file.type || 'application/pdf'
+        })),
+        warningCard: msg.warningCard || null
+      })),
+      user_consent_given: Boolean(userConsentGiven),
+      attachments: (attachments || []).map(file => ({
+        name: file.name || 'document.pdf',
+        size: file.size || null,
+        type: file.type || 'application/pdf'
+      }))
+    };
+
+    try {
+      const response = await fetch(`${BACKEND_BASE_URL}/api/chat`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        let errorDetail = 'Failed to generate response.';
+        try {
+          const errJson = await response.json();
+          errorDetail = errJson.detail || errorDetail;
+        } catch (_) {}
+
+        if (response.status === 429) {
+          return {
+            text: '⚠️ **Too Many Requests**:\n\nPlease pause for a moment before sending another message. Our health assistant is rate-limited to ensure system stability.',
+            warningCard: null,
+            isEmergency: false
+          };
+        }
+
+        return {
+          text: `⚠️ **Service Notice** (${response.status}):\n\n${errorDetail}\n\nIf you have an urgent medical question, please contact your doctor or local health clinic.`,
+          warningCard: null,
+          isEmergency: false
+        };
+      }
+
+      const data = await response.json();
+
+      // Update active conversation identifier
+      if (data.conversation_id) {
+        activeConversationId = data.conversation_id;
+      }
+
       return {
-        text: `Here is a simple look at your blood pressure over the last week:\n\n- **Your Average**: **124 / 81 mmHg**\n- **What it means**: This is in a generally healthy range. Doctors recommend keeping the top number under 120 and the bottom number under 80 for optimal health.\n\n### Helpful Everyday Tips:\n1. Keep cutting down on heavy table salt.\n2. Drink plenty of water throughout the day.\n3. Take a light walk in the morning or evening.\n\n*Remember: This is an educational tool. If your numbers stay above 135/85 repeatedly, be sure to show your logs to your doctor.*`,
+        text: data.text || data.response || 'No response generated.',
+        warningCard: data.warningCard || null,
+        isEmergency: Boolean(data.is_emergency),
+        conversationId: data.conversation_id
+      };
+    } catch (networkError) {
+      console.error('BioTrajectory backend connection error:', networkError);
+      return {
+        text: `⚠️ **Backend Connection Unavailable**:\n\nCould not reach the BioTrajectory API server at \`${BACKEND_BASE_URL}\`.\n\nPlease ensure the FastAPI backend is running:\n\`\`\`bash\ncd backend\nsource venv/bin/activate\nuvicorn app.main:app --port 8000\n\`\`\`\n\n*If you are in an emergency, please call 911 or 112 immediately.*`,
         warningCard: {
           level: 'warning',
-          title: 'Check In With Your Doctor If It Rises',
-          measurement: 'Latest: 121 / 78 mmHg (Good range)',
-          recommendation: 'Rest quietly for 5 minutes before checking your blood pressure for the most accurate reading.',
-          actionText: 'View Your Health Trends'
-        }
+          title: 'Backend Connection Offline',
+          measurement: 'FastAPI Server: Offline',
+          recommendation: 'Start the Python FastAPI backend server on port 8000 to enable live AI assistance.',
+          actionText: 'Check Server Status'
+        },
+        isEmergency: false
       };
     }
+  }
 
-    if (
-      lowerQuery.includes('steps') ||
-      lowerQuery.includes('walking') ||
-      lowerQuery.includes('walk') ||
-      lowerQuery.includes('exercise')
-    ) {
-      return {
-        text: `You have been doing great with daily movement!\n\n- **Your Daily Average**: About **8,400 steps** every day (Target is 8,000 steps).\n- **Active Exercise Time**: Around **38 minutes** a day.\n\nWalking helps keep your heart strong, lowers blood pressure naturally, and helps your body use up extra blood sugar after meals.`
-      };
+  /**
+   * Retrieves conversation history from backend
+   */
+  static async fetchHistory(conversationId) {
+    if (!conversationId) return [];
+    try {
+      const response = await fetch(`${BACKEND_BASE_URL}/api/history?conversation_id=${encodeURIComponent(conversationId)}`);
+      if (response.ok) {
+        const data = await response.json();
+        return data.messages || [];
+      }
+    } catch (e) {
+      console.warn('Failed to fetch conversation history:', e);
     }
+    return [];
+  }
 
-    if (
-      lowerQuery.includes('urine') ||
-      lowerQuery.includes('protein') ||
-      lowerQuery.includes('kidney') ||
-      lowerQuery.includes('water')
-    ) {
-      return {
-        text: `Here is what your recent simple urine check shows in plain words:\n\n- **Protein Check**: **Negative (Clean)**. This means your kidney filters are holding onto good proteins like they should.\n- **Hydration Level**: **1.018**. This means you are drinking a healthy amount of fluids.\n\nKeep drinking 6 to 8 glasses of water a day to keep your kidneys flushed and happy!`,
-        warningCard: null
-      };
+  /**
+   * Retrieves backend health summary
+   */
+  static async fetchHealthSummary() {
+    try {
+      const response = await fetch(`${BACKEND_BASE_URL}/api/health/summary`);
+      if (response.ok) {
+        return await response.json();
+      }
+    } catch (e) {
+      console.warn('Failed to fetch health summary:', e);
     }
-
-    // Default friendly plain English response
-    return {
-      text: `Hello! I checked your recent health logs:\n\n- Your **blood pressure** and **daily steps** have been steady over the last two weeks.\n- Your simple tests show good **hydration** and clean kidney checks.\n\nWhat would you like to understand better about your health numbers?`,
-      warningCard: null
-    };
+    return null;
   }
 }
+
+export default GeminiAssistantService;

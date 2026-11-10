@@ -76,7 +76,8 @@ export default function AiAssistantPage() {
       const response = await GeminiAssistantService.queryAssistant({
         query: textToSend,
         attachments: attachedFiles,
-        userConsentGiven: hasDocConsent
+        userConsentGiven: hasDocConsent,
+        conversationHistory: messages.filter(msg => msg.id !== 'msg_welcome' && msg.sender).slice(-8)
       });
 
       const assistantMessage = {
@@ -90,6 +91,14 @@ export default function AiAssistantPage() {
       setMessages(prev => [...prev, assistantMessage]);
     } catch (err) {
       console.error(err);
+      const retryMessage = {
+        id: `asst_err_${Date.now()}`,
+        sender: 'assistant',
+        text: 'I hit a temporary backend issue while preparing your answer. Please try again in a moment.',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        warningCard: null
+      };
+      setMessages(prev => [...prev, retryMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -120,6 +129,7 @@ export default function AiAssistantPage() {
   };
 
   const clearChat = () => {
+    GeminiAssistantService.resetConversation();
     setMessages([
       {
         id: 'msg_reset',
