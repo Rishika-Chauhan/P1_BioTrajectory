@@ -21,6 +21,7 @@ import {
   Grid,
   Layers,
   UserCheck,
+  User,
   Compass,
   TrendingUp,
   Bluetooth,
@@ -62,7 +63,7 @@ import {
 import ConsentModal from './ConsentModal';
 import { GeminiAssistantService } from '../services/gemini';
 
-export default function LiveDemo({ onOpenReportModal }) {
+export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
   const { isDark } = useTheme();
 
   // Active Main View: 'trajectory', 'multistream', 'piechart', 'bluetooth', 'scanner', 'gemini', 'clinician', 'dual', 'heatmap', 'distribution'
@@ -607,130 +608,152 @@ export default function LiveDemo({ onOpenReportModal }) {
           {/* Deep Clinical Teal Left Accent Line */}
           <div className="absolute top-0 left-0 w-1.5 h-full bg-[#00685f]"></div>
 
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pl-2">
-            <div className="flex flex-col gap-2 max-w-3xl">
+          <div className="flex flex-col gap-5 pl-2">
+            {/* Full-Width Telemetry & Personalized Welcome Heading */}
+            <div className="flex flex-col gap-2 w-full">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-sans text-[11px] uppercase tracking-wider bg-[#00685f]/10 text-[#00685f] dark:text-[#6bd8cb] px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#00685f] dark:bg-[#6bd8cb] animate-pulse"></span>
                   Longitudinal Telemetry Active
                 </span>
-                <span className="text-slate-400 text-xs">•</span>
+                <span className="text-slate-400 text-xs hidden sm:inline">•</span>
                 <span className={`text-xs font-sans ${isDark ? 'text-slate-400' : 'text-[#3d4947]'}`}>
                   Calibrated against iPhone 15 Pro TrueDepth Sensor
                 </span>
-                <span className="text-slate-400 text-xs">•</span>
+                <span className="text-slate-400 text-xs hidden sm:inline">•</span>
                 <span className={`text-xs font-sans ${isDark ? 'text-slate-400' : 'text-[#3d4947]'}`}>
                   Person: <strong className={isDark ? 'text-white' : 'text-slate-900'}>{activePersona.name} ({activePersona.age}y)</strong>
                 </span>
               </div>
 
-              <h1 className="font-sans text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight leading-tight">
+              <h1 className="font-sans text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight leading-snug">
                 Welcome back, {activePersona.name.split(' ')[0]}. Your personal baseline is established across {activeHistory.length} days{' '}
                 <span className={`font-normal text-base sm:text-lg ${isDark ? 'text-slate-400' : 'text-[#3d4947]'}`}>
                   ({history.length} strip scans logged).
                 </span>
               </h1>
 
-              <p className={`text-sm leading-relaxed ${isDark ? 'text-slate-300' : 'text-[#3d4947]'}`}>
+              <p className={`text-xs sm:text-sm leading-relaxed max-w-4xl ${isDark ? 'text-slate-300' : 'text-[#3d4947]'}`}>
                 Continuous urine analyte matrix synchronized with daily biosensors. Biological drift confidence index:{' '}
                 <strong className="text-[#00685f] dark:text-[#6bd8cb] font-semibold">98.4% optical match</strong>.
               </p>
             </div>
 
-            {/* Quick Actions Toolbelt */}
-            <div className="flex flex-wrap items-center gap-2 shrink-0">
-              {/* Persona Switchers */}
-              <div className={`flex items-center p-1 rounded-lg border text-xs font-sans mr-1 ${isDark ? 'bg-[#070b14] border-slate-800' : 'bg-slate-50 border-slate-200'
-                }`}>
-                {patientList.map((p) => {
-                  const isSelected = selectedPersonaId === p.id;
-                  return (
-                    <button
-                      key={p.id}
-                      onClick={() => handleSelectPersona(p.id)}
-                      className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${isSelected
-                        ? 'bg-[#00685f] text-white shadow-xs font-semibold'
-                        : isDark ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
-                        }`}
-                      title={p.description || p.name}
-                    >
-                      {p.id === 'my_user_profile' ? 'You (My Ledger)' : p.name.split(' ')[0]}
-                    </button>
-                  );
-                })}
+            {/* Quick Actions Toolbelt Row */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-200/60 dark:border-slate-800/60">
+              {/* Left Cluster: Persona Switchers & Data Sovereignty Export */}
+              <div className="flex flex-wrap items-center gap-2">
+                <div className={`flex items-center p-1 rounded-lg border text-xs font-sans ${isDark ? 'bg-[#070b14] border-slate-800' : 'bg-slate-50 border-slate-200'
+                  }`}>
+                  {patientList.map((p) => {
+                    const isSelected = selectedPersonaId === p.id;
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => handleSelectPersona(p.id)}
+                        className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${isSelected
+                          ? 'bg-[#00685f] text-white shadow-xs font-semibold'
+                          : isDark ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        title={p.description || p.name}
+                      >
+                        {p.id === 'my_user_profile' ? 'You (My Ledger)' : p.name.split(' ')[0]}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={handleExportCSV}
+                    className={`flex items-center gap-1 font-sans text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-colors border ${isDark
+                      ? 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-800'
+                      : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 shadow-xs'
+                      }`}
+                    title="Download verified patient measurements in CSV format"
+                    type="button"
+                  >
+                    <Download className="w-3.5 h-3.5 text-[#00685f]" />
+                    <span>CSV</span>
+                  </button>
+
+                  <button
+                    onClick={handleExportJSON}
+                    className={`flex items-center gap-1 font-sans text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-colors border ${isDark
+                      ? 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-800'
+                      : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 shadow-xs'
+                      }`}
+                    title="Download verified patient measurements in JSON format"
+                    type="button"
+                  >
+                    <Download className="w-3.5 h-3.5 text-[#00687a]" />
+                    <span>JSON</span>
+                  </button>
+
+                  <button
+                    onClick={handleResetDataset}
+                    className={`p-1.5 rounded-lg transition-colors border ${isDark
+                      ? 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-amber-400 border-slate-800'
+                      : 'bg-white hover:bg-slate-50 text-slate-500 hover:text-amber-600 border-slate-200 shadow-xs'
+                      }`}
+                    title="Reset active dataset to factory baseline"
+                    type="button"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
 
-              {/* Data Sovereignty Actions */}
-              <button
-                onClick={handleExportCSV}
-                className={`flex items-center gap-1 font-sans text-xs font-semibold px-2.5 py-2 rounded-lg transition-colors border ${isDark
-                  ? 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-800'
-                  : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 shadow-xs'
-                  }`}
-                title="Download verified patient measurements in CSV format"
-                type="button"
-              >
-                <Download className="w-3.5 h-3.5 text-[#00685f]" />
-                <span className="hidden sm:inline">CSV</span>
-              </button>
+              {/* Right Cluster: Interactive Action Buttons */}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => setActiveTab('scanner')}
+                  className={`flex items-center gap-1.5 font-sans text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors border ${isDark
+                    ? 'bg-slate-900 hover:bg-slate-800 text-slate-200 border-slate-800'
+                    : 'bg-white hover:bg-slate-50 text-[#131b2e] border-slate-200 shadow-xs'
+                    }`}
+                  type="button"
+                >
+                  <Sliders className="w-3.5 h-3.5 text-[#00687a]" />
+                  <span>Review Calibration</span>
+                </button>
 
-              <button
-                onClick={handleExportJSON}
-                className={`flex items-center gap-1 font-sans text-xs font-semibold px-2.5 py-2 rounded-lg transition-colors border ${isDark
-                  ? 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-800'
-                  : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 shadow-xs'
-                  }`}
-                title="Download verified patient measurements in JSON format"
-                type="button"
-              >
-                <Download className="w-3.5 h-3.5 text-[#00687a]" />
-                <span className="hidden sm:inline">JSON</span>
-              </button>
+                {onOpenProfile && (
+                  <button
+                    onClick={onOpenProfile}
+                    className={`flex items-center gap-1.5 font-sans text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors border ${isDark
+                      ? 'bg-slate-900 hover:bg-slate-800 text-teal-300 border-teal-500/30'
+                      : 'bg-white hover:bg-slate-50 text-[#00685f] border-teal-200 shadow-xs'
+                      }`}
+                    type="button"
+                    title="Configure your personal health profile, units, and baseline goals"
+                  >
+                    <User className="w-3.5 h-3.5 text-[#00685f] dark:text-teal-400" />
+                    <span>Profile &amp; Goals</span>
+                  </button>
+                )}
 
-              <button
-                onClick={handleResetDataset}
-                className={`p-2 rounded-lg transition-colors border ${isDark
-                  ? 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-amber-400 border-slate-800'
-                  : 'bg-white hover:bg-slate-50 text-slate-500 hover:text-amber-600 border-slate-200 shadow-xs'
-                  }`}
-                title="Reset active dataset to factory baseline"
-                type="button"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-              </button>
+                <button
+                  onClick={onOpenReportModal}
+                  className={`flex items-center gap-1.5 font-sans text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors border ${isDark
+                    ? 'bg-slate-900 hover:bg-slate-800 text-slate-200 border-slate-800'
+                    : 'bg-white hover:bg-slate-50 text-[#131b2e] border-slate-200 shadow-xs'
+                    }`}
+                  type="button"
+                >
+                  <FileText className="w-3.5 h-3.5 text-[#00685f]" />
+                  <span>Export Doctor Packet</span>
+                </button>
 
-              <button
-                onClick={() => setActiveTab('scanner')}
-                className={`flex items-center gap-1.5 font-sans text-xs font-semibold px-3 py-2 rounded-lg transition-colors border ${isDark
-                  ? 'bg-slate-900 hover:bg-slate-800 text-slate-200 border-slate-800'
-                  : 'bg-white hover:bg-slate-50 text-[#131b2e] border-slate-200 shadow-xs'
-                  }`}
-                type="button"
-              >
-                <Sliders className="w-3.5 h-3.5 text-[#00687a]" />
-                <span>Review Calibration</span>
-              </button>
-
-              <button
-                onClick={onOpenReportModal}
-                className={`flex items-center gap-1.5 font-sans text-xs font-semibold px-3 py-2 rounded-lg transition-colors border ${isDark
-                  ? 'bg-slate-900 hover:bg-slate-800 text-slate-200 border-slate-800'
-                  : 'bg-white hover:bg-slate-50 text-[#131b2e] border-slate-200 shadow-xs'
-                  }`}
-                type="button"
-              >
-                <FileText className="w-3.5 h-3.5 text-[#00685f]" />
-                <span>Export Doctor Packet</span>
-              </button>
-
-              <button
-                onClick={() => setIsManualModalOpen(true)}
-                className="flex items-center gap-1.5 bg-[#00685f] hover:bg-[#008378] text-white font-sans text-xs font-bold px-3.5 py-2 rounded-lg transition-all shadow-xs active:scale-95"
-                type="button"
-              >
-                <Camera className="w-3.5 h-3.5" />
-                <span>+ New Strip Scan</span>
-              </button>
+                <button
+                  onClick={() => setIsManualModalOpen(true)}
+                  className="flex items-center gap-1.5 bg-[#00685f] hover:bg-[#008378] text-white font-sans text-xs font-bold px-3.5 py-1.5 rounded-lg transition-all shadow-xs active:scale-95"
+                  type="button"
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                  <span>+ New Strip Scan</span>
+                </button>
+              </div>
             </div>
           </div>
         </section>
@@ -1110,8 +1133,8 @@ export default function LiveDemo({ onOpenReportModal }) {
             <div className="flex flex-col gap-4">
               {/* Baseline Sufficiency & Data-Integrity Status Banner */}
               <div className={`p-4 rounded-xl border flex flex-wrap items-center justify-between gap-4 transition-all ${isBaselineActive
-                  ? isDark ? 'bg-slate-900/40 border-emerald-500/30' : 'bg-emerald-50/70 border-emerald-300'
-                  : isDark ? 'bg-amber-950/20 border-amber-500/40' : 'bg-amber-50/80 border-amber-300'
+                ? isDark ? 'bg-slate-900/40 border-emerald-500/30' : 'bg-emerald-50/70 border-emerald-300'
+                : isDark ? 'bg-amber-950/20 border-amber-500/40' : 'bg-amber-50/80 border-amber-300'
                 }`}>
                 <div className="flex items-center space-x-3">
                   <div className={`w-3 h-3 rounded-full ${isBaselineActive ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-amber-500 animate-ping'
@@ -1412,8 +1435,8 @@ export default function LiveDemo({ onOpenReportModal }) {
                   <>
                     <div className="flex items-center gap-3">
                       <div className={`w-3 h-3 rounded-full ${(hoveredPoint.flagged || (hoveredPoint[selectedBiomarker] >= currentBiomarkerMeta.criticalThreshold))
-                          ? 'bg-rose-500 animate-ping'
-                          : 'bg-[#00685f]'
+                        ? 'bg-rose-500 animate-ping'
+                        : 'bg-[#00685f]'
                         }`}></div>
                       <div>
                         <div className="flex items-center gap-2">
@@ -1421,8 +1444,8 @@ export default function LiveDemo({ onOpenReportModal }) {
                             Day {hoveredPoint.day} ({hoveredPoint.date} at {hoveredPoint.time})
                           </span>
                           <span className={`px-2 py-0.5 rounded text-[10px] font-sans font-semibold ${(hoveredPoint.flagged || (hoveredPoint[selectedBiomarker] >= currentBiomarkerMeta.criticalThreshold))
-                              ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
-                              : 'bg-[#006947]/10 text-[#006947] dark:text-[#6ffbbe]'
+                            ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+                            : 'bg-[#006947]/10 text-[#006947] dark:text-[#6ffbbe]'
                             }`}>
                             {(hoveredPoint.flagged || (hoveredPoint[selectedBiomarker] >= currentBiomarkerMeta.criticalThreshold))
                               ? 'Review Flagged (+3.8σ)'

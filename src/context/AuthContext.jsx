@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { FirebaseService, ROLES } from '../services/firebase';
+import { trajectoryStorage } from '../services/trajectoryStorage';
 
 const AuthContext = createContext();
 
@@ -52,6 +53,19 @@ export function AuthProvider({ children }) {
 
   const [authError, setAuthError] = useState(null);
   const [tokenClaims, setTokenClaims] = useState(null);
+  const [healthProfile, setHealthProfile] = useState(() => trajectoryStorage.getHealthProfile());
+
+  useEffect(() => {
+    const handleProfileUpdate = (e) => {
+      if (e.detail?.profile) {
+        setHealthProfile(e.detail.profile);
+      } else {
+        setHealthProfile(trajectoryStorage.getHealthProfile());
+      }
+    };
+    window.addEventListener('biotrajectory_profile_updated', handleProfileUpdate);
+    return () => window.removeEventListener('biotrajectory_profile_updated', handleProfileUpdate);
+  }, []);
 
   useEffect(() => {
     if (currentUser) {
@@ -213,10 +227,29 @@ export function AuthProvider({ children }) {
     }));
   };
 
+  const updateHealthProfile = (updates) => {
+    const saved = trajectoryStorage.saveHealthProfile(updates);
+    if (saved) {
+      setHealthProfile(saved);
+      if (saved.name) {
+        setCurrentUser(prev => prev ? ({ ...prev, name: saved.name }) : prev);
+      }
+    }
+    return saved;
+  };
+
+  const deleteAccountData = () => {
+    trajectoryStorage.deleteAccountData();
+    logout();
+  };
+
   return (
     <AuthContext.Provider
       value={{
         currentUser,
+        healthProfile,
+        updateHealthProfile,
+        deleteAccountData,
         isAuthenticated: !!currentUser,
         role: currentUser?.role || USER_ROLES.UNKNOWN,
         isUser: currentUser?.role === USER_ROLES.USER,

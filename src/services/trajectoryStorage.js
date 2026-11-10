@@ -15,8 +15,38 @@ const STORAGE_KEYS = {
   PATIENTS: 'biotrajectory_v2_patients',
   ACTIVE_PATIENT: 'biotrajectory_v2_active_patient_id',
   USER_CONSENT: 'biotrajectory_v2_user_consent',
+  USER_PROFILE: 'biotrajectory_v2_health_profile',
   BLE_DEVICES: 'biotrajectory_v2_ble_devices',
   CUSTOM_SCANS: 'biotrajectory_v2_optical_scans'
+};
+
+export const DEFAULT_HEALTH_PROFILE = {
+  name: 'Pranjal Sharma',
+  ageRange: '30–44',
+  gender: 'Prefer not to say',
+  timezone: 'UTC+05:30',
+  units: 'metric', // 'metric' or 'imperial'
+  height: 175,
+  weight: 70,
+  lifestyle: {
+    activityLevel: 'Moderately Active',
+    hydrationHabit: 'Moderate (1.5–2.5 L/day)',
+    testingSchedule: 'Second Morning Void (Recommended)'
+  },
+  goals: [
+    'Track kidney / microalbumin stability',
+    'Monitor metabolic & ketone trends'
+  ],
+  customGoal: '',
+  consent: {
+    storeAndProcessHealthData: true,
+    shareWithClinician: true,
+    aiAssistantAnalysis: true,
+    nonDiagnosticScopeAcknowledged: true,
+    acceptedAt: new Date().toISOString()
+  },
+  onboardingCompleted: true,
+  updatedAt: new Date().toISOString()
 };
 
 // Safe storage helper with memory fallback
@@ -369,6 +399,87 @@ class TrajectoryStorageService {
       };
       safeStorage.setItem(STORAGE_KEYS.USER_CONSENT, JSON.stringify(payload));
       return payload;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Health Profile Management
+  getHealthProfile() {
+    try {
+      const stored = safeStorage.getItem(STORAGE_KEYS.USER_PROFILE);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (e) {}
+    return {
+      ...DEFAULT_HEALTH_PROFILE,
+      onboardingCompleted: false
+    };
+  }
+
+  saveHealthProfile(profileData) {
+    try {
+      const existing = this.getHealthProfile();
+      const updatedProfile = {
+        ...existing,
+        ...profileData,
+        consent: {
+          ...(existing?.consent || {}),
+          ...(profileData?.consent || {})
+        },
+        lifestyle: {
+          ...(existing?.lifestyle || {}),
+          ...(profileData?.lifestyle || {})
+        },
+        goals: profileData?.goals || existing?.goals || [],
+        onboardingCompleted: true,
+        updatedAt: new Date().toISOString()
+      };
+
+      safeStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(updatedProfile));
+
+      // Synchronize consent ledger
+      if (updatedProfile.consent) {
+        this.setUserConsent({
+          agreedToNonDiagnosticScope: Boolean(updatedProfile.consent.nonDiagnosticScopeAcknowledged),
+          allowLocalLogging: Boolean(updatedProfile.consent.storeAndProcessHealthData),
+          agreedToClinicianVoluntaryShare: Boolean(updatedProfile.consent.shareWithClinician),
+          aiAssistantAnalysis: Boolean(updatedProfile.consent.aiAssistantAnalysis)
+        });
+      }
+
+      // Synchronize with user persona in local ledger
+      const allPatients = this.getAllPatients();
+      const userIdx = allPatients.findIndex(p => p.id === 'my_user_profile');
+      if (userIdx !== -1) {
+        allPatients[userIdx].name = updatedProfile.name || 'You';
+        allPatients[userIdx].age = parseInt(updatedProfile.ageRange?.split('–')?.[0] || '32', 10);
+        allPatients[userIdx].goals = updatedProfile.goals;
+        safeStorage.setItem(STORAGE_KEYS.PATIENTS, JSON.stringify(allPatients));
+      }
+
+      dispatchEventSafe('biotrajectory_profile_updated', { profile: updatedProfile });
+      dispatchEventSafe('biotrajectory_data_updated', { profile: updatedProfile });
+      return updatedProfile;
+    } catch (e) {
+      console.warn('Failed to save health profile:', e);
+      return false;
+    }
+  }
+
+  deleteAccountData() {
+    try {
+      safeStorage.removeItem(STORAGE_KEYS.USER_PROFILE);
+      safeStorage.removeItem(STORAGE_KEYS.USER_CONSENT);
+      safeStorage.removeItem(STORAGE_KEYS.BLE_DEVICES);
+      safeStorage.removeItem(STORAGE_KEYS.CUSTOM_SCANS);
+      safeStorage.removeItem(STORAGE_KEYS.PATIENTS);
+      safeStorage.removeItem(STORAGE_KEYS.ACTIVE_PATIENT);
+      this.init();
+      dispatchEventSafe('biotrajectory_data_purged');
+      dispatchEventSafe('biotrajectory_account_deleted');
+      return true;
     } catch (e) {
       return false;
     }

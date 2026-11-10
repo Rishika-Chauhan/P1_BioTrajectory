@@ -8,14 +8,18 @@ import {
   Shield,
   LogOut,
   ArrowRight,
-  CheckCircle2
+  CheckCircle2,
+  Activity,
+  Sparkles
 } from 'lucide-react';
 import { useAuth, USER_ROLES } from '../../context/AuthContext';
+import HealthProfileModal from '../../components/HealthProfileModal';
 
 export default function AccountSetupPage() {
   const { currentUser, logout, setUserRole } = useAuth();
   const navigate = useNavigate();
   const [assignedRoleNotice, setAssignedRoleNotice] = useState(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const handleAssignRole = (role, path) => {
     setUserRole(role);
@@ -77,6 +81,31 @@ export default function AccountSetupPage() {
             </div>
           )}
 
+          {/* First-Time Health Profile & Consent Onboarding Action */}
+          <div className="p-4 rounded-2xl bg-teal-50/60 dark:bg-teal-950/20 border border-teal-200/60 dark:border-teal-800/40 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-teal-900 dark:text-teal-200 flex items-center gap-1.5">
+                <Activity className="w-3.5 h-3.5 text-[#00685f]" />
+                <span>Health Profile &amp; Informed Consent Setup</span>
+              </span>
+              <span className="text-[10px] font-mono font-semibold text-[#00685f] dark:text-[#6bd8cb] bg-teal-100 dark:bg-teal-900/40 px-2 py-0.5 rounded-full">
+                7-Step Guided Flow
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+              Define your age bracket, optional biometric units, lifestyle context, baseline tracking goals, and data privacy consent preferences.
+            </p>
+            <button
+              type="button"
+              onClick={() => setIsProfileModalOpen(true)}
+              className="w-full py-2.5 px-3 rounded-xl bg-[#00685f] hover:bg-[#008378] text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Complete My Health Profile Setup</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
           {/* Test Sandbox Role Provisioner */}
           <div className="p-4 rounded-2xl bg-cyan-50/50 dark:bg-cyan-950/20 border border-cyan-200/50 dark:border-cyan-800/40 space-y-2.5">
             <span className="text-xs font-bold text-cyan-900 dark:text-cyan-200 block">
@@ -134,6 +163,13 @@ export default function AccountSetupPage() {
           </button>
         </div>
       </div>
+
+      {/* Embedded Health Profile & Consent Modal */}
+      <HealthProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        initialStep={1}
+      />
     </div>
   );
 }

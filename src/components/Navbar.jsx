@@ -9,11 +9,12 @@ import {
   Sun,
   Moon,
   Camera,
-  ShieldCheck
+  ShieldCheck,
+  User
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
-export default function Navbar({ onOpenDemo, onOpenReport }) {
+export default function Navbar({ onOpenDemo, onOpenReport, onOpenProfile }) {
   const { isDark, toggleTheme } = useTheme();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -81,11 +82,11 @@ export default function Navbar({ onOpenDemo, onOpenReport }) {
 
             <div>
               <div className="flex items-center space-x-2">
-                <span className={`font-sans text-lg sm:text-xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-[#131b2e]'}`}>
+                <span className={`font-sans text-lg sm:text-xl font-bold tracking-tight whitespace-nowrap ${isDark ? 'text-white' : 'text-[#131b2e]'}`}>
                   Bio<span className={isDark ? 'text-teal-400' : 'text-[#00685f]'}>Trajectory</span>
                 </span>
                 <span
-                  className={`text-[10px] font-sans font-semibold tracking-wide px-2 py-0.5 rounded-full border ${isDark
+                  className={`text-[10px] font-sans font-semibold tracking-wide px-2 py-0.5 rounded-full border whitespace-nowrap hidden 2xl:inline-flex ${isDark
                     ? 'bg-teal-500/10 text-teal-300 border-teal-500/30'
                     : 'bg-[#f2f3ff] text-[#00685f] border-[#dae2fd]'
                     }`}
@@ -93,22 +94,30 @@ export default function Navbar({ onOpenDemo, onOpenReport }) {
                   Preventive Baseline Engine
                 </span>
               </div>
-              <p className={`text-[11px] font-sans tracking-tight hidden sm:block ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              <p className={`text-[11px] font-sans tracking-tight hidden sm:block whitespace-nowrap ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                 Longitudinal Biomarker Intelligence
               </p>
             </div>
           </div>
 
-          {/* Center Personal Baseline Status Pill (from Stitch design) */}
-          <div className="hidden xl:flex items-center gap-2 bg-slate-100/80 dark:bg-slate-900/60 border border-slate-200/70 dark:border-white/10 px-3.5 py-1.5 rounded-full shadow-xs">
+          {/* Center Personal Baseline Status Pill (Shown on very wide screens to avoid navbar crowding) */}
+          <button
+            type="button"
+            onClick={onOpenProfile}
+            className={`hidden 2xl:flex items-center gap-2 border px-3.5 py-1.5 rounded-full shadow-xs transition-all cursor-pointer group ${isDark
+              ? 'bg-slate-900/60 hover:bg-slate-800/80 border-white/10 hover:border-teal-400/40 text-slate-300'
+              : 'bg-slate-100/80 hover:bg-slate-200/80 border-slate-200/70 hover:border-[#00685f]/40 text-slate-700'
+              }`}
+            title="Click to view or edit your personal health profile and baseline goals"
+          >
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className={`text-xs font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-              Personal Baseline: <strong className="text-emerald-600 dark:text-emerald-400">42 Days Active</strong> · Stable
+            <span className="text-xs font-medium whitespace-nowrap">
+              Personal Baseline: <strong className="text-emerald-600 dark:text-emerald-400">42 Days Active</strong> · <span className="group-hover:underline">Edit Profile</span>
             </span>
-          </div>
+          </button>
 
           {/* Center Navigation Links (Clean Precision Humanism) */}
-          <nav className="hidden lg:flex items-center space-x-1">
+          <nav className="hidden lg:flex items-center space-x-1 shrink-0">
             {navLinks.map((item) => {
               const isActive = activeSection === item.id;
               return (
@@ -138,12 +147,12 @@ export default function Navbar({ onOpenDemo, onOpenReport }) {
           </nav>
 
           {/* Right Action Cluster */}
-          <div className="hidden sm:flex items-center space-x-2.5">
+          <div className="hidden sm:flex items-center space-x-2 shrink-0">
 
             {/* Theme Switcher Toggle */}
             <button
               onClick={toggleTheme}
-              className={`p-2 rounded-xl border transition-all flex items-center justify-center ${isDark
+              className={`p-2 rounded-xl border transition-all flex items-center justify-center shrink-0 ${isDark
                 ? 'border-white/10 text-teal-300 bg-slate-900/80 hover:bg-slate-800 hover:border-teal-400/40 shadow-xs'
                 : 'border-slate-200 text-[#00685f] bg-white hover:bg-slate-50 shadow-xs'
                 }`}
@@ -152,29 +161,43 @@ export default function Navbar({ onOpenDemo, onOpenReport }) {
               {isDark ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
             </button>
 
-            {/* Clinician Brief Button */}
+            {/* Health Profile & Baseline Goals Button */}
             <button
-              onClick={onOpenReport}
-              className={`text-xs font-semibold tracking-wide px-3 py-2 rounded-xl border transition-all flex items-center space-x-1.5 ${isDark
+              onClick={onOpenProfile}
+              className={`text-xs font-semibold tracking-wide px-2.5 sm:px-3 py-2 rounded-xl border transition-all flex items-center space-x-1.5 shrink-0 ${isDark
                 ? 'border-white/10 hover:border-teal-400/40 text-slate-300 hover:text-white bg-slate-900/60 hover:bg-slate-800'
                 : 'border-slate-200 hover:border-[#00685f] text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 shadow-xs'
                 }`}
+              title="View and update your health profile, units, and consent preferences"
+            >
+              <User className={`w-3.5 h-3.5 ${isDark ? 'text-teal-400' : 'text-[#00685f]'}`} />
+              <span className="whitespace-nowrap">Profile &amp; Goals</span>
+            </button>
+
+            {/* Clinician Brief Button */}
+            <button
+              onClick={onOpenReport}
+              className={`text-xs font-semibold tracking-wide px-2.5 sm:px-3 py-2 rounded-xl border transition-all flex items-center space-x-1.5 shrink-0 ${isDark
+                ? 'border-white/10 hover:border-teal-400/40 text-slate-300 hover:text-white bg-slate-900/60 hover:bg-slate-800'
+                : 'border-slate-200 hover:border-[#00685f] text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 shadow-xs'
+                }`}
+              title="Export Clinician Handover Packet"
             >
               <FileText className={`w-3.5 h-3.5 ${isDark ? 'text-teal-400' : 'text-[#00685f]'}`} />
-              <span>Export Doctor Packet</span>
+              <span className="whitespace-nowrap">Doctor Packet</span>
             </button>
 
             {/* Launch Interactive Strip Scan CTA */}
             <button
               onClick={onOpenDemo}
-              className={`group text-xs font-bold tracking-wide px-4 py-2 rounded-xl transition-all duration-300 flex items-center space-x-2 shadow-sm ${isDark
+              className={`group text-xs font-bold tracking-wide px-3 sm:px-3.5 py-2 rounded-xl transition-all duration-300 flex items-center space-x-1.5 shadow-sm shrink-0 whitespace-nowrap ${isDark
                 ? 'bg-gradient-to-r from-teal-500 to-cyan-600 text-white shadow-[0_0_20px_rgba(0,131,120,0.3)] hover:shadow-[0_0_30px_rgba(0,131,120,0.5)]'
                 : 'bg-[#00685f] hover:bg-[#008378] text-white shadow-md shadow-[#00685f]/20 hover:shadow-lg'
                 }`}
             >
               <Camera className="w-3.5 h-3.5" />
-              <span>+ Log Strip Scan</span>
-              <ChevronRight className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform" />
+              <span>+ Strip Scan</span>
+              <ChevronRight className="w-3 h-3 transform group-hover:translate-x-0.5 transition-transform" />
             </button>
           </div>
 
@@ -219,6 +242,18 @@ export default function Navbar({ onOpenDemo, onOpenReport }) {
           ))}
 
           <div className="pt-3 border-t border-inherit flex flex-col space-y-2">
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                if (onOpenProfile) onOpenProfile();
+              }}
+              className={`w-full py-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center space-x-2 ${isDark ? 'border-white/10 text-slate-200 bg-slate-800' : 'border-slate-200 text-slate-800 bg-slate-50'
+                }`}
+            >
+              <User className="w-4 h-4 text-[#00685f] dark:text-teal-400" />
+              <span>Health Profile &amp; Consents</span>
+            </button>
+
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
