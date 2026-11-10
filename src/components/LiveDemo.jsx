@@ -27,7 +27,16 @@ import {
   PieChart as PieChartIcon,
   Radio,
   Sliders,
-  Cpu
+  Cpu,
+  Clock,
+  Eye,
+  ArrowRight,
+  ShieldAlert,
+  ShieldCheck,
+  ExternalLink,
+  ChevronRight,
+  Calendar,
+  Share2
 } from 'lucide-react';
 import {
   BIOMARKER_DEFINITIONS,
@@ -46,10 +55,10 @@ import AttractivePieChart from './AttractivePieChart';
 export default function LiveDemo({ onOpenReportModal }) {
   const { isDark } = useTheme();
 
-  // Active Main Tab: 'trajectory', 'multistream', 'piechart', 'bluetooth', 'scanner', 'gemini', 'clinician'
+  // Active Main View: 'trajectory', 'multistream', 'piechart', 'bluetooth', 'scanner', 'gemini', 'clinician', 'dual', 'heatmap', 'distribution'
   const [activeTab, setActiveTab] = useState('trajectory');
 
-  // Selected Patient Persona: 'arjun', 'sunita', 'david', 'custom'
+  // Selected Patient Persona: 'arjun', 'sunita', 'david'
   const [selectedPersonaId, setSelectedPersonaId] = useState('arjun');
   const activePersona = useMemo(() => {
     return PATIENT_PERSONAS.find((p) => p.id === selectedPersonaId) || PATIENT_PERSONAS[0];
@@ -58,7 +67,7 @@ export default function LiveDemo({ onOpenReportModal }) {
   // History state allowing live additions, persona changes, and resets
   const [history, setHistory] = useState(activePersona.history);
 
-  // Baseline Sufficiency Simulation Slider (PDF Section 11 & 17)
+  // Baseline Sufficiency Simulation Slider
   const [simulatedReadingsLimit, setSimulatedReadingsLimit] = useState(15);
 
   // Bluetooth Continuous Sensor Metric Selection State
@@ -75,23 +84,23 @@ export default function LiveDemo({ onOpenReportModal }) {
   };
 
   // Chart Configuration States
-  const [chartMode, setChartMode] = useState('single'); // 'single', 'dual', 'heatmap', 'distribution'
   const [selectedBiomarker, setSelectedBiomarker] = useState('protein');
   const [dualSecondaryBiomarker, setDualSecondaryBiomarker] = useState('specificGravity');
-  const [timeRange, setTimeRange] = useState(30); // 7, 14, 30
+  const [timeRange, setTimeRange] = useState(30); // 7, 14, 30, 90
   const [hoveredPoint, setHoveredPoint] = useState(null);
   const [inspectedSession, setInspectedSession] = useState(null);
+  const [inspectedScanModal, setInspectedScanModal] = useState(null);
 
   // Manual Entry Modal State
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
 
   // Optical Strip Scanner State
-  const [selectedPreset, setSelectedPreset] = useState(SIMULATOR_PRESETS[1]); // Default to Day 22 spike
+  const [selectedPreset, setSelectedPreset] = useState(SIMULATOR_PRESETS[1]);
   const [ambientLux, setAmbientLux] = useState(520);
   const [tiltAngleDeg, setTiltAngleDeg] = useState(0.4);
   const [timerSeconds, setTimerSeconds] = useState(60);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
-  const [activePadIndex, setActivePadIndex] = useState(3); // Protein pad default
+  const [activePadIndex, setActivePadIndex] = useState(3);
   const [editedReadings, setEditedReadings] = useState(SIMULATOR_PRESETS[1].readings);
   const [userNotes, setUserNotes] = useState('Evening cross-training session; low fluid intake during afternoon.');
   const [lifestyleTag, setLifestyleTag] = useState('Post-Workout');
@@ -108,7 +117,7 @@ export default function LiveDemo({ onOpenReportModal }) {
     return limited.slice(-timeRange);
   }, [history, simulatedReadingsLimit, timeRange]);
 
-  // Check if baseline is statistically established (PDF requires minimum 10 readings)
+  // Check if baseline is statistically established
   const isBaselineActive = simulatedReadingsLimit >= 10;
 
   // Active biomarker metadata
@@ -158,7 +167,7 @@ export default function LiveDemo({ onOpenReportModal }) {
         particleCount: 45,
         spread: 60,
         origin: { y: 0.7 },
-        colors: isDark ? ['#f59e0b', '#10b981', '#38bdf8'] : ['#b45309', '#059669', '#0284c7']
+        colors: ['#00685f', '#006947', '#00687a']
       });
     } catch (e) {
       // safe fallback
@@ -251,9 +260,9 @@ export default function LiveDemo({ onOpenReportModal }) {
   // =========================================================================
   // SVG CHART MATHEMATICS & GEOMETRY (SMOOTH BEZIER & DUAL-AXIS)
   // =========================================================================
-  const chartWidth = 840;
-  const chartHeight = 280;
-  const padding = { top: 35, right: 60, bottom: 45, left: 60 };
+  const chartWidth = 860;
+  const chartHeight = 260;
+  const padding = { top: 30, right: 55, bottom: 40, left: 55 };
 
   const activeValues = activeHistory.map((d) => d[selectedBiomarker] ?? 0);
   const minVal = Math.min(...activeValues, currentBiomarkerMeta.baselineMin * 0.9);
@@ -273,7 +282,6 @@ export default function LiveDemo({ onOpenReportModal }) {
     return chartHeight - padding.bottom - ((val - minVal) / rangeY) * (chartHeight - padding.top - padding.bottom);
   };
 
-  // Secondary axis calculations for dual chart
   const secondaryValues = activeHistory.map((d) => d[dualSecondaryBiomarker] ?? 0);
   const secMin = Math.min(...secondaryValues, secondaryBiomarkerMeta.baselineMin * 0.95);
   const secMax = Math.max(...secondaryValues, secondaryBiomarkerMeta.baselineMax * 1.05);
@@ -286,7 +294,7 @@ export default function LiveDemo({ onOpenReportModal }) {
   const baselineTopY = getY(currentBiomarkerMeta.baselineMax);
   const baselineBottomY = getY(currentBiomarkerMeta.baselineMin);
 
-  // Generate Smooth SVG Path using Catmull-Rom or Cubic Bezier
+  // Generate Smooth SVG Path
   const buildSmoothPath = (pts) => {
     if (pts.length < 2) return '';
     let d = `M ${pts[0].x} ${pts[0].y}`;
@@ -321,12 +329,11 @@ export default function LiveDemo({ onOpenReportModal }) {
   const primaryPathStr = buildSmoothPath(primaryPoints);
   const secondaryPathStr = buildSmoothPath(secondaryPoints);
 
-  // Closed area under primary curve
   const primaryAreaStr = primaryPoints.length > 1
     ? `${primaryPathStr} L ${primaryPoints[primaryPoints.length - 1].x} ${chartHeight - padding.bottom} L ${primaryPoints[0].x} ${chartHeight - padding.bottom} Z`
     : '';
 
-  // Rock-solid SVG Scrubber & Proximity Tracker (Zero-Flicker & Zero Layout Thrashing)
+  // Zero-Flicker Proximity Tracker
   const handleChartMouseMove = (e) => {
     if (!primaryPoints || primaryPoints.length === 0) return;
     const svg = e.currentTarget;
@@ -345,7 +352,6 @@ export default function LiveDemo({ onOpenReportModal }) {
       }
     }
 
-    // Stable proximity activation threshold: 38px
     if (minDist <= 38) {
       if (hoveredPoint?.day !== closest.data.day) {
         setHoveredPoint(closest.data);
@@ -369,261 +375,541 @@ export default function LiveDemo({ onOpenReportModal }) {
     }
   };
 
+  // Mock Recent Scans List matching Stitch table
+  const recentScansList = [
+    {
+      id: '#RAW_38',
+      timestamp: 'Yesterday, 8:15 AM',
+      context: 'Fasting Morning • Scan #38',
+      img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCYW0_xHZG3paXHnmtNR6qs3J3LdSzhzUPe28-O1yVcSzmTqIkaKAVhuprIj9hAp4S_fXg9q8GDcazUUYBLfQLawph6GKM5s0W2cWkkmS4ryZDQFgYPShUY_vGJoWXHcZw3rgiV5QtIRPAnt1ngfw7ECBoPtBPAOCjFGJ0IebkozBziOx8oX-xhhsdtwZXy_BKfUwRQ_ghdxoDW1-XfVVyenZ9jaDeCPYVcHsi7GBQ',
+      biomarkers: [
+        { label: 'SG: 1.026 ↑', type: 'variance' },
+        { label: 'KET: Trace', type: 'variance' },
+        { label: 'pH: 6.5', type: 'normal' },
+        { label: 'PRO: Neg', type: 'normal' }
+      ],
+      wearable: 'RHR: 61 bpm • Sleep: 7.4h • HRV 52ms',
+      validity: '99.4% Valid'
+    },
+    {
+      id: '#RAW_37',
+      timestamp: 'Nov 13, 7:45 AM',
+      context: 'Pre-Breakfast • Scan #37',
+      img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCs2gb3JSvirz23Bns9MCc404KMCt2V69aimcsX4-gNhNGDdqGq55BaQtGSARnWUsYcKSGMF5HYu4zVQ283qNMu-9pX7cKMaYWZsqVlne5yA_I0QtOBBZaSIoKniNKGZQEZl7dxwtnGFFXCw8qeuDZ7yUJARL7t6HdRnjDeM6FwzUVzSfjgDkBlvCeW_lYKJh0D-z93Ga6Pk4R97i5Nrsa9Ym7IZNwMbWokywCbiZc',
+      biomarkers: [
+        { label: 'SG: 1.018', type: 'normal' },
+        { label: 'KET: Neg', type: 'normal' },
+        { label: 'pH: 6.8', type: 'normal' },
+        { label: 'ALB: <10', type: 'normal' }
+      ],
+      wearable: 'RHR: 58 bpm • Sleep: 8.1h • HRV 58ms',
+      validity: '99.7% Valid'
+    },
+    {
+      id: '#RAW_36',
+      timestamp: 'Nov 11, 6:30 PM',
+      context: 'Post-Workout • Scan #36',
+      img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCXLkPpHewvZQQ1u7DcM7AEoDs9mfuxeYYoparcucw_-mljNd_1h9LGMeDEFV0d1sm4VPt4KuI3M2EnbMhJlCg3EhkyKmFNOpamwIa_Etbc50lntZ7DMtj0JH0oqW56_WND5eSQ26X5F9Utlw_VhC61PDLJ62ZnnBOeS9PzMqelnMdJaJsIOq0JEyaFAreaxbTYVbKK_-S9PXeCJ2dxIZ0z8BrGf0HGP4DQgjVABYQ',
+      biomarkers: [
+        { label: 'SG: 1.021', type: 'normal' },
+        { label: 'KET: Neg', type: 'normal' },
+        { label: 'pH: 6.2', type: 'normal' },
+        { label: 'LEU: Neg', type: 'normal' }
+      ],
+      wearable: 'Active HR: 142 bpm • Run: 5.2 km',
+      validity: '98.9% Valid'
+    },
+    {
+      id: '#RAW_35',
+      timestamp: 'Nov 09, 8:00 AM',
+      context: 'Morning Baseline • Scan #35',
+      img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCjj0eubKGtrkH_7dvGyX71XZblJ_wXcMr9y03dVfgdX5mfggokSsThYtHtLs_8MSn0vhpMrgYz6tUeLPldced7B1vOpwU60XlUglj4J0aUV1UjZMgvKB3PDJS_-wYm2CAm7z4--byoXNkwBrlF4fmco8zkg7vys28KRFai0eWGYcgQiPEqnxnjaf0dKJWfG4lH1c6IF7ZhpNXmhmLgY9C-fLIqiNTzWrxBQ1KmLZQ',
+      biomarkers: [
+        { label: 'SG: 1.014', type: 'normal' },
+        { label: 'KET: Neg', type: 'normal' },
+        { label: 'pH: 6.9', type: 'normal' },
+        { label: 'GLU: Norm', type: 'normal' }
+      ],
+      wearable: 'RHR: 59 bpm • Sleep: 7.9h • HRV 55ms',
+      validity: '99.8% Valid'
+    },
+    {
+      id: '#RAW_34',
+      timestamp: 'Nov 07, 7:50 AM',
+      context: 'Morning Baseline • Scan #34',
+      img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCS6oMXGbvor5TRONp6CO2eGNnx67XuOzkuLGYFa8ThXtnaum4owgI3qq2_umdEGVt5cFFugXGKS4t_zrr-R-8Vut92tIKGel4h1tCjYf4xCU1OPnHgdu-ZZwH82xiFmcQQ9-w-OTnvA5BueDhDfbOSal5TpgeasRn0F5_EOt6zS1LbklOBZz5uiHURoZBpmEb29wuydFJBg2R7U1mRIU5KN0Fst0Z5CVQYkcwIB6s',
+      biomarkers: [
+        { label: 'SG: 1.015', type: 'normal' },
+        { label: 'KET: Neg', type: 'normal' },
+        { label: 'pH: 6.7', type: 'normal' },
+        { label: 'PRO: Neg', type: 'normal' }
+      ],
+      wearable: 'RHR: 60 bpm • Sleep: 7.2h • HRV 51ms',
+      validity: '99.1% Valid'
+    }
+  ];
+
   return (
     <section
-      className={`relative pt-24 pb-16 border-b transition-colors overflow-hidden ${isDark ? 'bg-[#05070c] border-white/[0.08]' : 'bg-[#faf9f6] border-amber-900/10'
+      className={`relative pt-24 pb-16 transition-colors overflow-hidden ${isDark ? 'bg-[#070b14] text-slate-100' : 'bg-[#faf8ff] text-[#131b2e]'
         }`}
       id="live-prototype"
     >
-      {/* Background Ambient Glows & Technical Grid */}
-      <div className={`absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] rounded-full blur-[140px] pointer-events-none ${isDark ? 'bg-amber-500/10' : 'bg-amber-300/20'
-        }`}></div>
-      <div className={`absolute top-1/3 left-1/4 w-[450px] h-[450px] rounded-full blur-[120px] pointer-events-none ${isDark ? 'bg-emerald-500/8' : 'bg-emerald-400/15'
-        }`}></div>
-      <div className={`absolute top-2/3 right-1/4 w-[500px] h-[400px] rounded-full blur-[130px] pointer-events-none ${isDark ? 'bg-cyan-500/8' : 'bg-amber-400/15'
-        }`}></div>
+      {/* Subtle decorative ambient background elements from Stitch design */}
+      <div className="absolute -top-32 right-12 w-96 h-96 bg-[#00685f]/5 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute top-96 left-8 w-80 h-80 bg-[#00687a]/5 rounded-full blur-3xl pointer-events-none"></div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10 flex flex-col gap-6">
 
         {/* =========================================================================
-            TOP COMPACT TELEMETRY STATUS BAR (PATIENT & GRAPHS RIGHT ON TOP!)
+            1. EXECUTIVE STATUS & TELEMETRY BAR (STITCH DESIGN SPEC)
         ========================================================================== */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-          <div className="flex items-center space-x-2.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-xs font-mono-code font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-              Live Patient Telemetry & Trajectory Console
-            </span>
-            <span className="text-slate-400 text-xs hidden sm:inline">•</span>
-            <span className={`text-xs font-mono-code hidden sm:inline ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-              Individualized Baseline Corridor System
-            </span>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <span className={`text-[11px] font-mono-code px-3 py-1 rounded-full border ${isDark
-              ? 'bg-amber-400/10 text-amber-300 border-amber-400/20'
-              : 'bg-amber-50 text-amber-900 border-amber-200 shadow-xs'
-              }`}>
-              10-Session Rolling IQR Baseline Active
-            </span>
-          </div>
-        </div>
-
-        {/* =========================================================================
-            PATIENT COMMAND & IDENTITY CONSOLE (RIGHT ON TOP!)
-        ========================================================================== */}
-        <div className={`rounded-3xl border p-5 sm:p-7 mb-8 shadow-2xl backdrop-blur-xl transition-all ${isDark
-          ? 'bg-[#090e18]/95 border-amber-400/30 shadow-[0_15px_45px_rgba(0,0,0,0.6)]'
-          : 'bg-white border-amber-900/15 shadow-[0_15px_40px_rgba(180,145,95,0.08)]'
+        <section className={`rounded-xl p-6 sm:p-7 relative overflow-hidden transition-all border ${isDark
+            ? 'bg-[#0d1526] border-slate-800 shadow-[0_4px_24px_rgba(0,0,0,0.4)]'
+            : 'bg-white border-[#e2e8f0] shadow-xs'
           }`}>
-          {/* Top Row: Patient Avatar, Details, Switcher, and Direct Action CTAs */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-inherit">
+          {/* Deep Clinical Teal Left Accent Line */}
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-[#00685f]"></div>
 
-            {/* Left: Active Patient Identity */}
-            <div className="flex items-center space-x-4">
-              <div className={`relative flex items-center justify-center w-14 h-14 rounded-2xl font-cinzel font-bold text-xl border shadow-inner ${isDark
-                ? 'bg-gradient-to-br from-amber-400/20 to-slate-900 border-amber-400/40 text-amber-300'
-                : 'bg-gradient-to-br from-amber-100 to-amber-50 border-amber-300 text-amber-800'
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pl-2">
+            <div className="flex flex-col gap-2 max-w-3xl">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-sans text-[11px] uppercase tracking-wider bg-[#00685f]/10 text-[#00685f] dark:text-[#6bd8cb] px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#00685f] dark:bg-[#6bd8cb] animate-pulse"></span>
+                  Longitudinal Telemetry Active
+                </span>
+                <span className="text-slate-400 text-xs">•</span>
+                <span className={`text-xs font-sans ${isDark ? 'text-slate-400' : 'text-[#3d4947]'}`}>
+                  Calibrated against iPhone 15 Pro TrueDepth Sensor
+                </span>
+                <span className="text-slate-400 text-xs">•</span>
+                <span className={`text-xs font-sans ${isDark ? 'text-slate-400' : 'text-[#3d4947]'}`}>
+                  Person: <strong className={isDark ? 'text-white' : 'text-slate-900'}>{activePersona.name} ({activePersona.age}y)</strong>
+                </span>
+              </div>
+
+              <h1 className="font-sans text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight leading-tight">
+                Welcome back, {activePersona.name.split(' ')[0]}. Your personal baseline is established across {activeHistory.length} days{' '}
+                <span className={`font-normal text-base sm:text-lg ${isDark ? 'text-slate-400' : 'text-[#3d4947]'}`}>
+                  ({history.length} strip scans logged).
+                </span>
+              </h1>
+
+              <p className={`text-sm leading-relaxed ${isDark ? 'text-slate-300' : 'text-[#3d4947]'}`}>
+                Continuous urine analyte matrix synchronized with daily biosensors. Biological drift confidence index:{' '}
+                <strong className="text-[#00685f] dark:text-[#6bd8cb] font-semibold">98.4% optical match</strong>.
+              </p>
+            </div>
+
+            {/* Quick Actions Toolbelt */}
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              {/* Persona Switchers */}
+              <div className={`flex items-center p-1 rounded-lg border text-xs font-sans mr-2 ${isDark ? 'bg-[#070b14] border-slate-800' : 'bg-slate-50 border-slate-200'
                 }`}>
-                <span>{activePersona.initials || activePersona.name.split(' ').map(n => n[0]).join('')}</span>
-                <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-inherit animate-pulse"></span>
+                {PATIENT_PERSONAS.map((p) => {
+                  const isSelected = selectedPersonaId === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => handleSelectPersona(p.id)}
+                      className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${isSelected
+                          ? 'bg-[#00685f] text-white shadow-xs font-semibold'
+                          : isDark ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                    >
+                      {p.name.split(' ')[0]}
+                    </button>
+                  );
+                })}
               </div>
 
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className={`text-2xl sm:text-3xl font-cinzel font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'
-                    }`}>
-                    {activePersona.name}
-                  </h2>
-                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono-code font-bold uppercase tracking-wider border ${isDark
-                    ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
-                    : 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                    }`}>
-                    Live Trajectory Active
-                  </span>
-                  <button
-                    onClick={() => setActiveTab('bluetooth')}
-                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono-code font-bold uppercase tracking-wider border flex items-center space-x-1.5 transition-all hover:scale-105 ${isDark
-                      ? 'bg-blue-500/15 text-blue-300 border-blue-500/30 hover:border-blue-400'
-                      : 'bg-blue-50 text-blue-800 border-blue-300 hover:border-blue-500 shadow-xs'
-                      }`}
-                    title="Click to view Connected Bluetooth Hub"
-                  >
-                    <Bluetooth className="w-3 h-3 text-blue-400 animate-pulse" />
-                    <span>3 BLE Devices Connected (CGM • BP • Scale)</span>
-                  </button>
-                </div>
+              <button
+                onClick={() => setActiveTab('scanner')}
+                className={`flex items-center gap-1.5 font-sans text-xs font-semibold px-3 py-2 rounded-lg transition-colors border ${isDark
+                    ? 'bg-slate-900 hover:bg-slate-800 text-slate-200 border-slate-800'
+                    : 'bg-white hover:bg-slate-50 text-[#131b2e] border-slate-200 shadow-xs'
+                  }`}
+                type="button"
+              >
+                <Sliders className="w-3.5 h-3.5 text-[#00687a]" />
+                <span>Review Calibration</span>
+              </button>
 
-                <div className={`mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-mono-code ${isDark ? 'text-slate-400' : 'text-slate-500'
-                  }`}>
-                  <span>Age: <strong className={isDark ? 'text-slate-200' : 'text-slate-800'}>{activePersona.age}y</strong></span>
-                  <span>•</span>
-                  <span>Gender: <strong className={isDark ? 'text-slate-200' : 'text-slate-800'}>{activePersona.gender || 'Active'}</strong></span>
-                  <span>•</span>
-                  <span>Patient ID: <strong className={isDark ? 'text-amber-300' : 'text-amber-700'}>{activePersona.patientId || 'BT-9428'}</strong></span>
-                  <span>•</span>
-                  <span>Observation: <strong className={isDark ? 'text-slate-200' : 'text-slate-800'}>30-Day Window ({history.length} Sessions)</strong></span>
-                </div>
-              </div>
-            </div>
-
-            {/* Center: Patient Persona Switcher Tabs */}
-            <div className="flex flex-wrap items-center gap-2">
-              <span className={`text-xs font-mono-code uppercase font-semibold mr-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                Switch Patient:
-              </span>
-              {PATIENT_PERSONAS.map((persona) => {
-                const isSelected = selectedPersonaId === persona.id;
-                return (
-                  <button
-                    key={persona.id}
-                    onClick={() => handleSelectPersona(persona.id)}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all flex items-center space-x-2 border ${isSelected
-                      ? isDark
-                        ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-[0_0_20px_rgba(245,158,11,0.35)] font-bold scale-105'
-                        : 'bg-amber-700 text-white border-amber-800 shadow-md font-bold scale-105'
-                      : isDark
-                        ? 'bg-slate-900/80 border-white/10 text-slate-300 hover:text-white hover:bg-slate-800'
-                        : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100 shadow-xs'
-                      }`}
-                  >
-                    <UserCheck className="w-3.5 h-3.5" />
-                    <span>{persona.name} ({persona.age}y)</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Right: Direct Action CTAs (Generate Report & Log Strip) */}
-            <div className="flex flex-wrap items-center gap-3">
               <button
                 onClick={onOpenReportModal}
-                className={`px-5 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center space-x-2 shadow-lg ${isDark
-                  ? 'bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-slate-950 shadow-[0_0_25px_rgba(245,158,11,0.35)] hover:shadow-[0_0_35px_rgba(245,158,11,0.5)]'
-                  : 'bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800 text-white shadow-md hover:shadow-lg'
+                className={`flex items-center gap-1.5 font-sans text-xs font-semibold px-3 py-2 rounded-lg transition-colors border ${isDark
+                    ? 'bg-slate-900 hover:bg-slate-800 text-slate-200 border-slate-800'
+                    : 'bg-white hover:bg-slate-50 text-[#131b2e] border-slate-200 shadow-xs'
                   }`}
+                type="button"
               >
-                <Printer className="w-4 h-4" />
-                <span>Generate Clinician PDF Report</span>
+                <FileText className="w-3.5 h-3.5 text-[#00685f]" />
+                <span>Export Doctor Packet</span>
               </button>
 
               <button
                 onClick={() => setIsManualModalOpen(true)}
-                className={`px-4 py-3 rounded-xl border text-xs font-semibold tracking-wide uppercase transition-all flex items-center space-x-2 ${isDark
-                  ? 'bg-slate-900/80 hover:bg-slate-800 border-white/15 text-slate-200 hover:text-white'
-                  : 'bg-white hover:bg-slate-50 border-slate-300 text-slate-700'
-                  }`}
+                className="flex items-center gap-1.5 bg-[#00685f] hover:bg-[#008378] text-white font-sans text-xs font-bold px-3.5 py-2 rounded-lg transition-all shadow-xs active:scale-95"
+                type="button"
               >
-                <PlusCircle className="w-4 h-4 text-emerald-500" />
-                <span>+ Log Test Strip</span>
-              </button>
-
-              <button
-                onClick={handleExportCSV}
-                className={`p-3 rounded-xl border text-xs transition-all ${isDark
-                  ? 'bg-slate-900/80 hover:bg-slate-800 border-white/10 text-slate-300'
-                  : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-600 shadow-xs'
-                  }`}
-                title="Export CSV"
-              >
-                <Download className="w-4 h-4" />
+                <Camera className="w-3.5 h-3.5" />
+                <span>+ New Strip Scan</span>
               </button>
             </div>
           </div>
-
-          {/* Active Clinical Story Narrative */}
-          <div className={`mt-4 p-3.5 rounded-2xl border text-xs flex items-start space-x-3 ${isDark
-            ? 'bg-slate-950/70 border-white/10 text-slate-300'
-            : 'bg-amber-50/70 border-amber-200 text-slate-800'
-            }`}>
-            <span className="font-mono-code font-bold uppercase text-amber-500 text-[11px] shrink-0 mt-0.5">
-              Clinical Case Focus:
-            </span>
-            <span className="leading-relaxed">
-              {activePersona.clinicalStory}
-            </span>
-          </div>
-
-          {/* 4 Real-time Telemetry Badges Right on Top */}
-          <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs font-mono-code">
-            <div className={`p-3.5 rounded-xl border ${isDark ? 'bg-slate-950/80 border-white/5' : 'bg-slate-50 border-slate-200'
-              }`}>
-              <span className={`block text-[10px] uppercase ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                Active Parameter
-              </span>
-              <span className={`text-sm font-bold block mt-0.5 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                {currentBiomarkerMeta.name}
-              </span>
-              <p className={`text-[11px] mt-0.5 ${isDark ? 'text-amber-300' : 'text-amber-700'}`}>
-                Latest: {activeHistory[activeHistory.length - 1]?.[selectedBiomarker] ?? 0} {currentBiomarkerMeta.unit}
-              </p>
-            </div>
-
-            <div className={`p-3.5 rounded-xl border ${isDark ? 'bg-slate-950/80 border-white/5' : 'bg-slate-50 border-slate-200'
-              }`}>
-              <span className={`block text-[10px] uppercase ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                Personal Baseline Corridor
-              </span>
-              <span className={`text-sm font-bold block mt-0.5 ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
-                {activePersona.baselines?.[selectedBiomarker]?.normalCorridor || `${currentBiomarkerMeta.baselineMean} ${currentBiomarkerMeta.unit}`}
-              </span>
-              <p className={`text-[11px] mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                10-session rolling median IQR
-              </p>
-            </div>
-
-            <div className={`p-3.5 rounded-xl border ${isDark ? 'bg-slate-950/80 border-white/5' : 'bg-slate-50 border-slate-200'
-              }`}>
-              <span className={`block text-[10px] uppercase ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                Trajectory Direction
-              </span>
-              <span className={`text-sm font-bold block mt-0.5 ${selectedPersonaId === 'arjun'
-                ? 'text-emerald-400'
-                : selectedPersonaId === 'sunita'
-                  ? 'text-amber-400'
-                  : 'text-sky-400'
-                }`}>
-                {selectedPersonaId === 'arjun'
-                  ? 'Normalized (0.0σ)'
-                  : selectedPersonaId === 'sunita'
-                    ? 'Upward Creep (+1.4σ)'
-                    : 'Therapeutic Zone Active'}
-              </span>
-              <p className={`text-[11px] mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                {selectedPersonaId === 'arjun' ? 'Day 22 spike resolved' : selectedPersonaId === 'sunita' ? 'Glucose creep tracked' : 'pH 6.5 target met'}
-              </p>
-            </div>
-
-            <div className={`p-3.5 rounded-xl border ${isDark ? 'bg-slate-950/80 border-white/5' : 'bg-slate-50 border-slate-200'
-              }`}>
-              <span className={`block text-[10px] uppercase ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                Hydration Context (SG)
-              </span>
-              <span className={`text-sm font-bold block mt-0.5 ${isDark ? 'text-cyan-300' : 'text-teal-700'}`}>
-                SG {activeHistory[activeHistory.length - 1]?.specificGravity ?? 1.018}
-              </span>
-              <p className={`text-[11px] mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                Optimal fluid balance maintained
-              </p>
-            </div>
-          </div>
-        </div>
+        </section>
 
         {/* =========================================================================
-            FEATURE TAB NAVIGATION (TRAJECTORY GRAPHS, STRIP SCANNER, GEMINI AI, REPORT)
+            2. 4 BENTO KEY METRIC MODULES (STITCH DESIGN SPEC)
         ========================================================================== */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-          <div className={`inline-flex p-1.5 rounded-2xl border shadow-md ${isDark ? 'bg-slate-900/90 border-white/10' : 'bg-white border-amber-900/10'
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Bento 1: Trend Stability */}
+          <div className={`rounded-xl p-5 flex flex-col justify-between transition-all border ${isDark
+              ? 'bg-[#0d1526] border-slate-800 hover:border-slate-700'
+              : 'bg-white border-[#e2e8f0] hover:border-slate-300 shadow-xs'
+            }`}>
+            <div className="flex items-center justify-between">
+              <span className={`text-xs font-bold font-sans uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-[#3d4947]'
+                }`}>
+                Trend Stability
+              </span>
+              <span className="flex items-center gap-1 text-[11px] font-sans font-semibold text-[#006947] dark:text-[#6ffbbe] bg-[#006947]/10 px-2 py-0.5 rounded-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#006947] dark:bg-[#6ffbbe]"></span> In Envelope
+              </span>
+            </div>
+
+            <div className="my-3 flex items-baseline justify-between">
+              <div>
+                <div className="font-sans text-3xl font-bold tracking-tight text-on-surface">94%</div>
+                <div className={`text-xs font-sans ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Within personal boundary
+                </div>
+              </div>
+
+              {/* Mini Sparkline SVG */}
+              <div className="w-24 h-10">
+                <svg className="w-full h-full overflow-visible" viewBox="0 0 100 40">
+                  <rect className="text-[#006947]/10" fill="currentColor" height="24" rx="2" width="100" x="0" y="8"></rect>
+                  <path className="text-[#00685f]" d="M 0,22 Q 15,18 30,24 T 60,19 T 85,15 T 100,20" fill="none" stroke="currentColor" strokeWidth="2.5"></path>
+                  <circle className="text-[#00685f]" cx="100" cy="20" fill="currentColor" r="3" stroke="white" strokeWidth="1.5"></circle>
+                </svg>
+              </div>
+            </div>
+
+            <div className={`text-xs font-sans ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              36 of 38 readings strictly within personalized range
+            </div>
+          </div>
+
+          {/* Bento 2: Active Indicators */}
+          <div className={`rounded-xl p-5 flex flex-col justify-between transition-all border ${isDark
+              ? 'bg-[#0d1526] border-slate-800 hover:border-slate-700'
+              : 'bg-white border-[#e2e8f0] hover:border-slate-300 shadow-xs'
+            }`}>
+            <div className="flex items-center justify-between">
+              <span className={`text-xs font-bold font-sans uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-[#3d4947]'
+                }`}>
+                Active Analytes
+              </span>
+              <span className="text-[11px] font-sans font-semibold text-[#00687a] dark:text-[#57dffe] bg-[#00687a]/10 px-2 py-0.5 rounded-full">
+                7 Tracked
+              </span>
+            </div>
+
+            <div className="my-3">
+              <div className="font-sans text-3xl font-bold tracking-tight text-on-surface">
+                7 <span className={`text-sm font-normal ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>/ 10 Multiplex</span>
+              </div>
+              <div className={`text-xs font-sans mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                SG, pH, PRO, KET, LEU, ALB, GLU
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 pt-1 text-xs font-sans">
+              <span className="h-2 w-2 rounded-full bg-[#00685f]"></span>
+              <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>
+                Last complete multipanel: Yesterday 8:15 AM
+              </span>
+            </div>
+          </div>
+
+          {/* Bento 3: Notable Variance Flag */}
+          <div className={`rounded-xl p-5 flex flex-col justify-between transition-all border-l-4 border-l-[#f59e0b] border ${isDark
+              ? 'bg-[#0d1526] border-slate-800 hover:border-slate-700'
+              : 'bg-white border-[#e2e8f0] hover:border-slate-300 shadow-xs'
+            }`}>
+            <div className="flex items-center justify-between">
+              <span className={`text-xs font-bold font-sans uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-[#3d4947]'
+                }`}>
+                Identified Shift
+              </span>
+              <span className="flex items-center gap-1 text-[11px] font-sans font-semibold text-[#f59e0b] bg-[#f59e0b]/10 px-2 py-0.5 rounded-full">
+                <Info className="w-3 h-3" /> 1 Variance
+              </span>
+            </div>
+
+            <div className="my-3">
+              <div className="font-sans text-lg font-bold leading-tight">SG 1.026 & Trace KET</div>
+              <div className={`text-xs font-sans mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                Mild concentration vs 1.015 baseline
+              </div>
+            </div>
+
+            <div className="text-xs font-sans flex items-center justify-between">
+              <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>Scan #38 • 26h ago</span>
+              <button
+                onClick={() => {
+                  setSelectedBiomarker('specificGravity');
+                  setActiveTab('trajectory');
+                }}
+                className="text-[#00685f] dark:text-[#6bd8cb] font-semibold hover:underline"
+              >
+                Inspect
+              </button>
+            </div>
+          </div>
+
+          {/* Bento 4: Wearable Context Sync */}
+          <div className={`rounded-xl p-5 flex flex-col justify-between transition-all border ${isDark
+              ? 'bg-[#0d1526] border-slate-800 hover:border-slate-700'
+              : 'bg-white border-[#e2e8f0] hover:border-slate-300 shadow-xs'
+            }`}>
+            <div className="flex items-center justify-between">
+              <span className={`text-xs font-bold font-sans uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-[#3d4947]'
+                }`}>
+                Contextual Biosensors
+              </span>
+              <button
+                onClick={() => setActiveTab('bluetooth')}
+                className="flex items-center gap-1 text-[11px] font-sans font-semibold text-[#006947] dark:text-[#6ffbbe] hover:underline"
+              >
+                <Activity className="w-3.5 h-3.5 animate-pulse" /> Live BLE
+              </button>
+            </div>
+
+            <div className="my-3 flex items-center justify-between">
+              <div>
+                <div className="font-sans text-2xl font-bold tracking-tight">
+                  61 <span className="text-xs font-normal text-slate-400">BPM</span>
+                </div>
+                <div className={`text-xs font-sans ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Resting HR (Base: 59)
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="font-sans text-2xl font-bold tracking-tight">
+                  7.4 <span className="text-xs font-normal text-slate-400">hrs</span>
+                </div>
+                <div className={`text-xs font-sans ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Sleep Restorative: 84%
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 text-xs font-sans text-[#00687a] dark:text-[#57dffe]">
+              <span className="w-2 h-2 rounded-full bg-[#00687a]"></span>
+              <span>Passive hydration deficit detected</span>
+            </div>
+          </div>
+        </section>
+
+        {/* =========================================================================
+            3. GEMINI AI LONGITUDINAL PLAIN-LANGUAGE INSIGHT CARD (STITCH SPEC)
+        ========================================================================== */}
+        <section className={`rounded-xl p-6 sm:p-7 relative overflow-hidden transition-all border ${isDark
+            ? 'bg-[#0d1526] border-slate-800 shadow-[0_4px_24px_rgba(0,0,0,0.4)]'
+            : 'bg-white border-[#e2e8f0] shadow-xs'
+          }`}>
+          {/* AI Subtle decorative flourish */}
+          <div className="absolute top-0 right-0 w-80 h-80 bg-[#00685f]/5 rounded-bl-full pointer-events-none"></div>
+
+          <div className="flex flex-col gap-5 relative z-10">
+            {/* Header */}
+            <div className={`flex flex-wrap items-center justify-between gap-3 pb-3 border-b ${isDark ? 'border-slate-800' : 'border-slate-100'
+              }`}>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-[#00685f] text-white flex items-center justify-center shadow-xs">
+                  <Sparkles className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-sans text-base sm:text-lg font-bold">Gemini Longitudinal Pattern Interpretation</h2>
+                    <span className="text-[11px] font-sans font-semibold bg-[#00685f]/10 text-[#00685f] dark:text-[#6bd8cb] px-2 py-0.5 rounded-full">
+                      Gemini 1.5 Pro Telemetry
+                    </span>
+                  </div>
+                  <p className={`text-xs font-sans ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Objective evaluation of continuous biomarker deviations vs your 42-day norm
+                  </p>
+                </div>
+              </div>
+
+              {/* Boundary badge */}
+              <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${isDark ? 'bg-slate-900 text-slate-300 border border-slate-800' : 'bg-slate-100 text-slate-700'
+                }`}>
+                <ShieldCheck className="w-3.5 h-3.5 text-[#006947]" />
+                <span>Non-Diagnostic • Pattern Analysis Only</span>
+              </div>
+            </div>
+
+            {/* 4 Structured Interpretation Bento Boxes */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Card 1: What Changed */}
+              <div className={`rounded-lg p-4 flex flex-col gap-1.5 border ${isDark ? 'bg-[#070b14] border-slate-800' : 'bg-[#f8faff] border-slate-200'
+                }`}>
+                <div className="flex items-center gap-1.5 text-[#00685f] font-sans text-sm font-semibold">
+                  <TrendingUp className="w-4 h-4" />
+                  <span>What Changed</span>
+                </div>
+                <p className={`text-xs font-sans leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                  Over the last 72 hours, your <strong>Urine Specific Gravity</strong> trended from your baseline 1.015 up to <strong>1.026</strong>, coinciding with trace Ketones (5 mg/dL) following a recorded low-carbohydrate fasting window.
+                </p>
+              </div>
+
+              {/* Card 2: What It Likely Reflects */}
+              <div className={`rounded-lg p-4 flex flex-col gap-1.5 border ${isDark ? 'bg-[#070b14] border-slate-800' : 'bg-[#f8faff] border-slate-200'
+                }`}>
+                <div className="flex items-center gap-1.5 text-[#00687a] font-sans text-sm font-semibold">
+                  <Info className="w-4 h-4" />
+                  <span>What It Likely Reflects</span>
+                </div>
+                <p className={`text-xs font-sans leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                  Typical physiologic response to mild dehydration and deliberate ketogenic metabolic shift. Crucially, your renal filtration markers (<strong>Microalbumin & Protein</strong>) remain flatlined strictly within negative baseline bounds.
+                </p>
+              </div>
+
+              {/* Card 3: What This DOES NOT Mean */}
+              <div className={`rounded-lg p-4 flex flex-col gap-1.5 border ${isDark ? 'bg-[#070b14] border-slate-800' : 'bg-[#f8faff] border-slate-200'
+                }`}>
+                <div className="flex items-center gap-1.5 text-slate-500 font-sans text-sm font-semibold">
+                  <AlertTriangle className="w-4 h-4 text-amber-500" />
+                  <span>What This Does NOT Mean</span>
+                </div>
+                <p className={`text-xs font-sans leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                  This is <strong>not</strong> an indicator of chronic renal impairment or diabetic ketoacidosis (DKA). Concurrent fasting glucose remained optimal (86 mg/dL), and leukocytes / nitrites are completely negative.
+                </p>
+              </div>
+
+              {/* Card 4: Suggested Next Step */}
+              <div className={`rounded-lg p-4 flex flex-col gap-1.5 border ${isDark ? 'bg-[#070b14] border-slate-800' : 'bg-[#f8faff] border-slate-200'
+                }`}>
+                <div className="flex items-center gap-1.5 text-[#006947] font-sans text-sm font-semibold">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Suggested Next Step</span>
+                </div>
+                <p className={`text-xs font-sans leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                  Increase structured fluid intake by <strong>500–750 mL</strong> of electrolyte water today. Log a confirmation strip test tomorrow morning during your second void to verify specific gravity re-entry into your 1.015 envelope.
+                </p>
+              </div>
+            </div>
+
+            {/* Gemini Interactive Follow-up Bar */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+              <div className="flex items-center gap-2 text-xs font-sans text-slate-400">
+                <Sparkles className="w-3.5 h-3.5 text-[#00685f]" />
+                <span>Need clarification? You can ask Gemini questions about your physiological baseline.</span>
+              </div>
+
+              <form onSubmit={handleCustomGeminiSubmit} className="flex items-center gap-2 w-full sm:w-auto">
+                <input
+                  type="text"
+                  value={customGeminiQuery}
+                  onChange={(e) => setCustomGeminiQuery(e.target.value)}
+                  placeholder="Ask Gemini about your baseline..."
+                  className={`px-3 py-1.5 text-xs rounded-lg border focus:outline-none w-full sm:w-64 ${isDark ? 'bg-[#070b14] border-slate-800 text-white focus:border-[#00685f]' : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-[#00685f]'
+                    }`}
+                />
+                <button
+                  type="submit"
+                  disabled={isAiThinking}
+                  className="px-3 py-1.5 rounded-lg bg-[#00685f] hover:bg-[#008378] text-white text-xs font-bold transition-all shrink-0 flex items-center gap-1"
+                >
+                  {isAiThinking ? <span>Thinking...</span> : <span>Ask Gemini</span>}
+                  <ArrowRight className="w-3 h-3" />
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        {/* =========================================================================
+            4. MAIN LONGITUDINAL BIOMARKER TRAJECTORY & MULTI-VIEW SUITE
+        ========================================================================== */}
+        <section className={`rounded-xl p-6 sm:p-7 relative overflow-hidden transition-all border ${isDark
+            ? 'bg-[#0d1526] border-slate-800 shadow-[0_4px_24px_rgba(0,0,0,0.4)]'
+            : 'bg-white border-[#e2e8f0] shadow-xs'
+          }`}>
+          {/* Main Trajectory Toolbar */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4">
+            <div>
+              <h2 className="font-sans text-lg sm:text-xl font-bold tracking-tight">Multi-Analyte Trajectory Envelope</h2>
+              <p className={`text-xs font-sans ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                Continuous curve vs personalized historical standard deviation corridor (±1.5σ)
+              </p>
+            </div>
+
+            {/* Timeframe & Analyte Selector Filters */}
+            <div className="flex flex-wrap items-center gap-3">
+              {/* 7D, 30D, 90D, 1Y toggles */}
+              <div className={`p-1 rounded-lg flex items-center gap-1 border ${isDark ? 'bg-[#070b14] border-slate-800' : 'bg-slate-100 border-slate-200'
+                }`}>
+                {[
+                  { label: '7D', val: 7 },
+                  { label: '30D', val: 30 },
+                  { label: '90D', val: 90 },
+                  { label: '1Y', val: 365 }
+                ].map((t) => (
+                  <button
+                    key={t.label}
+                    onClick={() => setTimeRange(t.val)}
+                    className={`px-2.5 py-1 rounded text-xs font-sans font-semibold transition-all ${timeRange === t.val
+                        ? isDark ? 'bg-[#00685f] text-white' : 'bg-white text-[#00685f] shadow-xs font-bold'
+                        : isDark ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Biomarker Selector Pills */}
+              <div className="hidden xl:flex items-center gap-1.5">
+                {[
+                  { id: 'specificGravity', label: 'Specific Gravity', color: '#00685f' },
+                  { id: 'ketones', label: 'Ketones', color: '#00687a' },
+                  { id: 'pH', label: 'Urine pH', color: '#6d7a77' },
+                  { id: 'protein', label: 'Microalbumin/Protein', color: '#006947' }
+                ].map((bio) => {
+                  const isSelected = selectedBiomarker === bio.id;
+                  return (
+                    <button
+                      key={bio.id}
+                      onClick={() => setSelectedBiomarker(bio.id)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-sans font-semibold transition-all ${isSelected
+                          ? 'bg-[#00685f]/15 text-[#00685f] dark:text-[#6bd8cb] ring-1 ring-[#00685f]'
+                          : isDark ? 'bg-slate-900 text-slate-400 hover:text-white' : 'bg-slate-100 text-slate-600 hover:text-slate-900'
+                        }`}
+                    >
+                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: bio.color }}></span>
+                      <span>{bio.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Sub-View Switcher Tabs */}
+          <div className={`mt-2 mb-6 flex flex-wrap items-center gap-1.5 p-1 rounded-xl border text-xs font-sans ${isDark ? 'bg-[#070b14] border-slate-800' : 'bg-slate-50 border-slate-200'
             }`}>
             {[
-              { id: 'trajectory', label: '1. Trajectory Curves', icon: Activity },
-              { id: 'multistream', label: '2. Multi-Stream Line Chart', icon: TrendingUp },
-              { id: 'piechart', label: '3. Corridor & System Pie', icon: PieChartIcon },
-              { id: 'bluetooth', label: '4. Bluetooth BLE Hub', icon: Bluetooth },
-              { id: 'scanner', label: '5. Optical Strip Scanner', icon: Camera },
-              { id: 'gemini', label: '6. Grounded Gemini AI', icon: Sparkles },
-              { id: 'clinician', label: '7. Clinician Handover Report', icon: FileText },
+              { id: 'trajectory', label: 'Trajectory Envelope', icon: Activity },
+              { id: 'multistream', label: 'Multi-Stream (Strip + BLE)', icon: TrendingUp },
+              { id: 'piechart', label: 'Corridor Pie Breakdown', icon: PieChartIcon },
+              { id: 'bluetooth', label: 'Bluetooth BLE Hub', icon: Bluetooth },
+              { id: 'scanner', label: 'Optical Strip Scanner', icon: Camera },
+              { id: 'gemini', label: 'Grounded Gemini AI Lab', icon: Sparkles },
+              { id: 'clinician', label: 'Doctor Handover Report', icon: FileText }
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -631,1656 +917,778 @@ export default function LiveDemo({ onOpenReportModal }) {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wider uppercase transition-all ${isActive
-                    ? isDark
-                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-[0_0_20px_rgba(217,119,6,0.3)]'
-                      : 'bg-gradient-to-r from-amber-600 to-amber-800 text-white shadow-md'
-                    : isDark
-                      ? 'text-slate-400 hover:text-white hover:bg-white/5'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg font-semibold transition-all ${isActive
+                      ? 'bg-[#00685f] text-white shadow-xs font-bold'
+                      : isDark ? 'text-slate-400 hover:text-white hover:bg-slate-900' : 'text-slate-600 hover:text-slate-900 hover:bg-white'
                     }`}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="w-3.5 h-3.5" />
                   <span>{tab.label}</span>
                 </button>
               );
             })}
           </div>
 
-          {/* Quick Trigger to Print Handover Report */}
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={onOpenReportModal}
-              className={`px-4 py-2.5 rounded-xl text-xs font-mono-code uppercase font-semibold border flex items-center space-x-2 transition-all ${isDark
-                ? 'border-amber-400/40 bg-amber-400/10 hover:bg-amber-400/20 text-amber-300'
-                : 'border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 shadow-xs'
-                }`}
-            >
-              <FileText className="w-3.5 h-3.5" />
-              <span>Full Doctor-Ready PDF</span>
-            </button>
-          </div>
-        </div>
-
-        {/* =========================================================================
-            TAB 1: GUIDED STRIP SCANNER & OPTICAL CALIBRATOR
-        ========================================================================== */}
-        {activeTab === 'scanner' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-
-            {/* Left 7 Cols: Camera Viewfinder Simulation */}
-            <div className={`lg:col-span-7 rounded-2xl border p-6 shadow-xl relative overflow-hidden ${isDark ? 'bg-[#090e18] border-white/10' : 'bg-white border-amber-900/10'
-              }`}>
-              {/* Header with real-time sensor tags */}
-              <div className={`flex flex-wrap items-center justify-between gap-3 pb-4 border-b ${isDark ? 'border-white/10' : 'border-slate-100'
-                }`}>
-                <div className="flex items-center space-x-2">
-                  <Camera className={`w-4 h-4 ${isDark ? 'text-amber-300' : 'text-amber-600'}`} />
-                  <span className={`text-sm font-semibold tracking-wide ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                    Smartphone Optical Capture & Lux Calibration
-                  </span>
+          {/* VIEW TAB 1: TRAJECTORY ENVELOPE (SVG CANVAS) */}
+          {activeTab === 'trajectory' && (
+            <div className="flex flex-col gap-4">
+              {/* Chart Header Info Overlay */}
+              <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-sans">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3.5 h-1.5 rounded-full bg-[#00685f]"></span>
+                    <span className="font-semibold text-on-surface">{currentBiomarkerMeta.name}</span>
+                    <span className="font-sans text-base font-bold text-[#00685f] dark:text-[#6bd8cb] ml-1">
+                      {activeHistory[activeHistory.length - 1]?.[selectedBiomarker] ?? currentBiomarkerMeta.baselineMean} {currentBiomarkerMeta.unit}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3.5 h-1.5 rounded-full bg-[#00687a]"></span>
+                    <span className="text-slate-400">Ketones (AcAc)</span>
+                    <span className="font-semibold text-[#00687a] dark:text-[#57dffe] ml-1">
+                      {activeHistory[activeHistory.length - 1]?.ketones ?? 0} mg/dL (Trace)
+                    </span>
+                  </div>
                 </div>
 
-                <div className="flex items-center space-x-2 text-xs">
-                  <span className={`flex items-center space-x-1 px-2.5 py-1 rounded font-mono-code border ${ambientLux >= 300
-                    ? isDark ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' : 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                    : 'bg-rose-500/10 text-rose-500 border-rose-500/30 font-bold animate-pulse'
-                    }`}>
-                    <Sun className="w-3 h-3" />
-                    <span>{ambientLux} Lux ({ambientLux >= 300 ? 'Optimal' : 'Low Light!'})</span>
+                <div className="flex items-center gap-4 text-slate-400 text-[11px]">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 bg-[#006947]/20 border border-[#006947]/40 rounded-xs"></span>
+                    <span>Shaded Band = Personal Baseline Corridor (±1.5σ)</span>
                   </span>
-
-                  <span className={`px-2 py-1 rounded font-mono-code border ${Math.abs(tiltAngleDeg) <= 4
-                    ? isDark ? 'bg-slate-800 text-slate-300 border-white/5' : 'bg-slate-100 text-slate-700 border-slate-200'
-                    : 'bg-rose-500/10 text-rose-500 border-rose-500/30 font-bold'
-                    }`}>
-                    Tilt: {tiltAngleDeg}°
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-4 border-t-2 border-dashed border-[#00687a]"></span>
+                    <span>Dashed = Wearable Hydration Strain</span>
                   </span>
                 </div>
               </div>
 
-              {/* Viewport Simulation Box */}
-              <div
-                className={`mt-5 relative w-full h-[380px] rounded-xl overflow-hidden border flex items-center justify-center transition-all ${isDark ? 'bg-slate-950 border-white/10' : 'bg-slate-900 border-slate-300'
-                  }`}
-                style={{
-                  filter: ambientLux < 300 ? `brightness(${ambientLux / 400})` : 'none'
-                }}
-              >
-                {/* Background Reticle Grid */}
-                <div className="absolute inset-0 bg-[radial-gradient(#ffffff20_1px,transparent_1px)] [background-size:16px_16px] opacity-40"></div>
-
-                {/* Perspective Guide Frame */}
-                <div className="absolute inset-6 border-2 border-dashed border-amber-400/50 rounded-lg pointer-events-none flex flex-col justify-between p-3">
-                  <div className="flex justify-between text-[10px] font-mono-code text-amber-300 font-semibold uppercase">
-                    <span>Target Zone: Reagent Strip</span>
-                    <span>CIE L*a*b* Calibrator Card</span>
-                  </div>
-                  <div className="flex justify-between text-[10px] font-mono-code text-amber-300">
-                    <span>Auto-Exposure Locked</span>
-                    <span>Confidence: {selectedPreset.confidenceScore}%</span>
-                  </div>
-                </div>
-
-                {/* Simulated 10-Pad Urine Test Strip with Interactive Pad Inspection */}
-                <div
-                  className="relative z-10 w-20 h-[300px] bg-[#f8fafc] rounded-md shadow-2xl border border-slate-300 flex flex-col items-center justify-between py-2 px-1 transition-transform"
-                  style={{
-                    transform: `rotate(${tiltAngleDeg}deg)`
-                  }}
+              {/* Main SVG Visualization */}
+              <div className={`relative w-full rounded-xl p-4 overflow-x-auto border ${isDark ? 'bg-[#070b14] border-slate-800' : 'bg-[#fcfaff] border-slate-200'
+                }`}>
+                <svg
+                  viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+                  className="w-full h-auto min-w-[700px] select-none"
+                  onMouseMove={handleChartMouseMove}
+                  onMouseLeave={handleChartMouseLeave}
+                  onClick={handleChartClick}
                 >
-                  <span className="text-[7px] font-mono-code text-slate-500 font-bold uppercase rotate-90 my-1">
-                    BT-10SG
-                  </span>
+                  <defs>
+                    <linearGradient id="baselineCorridorGradStitch" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#006947" stopOpacity="0.14" />
+                      <stop offset="100%" stopColor="#006947" stopOpacity="0.04" />
+                    </linearGradient>
+                    <linearGradient id="lineGlowTeal" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#00685f" stopOpacity="0.25" />
+                      <stop offset="100%" stopColor="#00685f" stopOpacity="0.0" />
+                    </linearGradient>
+                  </defs>
 
-                  {/* 10 Test Pads */}
-                  {BIOMARKER_DEFINITIONS.map((bio, idx) => {
-                    const readingVal = editedReadings[bio.id] ?? 0;
-                    const isSelectedPad = activePadIndex === idx;
-                    // Find closest color swatch
-                    const matchedSwatch = bio.colorScale.reduce((prev, curr) => {
-                      return Math.abs(curr.value - readingVal) < Math.abs(prev.value - readingVal) ? curr : prev;
-                    }, bio.colorScale[0]);
-
+                  {/* Horizontal Grid Lines */}
+                  {[0, 0.25, 0.5, 0.75, 1].map((pct, i) => {
+                    const y = padding.top + pct * (chartHeight - padding.top - padding.bottom);
+                    const valAtY = maxVal - pct * rangeY;
                     return (
-                      <div
-                        key={bio.id}
-                        onClick={() => setActivePadIndex(idx)}
-                        className={`w-12 h-4 rounded-xs border cursor-pointer transition-all flex items-center justify-center text-[8px] font-mono-code ${isSelectedPad
-                          ? 'ring-2 ring-amber-400 scale-110 shadow-md border-amber-400 z-20'
-                          : 'border-black/20 hover:scale-105'
-                          }`}
-                        style={{ backgroundColor: matchedSwatch.color }}
-                        title={`${bio.name}: ${readingVal} ${bio.unit}`}
-                      >
-                        {isSelectedPad && <span className="text-[7px] font-bold text-black/70">✓</span>}
-                      </div>
+                      <g key={i}>
+                        <line
+                          x1={padding.left}
+                          y1={y}
+                          x2={chartWidth - padding.right}
+                          y2={y}
+                          stroke={isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}
+                          strokeDasharray="4 4"
+                        />
+                        <text
+                          x={padding.left - 10}
+                          y={y + 3.5}
+                          textAnchor="end"
+                          className="text-[10px] font-sans fill-slate-400"
+                        >
+                          {currentBiomarkerMeta.unit === 'density' ? valAtY.toFixed(3) : valAtY.toFixed(1)}
+                        </text>
+                      </g>
                     );
                   })}
 
-                  <div className="w-8 h-4 rounded bg-slate-300 mt-1 flex items-center justify-center text-[7px] text-slate-600 font-bold">
-                    PAD
-                  </div>
-                </div>
-
-                {/* Real-Time Reaction Timer Display */}
-                <div className="absolute top-4 right-4 bg-slate-900/95 border border-white/20 rounded-xl p-3 backdrop-blur-md flex items-center space-x-3 text-white shadow-lg">
-                  <div className="relative w-9 h-9 flex items-center justify-center">
-                    <svg className="w-full h-full -rotate-90">
-                      <circle cx="18" cy="18" r="15" stroke="currentColor" strokeWidth="2.5" className="text-slate-800" fill="none" />
-                      <circle
-                        cx="18"
-                        cy="18"
-                        r="15"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                        className="text-amber-400 transition-all duration-1000"
-                        strokeDasharray={94.2}
-                        strokeDashoffset={94.2 * (1 - timerSeconds / 60)}
-                        fill="none"
-                      />
-                    </svg>
-                    <span className="absolute text-[11px] font-mono-code font-bold">{timerSeconds}s</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-mono-code uppercase block text-slate-400">Reaction Time</span>
-                    <div className="flex items-center space-x-1">
-                      <button
-                        onClick={() => setIsTimerRunning(!isTimerRunning)}
-                        className="p-1 rounded bg-white/10 hover:bg-white/20 text-xs"
-                        title={isTimerRunning ? 'Pause' : 'Start'}
-                      >
-                        {isTimerRunning ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
-                      </button>
-                      <button
-                        onClick={() => {
-                          setIsTimerRunning(false);
-                          setTimerSeconds(60);
-                        }}
-                        className="p-1 rounded bg-white/10 hover:bg-white/20 text-xs"
-                        title="Reset 60s"
-                      >
-                        <RotateCcw className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Warnings Overlay if Low Light or High Tilt */}
-                {ambientLux < 300 && (
-                  <div className="absolute bottom-4 inset-x-6 bg-rose-950/90 border border-rose-500/50 rounded-xl p-2.5 backdrop-blur-md flex items-center space-x-2 text-rose-200 text-xs animate-fadeIn">
-                    <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
-                    <span><strong>Low Light Hazard:</strong> Below 300 Lux. Colors may shift by ±1 block. Please turn on white room lighting.</span>
-                  </div>
-                )}
-                {Math.abs(tiltAngleDeg) > 4 && (
-                  <div className="absolute bottom-4 inset-x-6 bg-amber-950/90 border border-amber-500/50 rounded-xl p-2.5 backdrop-blur-md flex items-center space-x-2 text-amber-200 text-xs animate-fadeIn">
-                    <Compass className="w-4 h-4 text-amber-400 shrink-0" />
-                    <span><strong>Perspective Tilt ({tiltAngleDeg}°):</strong> Please hold smartphone parallel to test strip to prevent aspect distortion.</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Interactive Hardware Calibration Controls */}
-              <div className={`mt-5 p-4 rounded-xl border grid grid-cols-1 md:grid-cols-2 gap-4 ${isDark ? 'bg-slate-950 border-white/5' : 'bg-slate-50 border-slate-200'
-                }`}>
-                <div>
-                  <div className="flex justify-between text-xs font-mono-code mb-1">
-                    <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>Adjust Ambient Lux:</span>
-                    <strong className="text-amber-500">{ambientLux} Lux</strong>
-                  </div>
-                  <input
-                    type="range"
-                    min="150"
-                    max="800"
-                    step="10"
-                    value={ambientLux}
-                    onChange={(e) => setAmbientLux(parseInt(e.target.value))}
-                    className="w-full accent-amber-500 cursor-pointer"
+                  {/* Shaded Baseline Envelope Corridor */}
+                  <rect
+                    x={padding.left}
+                    y={baselineTopY}
+                    width={chartWidth - padding.left - padding.right}
+                    height={Math.max(6, baselineBottomY - baselineTopY)}
+                    fill="url(#baselineCorridorGradStitch)"
+                    stroke="#006947"
+                    strokeWidth="1"
+                    strokeDasharray="3 3"
+                    strokeOpacity="0.5"
+                    rx="3"
                   />
-                  <div className="flex justify-between text-[10px] font-mono-code text-slate-500 mt-0.5">
-                    <span>150 (Dim)</span>
-                    <span>300 (Min Required)</span>
-                    <span>800 (Bright)</span>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-xs font-mono-code mb-1">
-                    <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>Camera Tilt Angle:</span>
-                    <strong className="text-amber-500">{tiltAngleDeg}°</strong>
-                  </div>
-                  <input
-                    type="range"
-                    min="-10"
-                    max="10"
-                    step="0.5"
-                    value={tiltAngleDeg}
-                    onChange={(e) => setTiltAngleDeg(parseFloat(e.target.value))}
-                    className="w-full accent-amber-500 cursor-pointer"
+                  <line
+                    x1={padding.left}
+                    x2={chartWidth - padding.right}
+                    y1={(baselineTopY + baselineBottomY) / 2}
+                    y2={(baselineTopY + baselineBottomY) / 2}
+                    stroke="#006947"
+                    strokeDasharray="4 4"
+                    strokeOpacity="0.5"
+                    strokeWidth="1"
                   />
-                  <div className="flex justify-between text-[10px] font-mono-code text-slate-500 mt-0.5">
-                    <span>-10°</span>
-                    <span>0° (Flat)</span>
-                    <span>+10°</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Presets Switcher */}
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                <span className={`text-xs font-mono-code uppercase mr-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Test Presets:
-                </span>
-                {SIMULATOR_PRESETS.map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => handlePresetSelect(p)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-mono-code transition-all ${selectedPreset.id === p.id
-                      ? isDark ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-amber-600 text-white font-bold'
-                      : isDark ? 'bg-slate-900 text-slate-300 hover:text-white border border-white/5' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
-                      }`}
+                  <text
+                    x={chartWidth - padding.right - 8}
+                    y={baselineTopY + 12}
+                    textAnchor="end"
+                    className="text-[9px] font-sans font-semibold fill-[#006947] dark:fill-[#6ffbbe]"
                   >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+                    Personal Mean ({currentBiomarkerMeta.baselineMean} {currentBiomarkerMeta.unit})
+                  </text>
 
-            {/* Right 5 Cols: Step 2 Mandatory Confirmation Audit (PDF Section 5 & 10) */}
-            <div className={`lg:col-span-5 rounded-2xl border p-6 shadow-xl ${isDark ? 'bg-[#090e18] border-white/10' : 'bg-white border-amber-900/10'
-              }`}>
-              <div className={`pb-4 border-b ${isDark ? 'border-white/10' : 'border-slate-100'}`}>
-                <div className="flex items-center space-x-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-                  <span className={`text-xs font-mono-code uppercase tracking-wider font-semibold ${isDark ? 'text-amber-300' : 'text-amber-800'
-                    }`}>
-                    Step 2: Mandatory Patient Confirmation & Audit
-                  </span>
-                </div>
-                <h3 className={`text-lg font-bold font-cinzel mt-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  Review & Audit Values
-                </h3>
-                <p className={`text-xs mt-1 leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Every reading requires patient verification. Generative models never write unconfirmed medical data into the database.
-                </p>
-              </div>
+                  {/* Secondary Curve: Wearable Hydration Strain Estimate (Dashed line) */}
+                  <path
+                    d={`M ${padding.left},${getY(currentBiomarkerMeta.baselineMean * 1.05)} Q 250,${getY(currentBiomarkerMeta.baselineMean * 1.02)} 420,${getY(currentBiomarkerMeta.baselineMean * 0.98)} T 620,${getY(currentBiomarkerMeta.baselineMean * 1.15)} T ${chartWidth - padding.right},${getY(currentBiomarkerMeta.baselineMean * 1.35)}`}
+                    fill="none"
+                    opacity="0.6"
+                    stroke="#00687a"
+                    strokeDasharray="5 4"
+                    strokeWidth="1.8"
+                  />
 
-              {/* Pad Specific Inspector */}
-              {(() => {
-                const activeBio = BIOMARKER_DEFINITIONS[activePadIndex] || BIOMARKER_DEFINITIONS[0];
-                const activeVal = editedReadings[activeBio.id] ?? 0;
-                return (
-                  <div className={`mt-4 p-4 rounded-xl border ${isDark ? 'bg-slate-950/80 border-amber-400/30' : 'bg-amber-50/70 border-amber-300/80'
-                    }`}>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-mono-code uppercase font-bold text-amber-500">
-                        Inspecting: {activeBio.name}
-                      </span>
-                      <span className={`text-xs font-mono-code font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                        {activeVal} {activeBio.unit}
-                      </span>
-                    </div>
+                  {/* Area fill under primary curve */}
+                  {primaryAreaStr && (
+                    <path d={primaryAreaStr} fill="url(#lineGlowTeal)" />
+                  )}
 
-                    <div className="grid grid-cols-4 gap-1.5 mb-2">
-                      {activeBio.colorScale.map((swatch, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => setEditedReadings({ ...editedReadings, [activeBio.id]: swatch.value })}
-                          className={`p-1.5 rounded-lg border text-center transition-all ${activeVal === swatch.value
-                            ? 'ring-2 ring-amber-400 border-amber-400 font-bold scale-105'
-                            : 'border-black/10 opacity-75 hover:opacity-100'
+                  {/* Primary Trajectory Path (Deep Clinical Teal) */}
+                  {primaryPathStr && (
+                    <path
+                      d={primaryPathStr}
+                      fill="none"
+                      stroke="#00685f"
+                      strokeWidth="2.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  )}
+
+                  {/* Vertical Scrubber Guideline on Hover */}
+                  {hoveredPoint && (
+                    <line
+                      x1={primaryPoints.find((p) => p.data.day === hoveredPoint.day)?.x ?? 0}
+                      y1={padding.top}
+                      x2={primaryPoints.find((p) => p.data.day === hoveredPoint.day)?.x ?? 0}
+                      y2={chartHeight - padding.bottom}
+                      stroke="#00685f"
+                      strokeWidth="1.5"
+                      strokeDasharray="3 3"
+                      opacity="0.85"
+                      pointerEvents="none"
+                    />
+                  )}
+
+                  {/* Nodes & Data Points */}
+                  {primaryPoints.map((pt, i) => {
+                    const isHovered = hoveredPoint?.day === pt.data.day;
+                    const isFlagged = pt.data.flagged;
+                    const isLast = i === primaryPoints.length - 1;
+
+                    return (
+                      <g key={pt.data.day} pointerEvents="none">
+                        {/* Elevated current point with pulse */}
+                        {isLast && (
+                          <circle
+                            cx={pt.x}
+                            cy={pt.y}
+                            r="9"
+                            fill="#008378"
+                            fillOpacity="0.25"
+                            className="animate-pulse"
+                          />
+                        )}
+
+                        <circle
+                          cx={pt.x}
+                          cy={pt.y}
+                          r={isHovered ? 6 : isLast ? 5 : 4}
+                          fill={isFlagged ? '#ba1a1a' : '#00685f'}
+                          stroke="#ffffff"
+                          strokeWidth={isHovered ? 2.5 : 2}
+                          style={{ transition: 'r 120ms ease' }}
+                        />
+
+                        {/* X-axis day labels */}
+                        <text
+                          x={pt.x}
+                          y={chartHeight - padding.bottom + 16}
+                          textAnchor="middle"
+                          pointerEvents="none"
+                          className={`text-[9px] font-sans ${isHovered
+                              ? 'fill-[#00685f] dark:fill-[#6bd8cb] font-bold'
+                              : isDark ? 'fill-slate-500' : 'fill-slate-500'
                             }`}
                         >
-                          <div className="w-full h-4 rounded mb-1 border" style={{ backgroundColor: swatch.color }}></div>
-                          <span className={`text-[9px] font-mono-code block ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-                            {swatch.label}
+                          D{pt.data.day}
+                        </text>
+                      </g>
+                    );
+                  })}
+
+                  {/* Seamless Tracking Surface */}
+                  <rect
+                    x={padding.left}
+                    y={padding.top}
+                    width={chartWidth - padding.left - padding.right}
+                    height={chartHeight - padding.top - padding.bottom + 25}
+                    fill="none"
+                    pointerEvents="all"
+                    style={{ cursor: hoveredPoint ? 'pointer' : 'default' }}
+                  />
+                </svg>
+              </div>
+
+              {/* Fixed HUD Dock below chart */}
+              <div className={`min-h-[72px] rounded-xl p-4 flex flex-wrap items-center justify-between gap-4 border transition-all ${hoveredPoint
+                  ? hoveredPoint.flagged
+                    ? isDark ? 'bg-rose-950/30 border-rose-500/40' : 'bg-rose-50 border-rose-300'
+                    : isDark ? 'bg-slate-900 border-[#00685f]/40' : 'bg-white border-[#00685f]/40 shadow-xs'
+                  : isDark ? 'bg-[#070b14] border-slate-800' : 'bg-slate-50 border-slate-200'
+                }`}>
+                {hoveredPoint ? (
+                  <>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-3 h-3 rounded-full ${hoveredPoint.flagged ? 'bg-rose-500 animate-ping' : 'bg-[#00685f]'}`}></div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-sans text-xs font-bold">
+                            Day {hoveredPoint.day} ({hoveredPoint.date} at {hoveredPoint.time})
                           </span>
-                        </button>
-                      ))}
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-sans font-semibold ${hoveredPoint.flagged
+                              ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+                              : 'bg-[#006947]/10 text-[#006947] dark:text-[#6ffbbe]'
+                            }`}>
+                            {hoveredPoint.flagged ? 'Review Flagged (+3.8σ)' : 'Within Baseline'}
+                          </span>
+                        </div>
+                        <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                          <strong>Notes: </strong>{hoveredPoint.notes || 'Routine morning reading.'}
+                        </p>
+                      </div>
                     </div>
 
-                    <p className={`text-[11px] leading-relaxed italic ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                      {activeBio.biologicalContext}
-                    </p>
+                    <div className="flex items-center gap-4 text-xs font-sans">
+                      <div>
+                        <span className="block text-[10px] text-slate-400 uppercase">Protein</span>
+                        <strong className={hoveredPoint.protein > 20 ? 'text-rose-500' : 'text-[#00685f]'}>
+                          {hoveredPoint.protein} mg/dL
+                        </strong>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-slate-400 uppercase">Spec. Gravity</span>
+                        <strong>{hoveredPoint.specificGravity}</strong>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-slate-400 uppercase">pH</span>
+                        <strong>{hoveredPoint.pH}</strong>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-slate-400 uppercase">Ketones</span>
+                        <strong>{hoveredPoint.ketones} mg/dL</strong>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center justify-between w-full text-xs font-sans text-slate-400">
+                    <div className="flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-[#00685f] animate-pulse" />
+                      <span>Hover over any daily marker dot to inspect telemetry readings & clinical notes</span>
+                    </div>
+                    <span className="text-[11px] px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                      Click marker to inspect full record
+                    </span>
                   </div>
-                );
-              })()}
+                )}
+              </div>
 
-              {/* Fast Form Inputs for Key Biomarkers */}
-              <div className="mt-4 space-y-3">
-                <div className={`p-3 rounded-xl border flex items-center justify-between ${isDark ? 'bg-slate-900/70 border-white/5' : 'bg-slate-50 border-slate-200'
-                  }`}>
-                  <div>
-                    <span className={`text-xs font-semibold block ${isDark ? 'text-white' : 'text-slate-900'}`}>Protein (Albumin)</span>
-                    <span className={`text-[10px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Baseline: ~5 mg/dL</span>
+              {/* Bottom Legend & Calibration Status from Stitch */}
+              <div className={`p-3 rounded-lg flex flex-wrap items-center justify-between gap-3 text-xs font-sans ${isDark ? 'bg-[#070b14] border border-slate-800' : 'bg-slate-100 border border-slate-200'
+                }`}>
+                <div className="flex items-center gap-4 text-slate-400">
+                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#00685f]"></span> Specific Gravity</span>
+                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#00687a]"></span> Ketone Shift</span>
+                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#006947]"></span> Microalbumin Stable</span>
+                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-slate-400"></span> Leukocytes Zero</span>
+                </div>
+                <div className="text-[11px] text-slate-400">
+                  Calibration: White Reference Standard Patch 99.8% Match
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* VIEW TAB 2: MULTI-STREAM (ATTRACTIVELINECHART) */}
+          {activeTab === 'multistream' && (
+            <div className="mt-2">
+              <AttractiveLineChart
+                history={activeHistory}
+                activePersona={activePersona}
+                selectedBiomarker={selectedBiomarker}
+                selectedBleMetric={selectedBleMetric}
+              />
+            </div>
+          )}
+
+          {/* VIEW TAB 3: CORRIDOR PIE BREAKDOWN (ATTRACTIVEPIECHART) */}
+          {activeTab === 'piechart' && (
+            <div className="mt-2">
+              <AttractivePieChart activePersona={activePersona} />
+            </div>
+          )}
+
+          {/* VIEW TAB 4: BLUETOOTH BLE HUB */}
+          {activeTab === 'bluetooth' && (
+            <div className="mt-2">
+              <BluetoothHub
+                onSelectMetricForChart={(metricKey) => {
+                  setSelectedBleMetric(metricKey);
+                  setActiveTab('multistream');
+                }}
+                onSyncDeviceData={() => {
+                  const now = new Date();
+                  const newEntry = {
+                    day: history.length + 1,
+                    date: now.toISOString().split('T')[0],
+                    time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    protein: activePersona.baselines?.protein?.median || 6.2,
+                    specificGravity: 1.018,
+                    pH: 6.5,
+                    glucose: 0,
+                    ketones: 0,
+                    blood: 0,
+                    leukocytes: 0,
+                    nitrite: 0,
+                    urobilinogen: 0.2,
+                    bilirubin: 0,
+                    bleCgmGlucose: 95,
+                    bleBpSystolic: 118,
+                    bleBpDiastolic: 76,
+                    bleHeartRate: 68,
+                    bleSpo2: 98.5,
+                    bleHydration: 58.2,
+                    notes: 'Live BLE synchronized packet: continuous CGM, blood pressure, and resting heart rate data integrated.',
+                    flagged: false,
+                    confirmed: true
+                  };
+                  setHistory((prev) => [...prev, newEntry]);
+                  setSimulatedReadingsLimit((prev) => prev + 1);
+                }}
+              />
+            </div>
+          )}
+
+          {/* VIEW TAB 5: OPTICAL STRIP SCANNER */}
+          {activeTab === 'scanner' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mt-2">
+              {/* Left 7 cols: Camera Viewfinder */}
+              <div className={`lg:col-span-7 rounded-xl p-5 border ${isDark ? 'bg-[#070b14] border-slate-800' : 'bg-slate-50 border-slate-200'
+                }`}>
+                <div className="flex items-center justify-between pb-3 border-b border-inherit text-xs font-sans">
+                  <div className="flex items-center gap-2">
+                    <Camera className="w-4 h-4 text-[#00685f]" />
+                    <span className="font-semibold">Optical Colorimetric Calibration</span>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded bg-[#006947]/10 text-[#006947] font-semibold">
+                      {ambientLux} Lux (Optimal)
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                      Tilt: {tiltAngleDeg}°
+                    </span>
+                  </div>
+                </div>
+
+                {/* Viewport Simulation Box */}
+                <div className="mt-4 relative w-full h-[320px] rounded-lg overflow-hidden bg-slate-900 border border-slate-800 flex items-center justify-center">
+                  <div className="absolute inset-4 border border-dashed border-[#00685f]/50 rounded pointer-events-none flex flex-col justify-between p-2">
+                    <span className="text-[10px] text-[#00685f] font-mono">TARGET ALIGNED: CIE L*a*b* STANDARD</span>
+                    <span className="text-[10px] text-[#00685f] font-mono">EXPOSURE LOCKED • CONFIDENCE 99.4%</span>
+                  </div>
+
+                  {/* 10-Pad Strip */}
+                  <div className="relative z-10 w-16 h-[260px] bg-white rounded shadow-md flex flex-col items-center justify-between py-2 px-1">
+                    <span className="text-[8px] font-mono text-slate-400 font-bold rotate-90 my-1">BT-10SG</span>
+                    {BIOMARKER_DEFINITIONS.map((bio, idx) => {
+                      const readingVal = editedReadings[bio.id] ?? 0;
+                      const isSelectedPad = activePadIndex === idx;
+                      const matchedSwatch = bio.colorScale.reduce((prev, curr) => {
+                        return Math.abs(curr.value - readingVal) < Math.abs(prev.value - readingVal) ? curr : prev;
+                      }, bio.colorScale[0]);
+
+                      return (
+                        <div
+                          key={bio.id}
+                          onClick={() => setActivePadIndex(idx)}
+                          className={`w-10 h-3 rounded-xs border cursor-pointer transition-all ${isSelectedPad ? 'ring-2 ring-[#00685f] scale-110 shadow-sm' : 'border-black/20 hover:scale-105'
+                            }`}
+                          style={{ backgroundColor: matchedSwatch.color }}
+                          title={`${bio.name}: ${readingVal} ${bio.unit}`}
+                        />
+                      );
+                    })}
+                    <div className="w-8 h-3 rounded bg-slate-300 text-[6px] text-center font-bold text-slate-600">PAD</div>
+                  </div>
+                </div>
+
+                {/* Controls */}
+                <div className="mt-4 grid grid-cols-2 gap-3 text-xs font-sans">
+                  <div>
+                    <label className="text-slate-400 block mb-1">Adjust Ambient Lux ({ambientLux})</label>
+                    <input
+                      type="range"
+                      min="150"
+                      max="800"
+                      value={ambientLux}
+                      onChange={(e) => setAmbientLux(parseInt(e.target.value))}
+                      className="w-full accent-[#00685f]"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-slate-400 block mb-1">Camera Tilt ({tiltAngleDeg}°)</label>
+                    <input
+                      type="range"
+                      min="-10"
+                      max="10"
+                      step="0.5"
+                      value={tiltAngleDeg}
+                      onChange={(e) => setTiltAngleDeg(parseFloat(e.target.value))}
+                      className="w-full accent-[#00685f]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Right 5 cols: Value Audit & Confirm */}
+              <div className={`lg:col-span-5 rounded-xl p-5 border ${isDark ? 'bg-[#070b14] border-slate-800' : 'bg-slate-50 border-slate-200'
+                }`}>
+                <h3 className="font-sans text-sm font-bold uppercase tracking-wider text-[#00685f] mb-1">
+                  Step 2: Mandatory Patient Audit
+                </h3>
+                <p className="text-xs text-slate-400 mb-4">
+                  Review values before writing to your cryptographically confirmed baseline.
+                </p>
+
+                <div className="space-y-3 text-xs font-sans">
+                  <div className="flex items-center justify-between p-2.5 rounded bg-white dark:bg-slate-900 border border-inherit">
+                    <span className="font-semibold">Protein (Albumin)</span>
                     <input
                       type="number"
                       value={editedReadings.protein}
                       onChange={(e) => setEditedReadings({ ...editedReadings, protein: parseFloat(e.target.value) || 0 })}
-                      className={`w-20 px-2 py-1 text-right text-xs font-mono-code rounded border ${isDark ? 'bg-slate-950 border-white/15 text-white' : 'bg-white border-slate-300 text-slate-900'
-                        }`}
+                      className="w-20 px-2 py-1 text-right rounded border border-inherit bg-transparent"
                     />
-                    <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>mg/dL</span>
                   </div>
-                </div>
 
-                <div className={`p-3 rounded-xl border flex items-center justify-between ${isDark ? 'bg-slate-900/70 border-white/5' : 'bg-slate-50 border-slate-200'
-                  }`}>
-                  <div>
-                    <span className={`text-xs font-semibold block ${isDark ? 'text-white' : 'text-slate-900'}`}>Specific Gravity</span>
-                    <span className={`text-[10px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Hydration index (1.005–1.030)</span>
-                  </div>
-                  <input
-                    type="number"
-                    step="0.001"
-                    value={editedReadings.specificGravity}
-                    onChange={(e) => setEditedReadings({ ...editedReadings, specificGravity: parseFloat(e.target.value) || 1.018 })}
-                    className={`w-24 px-2 py-1 text-right text-xs font-mono-code rounded border ${isDark ? 'bg-slate-950 border-white/15 text-white' : 'bg-white border-slate-300 text-slate-900'
-                      }`}
-                  />
-                </div>
-
-                <div className={`p-3 rounded-xl border flex items-center justify-between ${isDark ? 'bg-slate-900/70 border-white/5' : 'bg-slate-50 border-slate-200'
-                  }`}>
-                  <div>
-                    <span className={`text-xs font-semibold block ${isDark ? 'text-white' : 'text-slate-900'}`}>Glucose</span>
-                    <span className={`text-[10px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Normal: 0 (Neg)</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center justify-between p-2.5 rounded bg-white dark:bg-slate-900 border border-inherit">
+                    <span className="font-semibold">Specific Gravity</span>
                     <input
                       type="number"
-                      value={editedReadings.glucose}
-                      onChange={(e) => setEditedReadings({ ...editedReadings, glucose: parseFloat(e.target.value) || 0 })}
-                      className={`w-20 px-2 py-1 text-right text-xs font-mono-code rounded border ${isDark ? 'bg-slate-950 border-white/15 text-white' : 'bg-white border-slate-300 text-slate-900'
-                        }`}
+                      step="0.001"
+                      value={editedReadings.specificGravity}
+                      onChange={(e) => setEditedReadings({ ...editedReadings, specificGravity: parseFloat(e.target.value) || 1.018 })}
+                      className="w-24 px-2 py-1 text-right rounded border border-inherit bg-transparent"
                     />
-                    <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>mg/dL</span>
-                  </div>
-                </div>
-
-                {/* Lifestyle & Confounder Annotation */}
-                <div className="pt-1">
-                  <label className={`text-[11px] font-medium block mb-1 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-                    Select Lifestyle Context Tag:
-                  </label>
-                  <div className="flex flex-wrap gap-1.5 mb-2">
-                    {['Post-Workout', '14h Fasting', 'Well-Hydrated', 'Dehydrated', 'First Morning Void'].map((tag) => (
-                      <button
-                        key={tag}
-                        type="button"
-                        onClick={() => setLifestyleTag(tag)}
-                        className={`px-2.5 py-1 rounded-md text-[10px] font-mono-code border transition-all ${lifestyleTag === tag
-                          ? isDark ? 'bg-amber-400 text-slate-950 font-bold border-amber-300' : 'bg-amber-600 text-white font-bold border-amber-700'
-                          : isDark ? 'bg-slate-950 text-slate-400 border-white/5' : 'bg-slate-100 text-slate-700 border-slate-200'
-                          }`}
-                      >
-                        {tag}
-                      </button>
-                    ))}
                   </div>
 
-                  <textarea
-                    rows={2}
-                    value={userNotes}
-                    onChange={(e) => setUserNotes(e.target.value)}
-                    placeholder="Describe relevant factors: workout intensity, fluid intake, medication..."
-                    className={`w-full text-xs p-2.5 rounded-xl border focus:outline-none ${isDark
-                      ? 'bg-slate-950 border-white/10 text-slate-200 focus:border-amber-400'
-                      : 'bg-white border-slate-300 text-slate-800 focus:border-amber-500'
-                      }`}
-                  ></textarea>
-                </div>
-              </div>
+                  <div className="flex items-center justify-between p-2.5 rounded bg-white dark:bg-slate-900 border border-inherit">
+                    <span className="font-semibold">Urine pH</span>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={editedReadings.pH}
+                      onChange={(e) => setEditedReadings({ ...editedReadings, pH: parseFloat(e.target.value) || 6.5 })}
+                      className="w-20 px-2 py-1 text-right rounded border border-inherit bg-transparent"
+                    />
+                  </div>
 
-              {/* Action Button */}
-              <div className={`mt-5 pt-4 border-t ${isDark ? 'border-white/10' : 'border-slate-100'} flex flex-col space-y-2`}>
-                <button
-                  onClick={handleSaveReading}
-                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-2"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Confirm & Save to Encrypted Trajectory</span>
-                </button>
-                <p className={`text-[10px] text-center ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Values are stored locally in accordance with the BioTrajectory Zero-Monetization Privacy Charter.
-                </p>
-              </div>
-            </div>
+                  <div>
+                    <label className="text-[11px] text-slate-400 block mb-1">Lifestyle Context Note</label>
+                    <textarea
+                      rows={2}
+                      value={userNotes}
+                      onChange={(e) => setUserNotes(e.target.value)}
+                      className="w-full text-xs p-2 rounded border border-inherit bg-transparent"
+                    />
+                  </div>
 
-          </div>
-        )}
-
-        {/* =========================================================================
-            TAB 2: POLISHED LONGITUDINAL TRAJECTORY DASHBOARD & MULTI-CHART SUITE
-        ========================================================================== */}
-        {activeTab === 'trajectory' && (
-          <div className={`rounded-2xl border p-6 sm:p-8 shadow-xl ${isDark ? 'bg-[#090e18] border-white/10' : 'bg-white border-amber-900/10'
-            }`}>
-
-            {/* Top Toolbar: Biomarker Selectors & View Modes */}
-            <div className={`flex flex-wrap items-center justify-between gap-4 pb-6 border-b ${isDark ? 'border-white/10' : 'border-slate-100'
-              }`}>
-              {/* Primary Biomarkers */}
-              <div className="flex flex-wrap items-center gap-1.5">
-                {BIOMARKER_DEFINITIONS.slice(0, 6).map((bio) => (
                   <button
-                    key={bio.id}
-                    onClick={() => setSelectedBiomarker(bio.id)}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all ${selectedBiomarker === bio.id
-                      ? isDark
-                        ? 'bg-amber-400 text-slate-950 shadow-sm font-bold'
-                        : 'bg-amber-600 text-white shadow-sm font-bold'
-                      : isDark
-                        ? 'bg-slate-900/60 text-slate-400 hover:text-white border border-white/5'
-                        : 'bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200'
-                      }`}
+                    onClick={handleSaveReading}
+                    className="w-full py-3 rounded-lg bg-[#00685f] hover:bg-[#008378] text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5"
                   >
-                    {bio.name}
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Confirm & Save to Trajectory</span>
                   </button>
-                ))}
-              </div>
-
-              {/* Chart Mode Switcher */}
-              <div className="flex items-center space-x-2 text-xs">
-                <span className={`font-mono-code uppercase mr-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Chart Mode:</span>
-                {[
-                  { id: 'single', label: 'Single Trend', icon: TrendingUp },
-                  { id: 'multistream', label: 'Multi-Stream (Strip + BLE)', icon: Activity },
-                  { id: 'dual', label: 'Dual-Axis', icon: BarChart2 },
-                  { id: 'piechart', label: 'Corridor Pie', icon: PieChartIcon },
-                  { id: 'heatmap', label: 'Strip Matrix', icon: Grid },
-                  { id: 'distribution', label: 'IQR Box', icon: Layers }
-                ].map((mode) => {
-                  const Icon = mode.icon;
-                  const isActive = chartMode === mode.id;
-                  return (
-                    <button
-                      key={mode.id}
-                      onClick={() => setChartMode(mode.id)}
-                      className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg font-mono-code text-xs transition-all ${isActive
-                        ? isDark
-                          ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
-                          : 'bg-amber-700 text-white font-bold shadow-sm'
-                        : isDark
-                          ? 'bg-slate-900 text-slate-400 hover:text-white border border-white/5'
-                          : 'bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200'
-                        }`}
-                    >
-                      <Icon className="w-3.5 h-3.5" />
-                      <span>{mode.label}</span>
-                    </button>
-                  );
-                })}
+                </div>
               </div>
             </div>
+          )}
 
-            {/* Quick Interactive Actions Row */}
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs">
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  onClick={() => setIsManualModalOpen(true)}
-                  className={`px-3.5 py-1.5 rounded-lg font-mono-code uppercase font-bold text-xs flex items-center space-x-1.5 transition-all shadow-sm ${isDark
-                    ? 'bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-[0_0_15px_rgba(217,119,6,0.2)]'
-                    : 'bg-amber-600 hover:bg-amber-700 text-white'
-                    }`}
-                >
-                  <PlusCircle className="w-3.5 h-3.5" />
-                  <span>+ Log Reading by Hand</span>
-                </button>
-
-                <button
-                  onClick={handleExportCSV}
-                  className={`px-3 py-1.5 rounded-lg font-mono-code text-xs border flex items-center space-x-1.5 transition-all ${isDark
-                    ? 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-white/10'
-                    : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 shadow-xs'
-                    }`}
-                  title="Download CSV"
-                >
-                  <Download className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Export CSV</span>
-                </button>
-
-                <button
-                  onClick={handleExportJSON}
-                  className={`px-3 py-1.5 rounded-lg font-mono-code text-xs border flex items-center space-x-1.5 transition-all ${isDark
-                    ? 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-white/10'
-                    : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 shadow-xs'
-                    }`}
-                  title="Download JSON"
-                >
-                  <Download className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>Export JSON</span>
-                </button>
-
-                {/* Horizon Switcher */}
-                <div className="flex items-center space-x-1 ml-2">
-                  {[7, 14, 30].map((days) => (
+          {/* VIEW TAB 6: GROUNDED GEMINI AI LAB */}
+          {activeTab === 'gemini' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mt-2">
+              <div className={`lg:col-span-5 rounded-xl p-5 border ${isDark ? 'bg-[#070b14] border-slate-800' : 'bg-slate-50 border-slate-200'
+                }`}>
+                <h3 className="font-sans text-xs font-bold uppercase tracking-wider text-[#00685f] mb-3">
+                  Clinical Inquiry Presets
+                </h3>
+                <div className="space-y-2">
+                  {GEMINI_PROMPT_PRESETS.map((p) => (
                     <button
-                      key={days}
-                      onClick={() => setTimeRange(days)}
-                      className={`px-2.5 py-1 rounded text-[11px] font-mono-code transition-all ${timeRange === days
-                        ? isDark ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold' : 'bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold'
-                        : isDark ? 'bg-slate-900 text-slate-400 hover:text-white' : 'bg-slate-100 text-slate-600 hover:text-slate-900'
+                      key={p.id}
+                      onClick={() => setSelectedGeminiPrompt(p)}
+                      className={`w-full text-left p-3 rounded-lg border text-xs font-sans transition-all ${selectedGeminiPrompt.id === p.id
+                          ? 'bg-[#00685f]/15 border-[#00685f] text-on-surface font-semibold'
+                          : isDark ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-600'
                         }`}
                     >
-                      {days}D
+                      <span className="block font-bold mb-0.5">{p.title}</span>
+                      <p className="text-[11px] text-slate-400 line-clamp-2">{p.prompt}</p>
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Reset to Active Persona */}
-              <button
-                onClick={() => {
-                  setHistory(activePersona.history);
-                  setSimulatedReadingsLimit(activePersona.history.length);
-                }}
-                className="text-[11px] font-mono-code text-slate-400 hover:text-amber-500 flex items-center space-x-1 transition-colors"
-              >
-                <RotateCcw className="w-3 h-3" />
-                <span>Reset {activePersona.name} Dataset</span>
-              </button>
-            </div>
-
-            {/* Baseline Sufficiency & Data-Integrity Status Banner (PDF Section 11 & 17) */}
-            <div className={`mt-5 p-4 rounded-xl border flex flex-wrap items-center justify-between gap-4 ${isBaselineActive
-              ? isDark ? 'bg-slate-900/40 border-emerald-500/30' : 'bg-emerald-50/70 border-emerald-300'
-              : isDark ? 'bg-amber-950/20 border-amber-500/40' : 'bg-amber-50/80 border-amber-300'
-              }`}>
-              <div className="flex items-center space-x-3">
-                <div className={`w-3 h-3 rounded-full ${isBaselineActive ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-amber-500 animate-ping'
-                  }`}></div>
-                <div>
-                  <span className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                    {isBaselineActive
-                      ? `Personal Baseline Active (${simulatedReadingsLimit} of 10 Recommended Sessions Logged)`
-                      : `Baseline Formation Pending (${simulatedReadingsLimit} of 10 Sessions Recorded)`}
-                  </span>
-                  <p className={`text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                    {isBaselineActive
-                      ? 'Constructed via non-parametric rolling medians & interquartile corridors. Avoids misleading composite wellness scores.'
-                      : 'Statistical Stability Rule: Baselines require minimum 10 readings before locking corridors to avoid premature false alarms.'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Interactive History Sufficiency Simulation Slider */}
-              <div className="flex items-center space-x-3 text-xs font-mono-code">
-                <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>Simulate History:</span>
-                <input
-                  type="range"
-                  min="2"
-                  max="15"
-                  value={simulatedReadingsLimit}
-                  onChange={(e) => setSimulatedReadingsLimit(parseInt(e.target.value))}
-                  className="w-28 accent-amber-500 cursor-pointer"
-                  title="Drag to simulate having fewer or more logged sessions"
-                />
-                <span className="font-bold text-amber-500 w-8 text-right">{simulatedReadingsLimit} logs</span>
-              </div>
-            </div>
-
-            {/* =========================================================================
-                CHART MODE 1: PRIMARY LONGITUDINAL TRAJECTORY CHART (SMOOTH SVG)
-            ========================================================================== */}
-            {chartMode === 'single' && (
-              <div className="mt-6 relative">
-                {/* Chart Header Indicators */}
-                <div className="flex flex-wrap items-center justify-between text-xs font-mono-code mb-2 px-1">
-                  <div className="flex items-center space-x-4">
-                    <span className="font-bold text-amber-500">{currentBiomarkerMeta.name} ({currentBiomarkerMeta.unit})</span>
-                    <span className="text-slate-400">Personal Median: ~{currentBiomarkerMeta.baselineMean}</span>
-                  </div>
-                  <div className="flex items-center space-x-3 text-[11px]">
-                    <span className="flex items-center space-x-1 text-emerald-500">
-                      <span className="w-2.5 h-2.5 rounded-xs bg-emerald-500/20 border border-emerald-500/60 inline-block"></span>
-                      <span>Personal Corridor</span>
-                    </span>
-                    <span className="flex items-center space-x-1 text-rose-500">
-                      <span className="w-2.5 h-0.5 bg-rose-500 inline-block"></span>
-                      <span>Advisory Threshold ({currentBiomarkerMeta.criticalThreshold})</span>
-                    </span>
-                  </div>
-                </div>
-
-                {/* SVG Render Canvas */}
-                <div className="w-full overflow-x-auto">
-                  <svg
-                    viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-                    className="w-full h-auto min-w-[700px] select-none"
-                    onMouseMove={handleChartMouseMove}
-                    onMouseLeave={handleChartMouseLeave}
-                    onClick={handleChartClick}
-                  >
-                    <defs>
-                      <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={isDark ? '#f59e0b' : '#d97706'} stopOpacity={isDark ? '0.35' : '0.25'} />
-                        <stop offset="100%" stopColor={isDark ? '#38bdf8' : '#0284c7'} stopOpacity="0.0" />
-                      </linearGradient>
-
-                      <linearGradient id="baselineCorridorGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#10b981" stopOpacity={isDark ? '0.15' : '0.10'} />
-                        <stop offset="100%" stopColor="#10b981" stopOpacity={isDark ? '0.05' : '0.03'} />
-                      </linearGradient>
-                    </defs>
-
-                    {/* Horizontal Grid Lines */}
-                    {[0, 0.25, 0.5, 0.75, 1].map((pct, i) => {
-                      const y = padding.top + pct * (chartHeight - padding.top - padding.bottom);
-                      const valAtY = maxVal - pct * rangeY;
-                      return (
-                        <g key={i}>
-                          <line
-                            x1={padding.left}
-                            y1={y}
-                            x2={chartWidth - padding.right}
-                            y2={y}
-                            stroke={isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)'}
-                            strokeDasharray="4 4"
-                          />
-                          <text
-                            x={padding.left - 10}
-                            y={y + 3.5}
-                            textAnchor="end"
-                            className={`text-[10px] font-mono-code ${isDark ? 'fill-slate-500' : 'fill-slate-500'}`}
-                          >
-                            {currentBiomarkerMeta.unit === 'density' ? valAtY.toFixed(3) : valAtY.toFixed(1)}
-                          </text>
-                        </g>
-                      );
-                    })}
-
-                    {/* Baseline Band (Only shown confidently when >=10 readings) */}
-                    {isBaselineActive ? (
-                      <g>
-                        <rect
-                          x={padding.left}
-                          y={baselineTopY}
-                          width={chartWidth - padding.left - padding.right}
-                          height={Math.max(6, baselineBottomY - baselineTopY)}
-                          fill="url(#baselineCorridorGrad)"
-                          stroke={isDark ? 'rgba(16, 185, 129, 0.4)' : 'rgba(5, 150, 105, 0.4)'}
-                          strokeWidth="1"
-                          strokeDasharray="3 3"
-                        />
-                        <text
-                          x={chartWidth - padding.right - 8}
-                          y={baselineTopY + 14}
-                          textAnchor="end"
-                          className={`text-[9px] font-mono-code ${isDark ? 'fill-emerald-400' : 'fill-emerald-700'}`}
-                        >
-                          Personal Baseline Corridor ({currentBiomarkerMeta.baselineMin} – {currentBiomarkerMeta.baselineMax} {currentBiomarkerMeta.unit})
-                        </text>
-                      </g>
-                    ) : (
-                      <g>
-                        <rect
-                          x={padding.left}
-                          y={baselineTopY}
-                          width={chartWidth - padding.left - padding.right}
-                          height={Math.max(6, baselineBottomY - baselineTopY)}
-                          fill="none"
-                          stroke={isDark ? 'rgba(245, 158, 11, 0.4)' : 'rgba(217, 119, 6, 0.4)'}
-                          strokeWidth="1.5"
-                          strokeDasharray="6 6"
-                        />
-                        <text
-                          x={chartWidth - padding.right - 8}
-                          y={baselineTopY + 14}
-                          textAnchor="end"
-                          className={`text-[9px] font-mono-code font-bold ${isDark ? 'fill-amber-400' : 'fill-amber-700'}`}
-                        >
-                          Tentative Baseline (Collecting Data: {simulatedReadingsLimit}/10)
-                        </text>
-                      </g>
-                    )}
-
-                    {/* Critical Review Threshold Line */}
-                    {getY(currentBiomarkerMeta.criticalThreshold) > padding.top && (
-                      <g>
-                        <line
-                          x1={padding.left}
-                          y1={getY(currentBiomarkerMeta.criticalThreshold)}
-                          x2={chartWidth - padding.right}
-                          y2={getY(currentBiomarkerMeta.criticalThreshold)}
-                          stroke="#f43f5e"
-                          strokeWidth="1.5"
-                          strokeDasharray="4 4"
-                          opacity="0.8"
-                        />
-                        <text
-                          x={padding.left + 8}
-                          y={getY(currentBiomarkerMeta.criticalThreshold) - 5}
-                          className="text-[9px] font-mono-code fill-rose-500 font-bold"
-                        >
-                          Review Threshold: {currentBiomarkerMeta.criticalThreshold} {currentBiomarkerMeta.unit}
-                        </text>
-                      </g>
-                    )}
-
-                    {/* Area fill under curve */}
-                    {primaryAreaStr && (
-                      <path d={primaryAreaStr} fill="url(#areaGradient)" />
-                    )}
-
-                    {/* Smooth Trajectory Curve */}
-                    {primaryPathStr && (
-                      <path
-                        d={primaryPathStr}
-                        fill="none"
-                        stroke={isDark ? '#f59e0b' : '#b45309'}
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    )}
-
-                    {/* Vertical Scrubber Guideline on Hover */}
-                    {hoveredPoint && (
-                      <line
-                        x1={primaryPoints.find((p) => p.data.day === hoveredPoint.day)?.x ?? 0}
-                        y1={padding.top}
-                        x2={primaryPoints.find((p) => p.data.day === hoveredPoint.day)?.x ?? 0}
-                        y2={chartHeight - padding.bottom}
-                        stroke={isDark ? '#fbbf24' : '#b45309'}
-                        strokeWidth="1.5"
-                        strokeDasharray="3 3"
-                        opacity="0.85"
-                        pointerEvents="none"
-                      />
-                    )}
-
-                    {/* Data Points and Interactivity */}
-                    {primaryPoints.map((pt) => {
-                      const isHovered = hoveredPoint?.day === pt.data.day;
-                      const isFlagged = pt.data.flagged;
-                      const val = pt.data[selectedBiomarker] ?? 0;
-                      return (
-                        <g
-                          key={pt.data.day}
-                          pointerEvents="none"
-                        >
-                          {/* Pulsing halo if flagged */}
-                          {isFlagged && (
-                            <circle
-                              cx={pt.x}
-                              cy={pt.y}
-                              r="10"
-                              fill="none"
-                              stroke="#ef4444"
-                              strokeWidth="1.5"
-                              opacity="0.75"
-                              pointerEvents="none"
-                            />
-                          )}
-
-                          {/* Outer ring on hover - always present in DOM, controlled via opacity for zero DOM mutation */}
-                          <circle
-                            cx={pt.x}
-                            cy={pt.y}
-                            r={isHovered ? 8 : 4}
-                            fill="none"
-                            stroke={isDark ? '#ffffff' : '#0f172a'}
-                            strokeWidth="2"
-                            opacity={isHovered ? 1 : 0}
-                            pointerEvents="none"
-                            style={{ transition: 'opacity 120ms ease, r 120ms ease' }}
-                          />
-
-                          {/* Point Dot */}
-                          <circle
-                            cx={pt.x}
-                            cy={pt.y}
-                            r={isHovered ? 6 : 4}
-                            fill={
-                              isFlagged
-                                ? '#ef4444'
-                                : val > currentBiomarkerMeta.baselineMax
-                                  ? '#f59e0b'
-                                  : '#10b981'
-                            }
-                            stroke={isDark ? '#090e18' : '#ffffff'}
-                            strokeWidth="1.5"
-                            pointerEvents="none"
-                            style={{ transition: 'r 120ms ease' }}
-                          />
-
-                          {/* X-Axis Date / Day Labels */}
-                          <text
-                            x={pt.x}
-                            y={chartHeight - padding.bottom + 18}
-                            textAnchor="middle"
-                            pointerEvents="none"
-                            className={`text-[9px] font-mono-code ${isHovered
-                              ? isDark ? 'fill-amber-400 font-bold' : 'fill-amber-700 font-bold'
-                              : isDark ? 'fill-slate-500' : 'fill-slate-600'
-                              }`}
-                          >
-                            D{pt.data.day}
-                          </text>
-                        </g>
-                      );
-                    })}
-
-                    {/* Seamless Invisible Interaction Tracking Surface */}
-                    <rect
-                      x={padding.left}
-                      y={padding.top}
-                      width={chartWidth - padding.left - padding.right}
-                      height={chartHeight - padding.top - padding.bottom + 25}
-                      fill="none"
-                      pointerEvents="all"
-                      style={{ cursor: hoveredPoint ? 'pointer' : 'default' }}
-                    />
-                  </svg>
-                </div>
-
-                {/* Fixed-Height Inspection HUD Dock (Zero Layout Shifts & Screen Shaking) */}
-                <div className={`mt-3 min-h-[82px] rounded-xl border p-4 transition-all duration-200 flex flex-wrap items-center justify-between gap-4 shadow-sm ${hoveredPoint
-                  ? hoveredPoint.flagged
-                    ? isDark ? 'bg-rose-950/40 border-rose-500/40' : 'bg-rose-50 border-rose-300'
-                    : isDark ? 'bg-slate-900/90 border-amber-400/30 shadow-[0_0_20px_rgba(245,158,11,0.1)]' : 'bg-white border-amber-300 shadow-md'
-                  : isDark ? 'bg-slate-950/40 border-white/[0.06] text-slate-400' : 'bg-slate-50/80 border-slate-200 text-slate-500'
-                  }`}>
-                  {hoveredPoint ? (
-                    <>
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-3.5 h-3.5 rounded-full ${hoveredPoint.flagged ? 'bg-rose-500 animate-ping' : 'bg-emerald-500'}`} />
-                        <div>
-                          <div className="flex items-center space-x-2">
-                            <span className={`font-mono-code text-xs font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                              Day {hoveredPoint.day} ({hoveredPoint.date} at {hoveredPoint.time})
-                            </span>
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-mono-code border ${hoveredPoint.flagged
-                              ? 'bg-rose-500/20 text-rose-400 border-rose-500/30 font-bold'
-                              : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                              }`}>
-                              {hoveredPoint.flagged ? 'Review Flagged (+3.8σ)' : 'Within Baseline'}
-                            </span>
-                          </div>
-                          <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                            <strong>Notes: </strong>{hoveredPoint.notes || 'No contextual notes recorded.'}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center space-x-4 text-xs font-mono-code">
-                        <div>
-                          <span className="block text-[10px] text-slate-400 uppercase">Protein</span>
-                          <strong className={hoveredPoint.protein > 20 ? 'text-rose-500' : isDark ? 'text-white' : 'text-slate-900'}>
-                            {hoveredPoint.protein} mg/dL
-                          </strong>
-                        </div>
-                        <div>
-                          <span className="block text-[10px] text-slate-400 uppercase">Spec. Gravity</span>
-                          <strong className={isDark ? 'text-white' : 'text-slate-900'}>{hoveredPoint.specificGravity}</strong>
-                        </div>
-                        <div>
-                          <span className="block text-[10px] text-slate-400 uppercase">pH</span>
-                          <strong className={isDark ? 'text-white' : 'text-slate-900'}>{hoveredPoint.pH}</strong>
-                        </div>
-                        <div>
-                          <span className="block text-[10px] text-slate-400 uppercase">Ketones</span>
-                          <strong className={isDark ? 'text-white' : 'text-slate-900'}>{hoveredPoint.ketones} mg/dL</strong>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex items-center justify-between w-full text-xs font-mono-code">
-                      <div className="flex items-center space-x-2.5">
-                        <Activity className="w-4 h-4 text-amber-500 animate-pulse" />
-                        <span>Hover over any daily marker dot to inspect telemetry readings & clinical notes</span>
-                      </div>
-                      <span className={`text-[11px] px-2.5 py-1 rounded border hidden sm:inline-block ${isDark ? 'bg-white/5 border-white/10 text-slate-400' : 'bg-white border-slate-200 text-slate-600'
-                        }`}>
-                        Click marker to inspect full record
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* =========================================================================
-                CHART MODE 2: SYNCHRONIZED DUAL-AXIS CORRELATION CHART
-            ========================================================================== */}
-            {chartMode === 'dual' && (
-              <div className="mt-6 relative">
-                <div className={`p-3.5 rounded-xl border mb-4 text-xs ${isDark ? 'bg-slate-950 border-white/10 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'
-                  }`}>
-                  <strong className="text-amber-500">Dual-Axis Physiological Correlation: </strong>
-                  Compare two biomarkers simultaneously. Notice how on Day 22, the elevation in Specific Gravity (1.028, urine concentration) coincides directly with the protein reading (32 mg/dL), confirming dehydration rather than chronic kidney disease!
-                </div>
-
-                <div className="flex flex-wrap items-center justify-between text-xs font-mono-code mb-2">
-                  <div className="flex items-center space-x-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                    <span className="text-amber-500 font-bold">Left Axis: {currentBiomarkerMeta.name}</span>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
-                    <span className="text-cyan-400 font-bold">Right Axis: </span>
-                    <select
-                      value={dualSecondaryBiomarker}
-                      onChange={(e) => setDualSecondaryBiomarker(e.target.value)}
-                      className={`px-2 py-1 rounded border text-xs font-mono-code ${isDark ? 'bg-slate-900 border-white/15 text-cyan-300' : 'bg-white border-slate-300 text-sky-800'
-                        }`}
-                    >
-                      {BIOMARKER_DEFINITIONS.filter((b) => b.id !== selectedBiomarker).map((b) => (
-                        <option key={b.id} value={b.id}>{b.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* SVG Dual-Axis Chart Canvas */}
-                <div className="w-full overflow-x-auto">
-                  <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-auto min-w-[700px] select-none">
-                    {/* Grid */}
-                    {[0, 0.5, 1].map((pct, i) => {
-                      const y = padding.top + pct * (chartHeight - padding.top - padding.bottom);
-                      const leftVal = maxVal - pct * rangeY;
-                      const rightVal = secMax - pct * secRangeY;
-                      return (
-                        <g key={i}>
-                          <line
-                            x1={padding.left}
-                            y1={y}
-                            x2={chartWidth - padding.right}
-                            y2={y}
-                            stroke={isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)'}
-                            strokeDasharray="4 4"
-                          />
-                          <text x={padding.left - 10} y={y + 3.5} textAnchor="end" className="text-[10px] font-mono-code fill-amber-500">
-                            {currentBiomarkerMeta.unit === 'density' ? leftVal.toFixed(3) : leftVal.toFixed(1)}
-                          </text>
-                          <text x={chartWidth - padding.right + 10} y={y + 3.5} textAnchor="start" className="text-[10px] font-mono-code fill-cyan-400">
-                            {secondaryBiomarkerMeta.unit === 'density' ? rightVal.toFixed(3) : rightVal.toFixed(1)}
-                          </text>
-                        </g>
-                      );
-                    })}
-
-                    {/* Primary Curve (Amber) */}
-                    {primaryPathStr && (
-                      <path d={primaryPathStr} fill="none" stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round" />
-                    )}
-
-                    {/* Secondary Curve (Cyan) */}
-                    {secondaryPathStr && (
-                      <path d={secondaryPathStr} fill="none" stroke="#38bdf8" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="3 3" />
-                    )}
-
-                    {/* Points */}
-                    {primaryPoints.map((pt, i) => (
-                      <g key={i}>
-                        <circle cx={pt.x} cy={pt.y} r="3.5" fill="#f59e0b" />
-                        <circle cx={secondaryPoints[i].x} cy={secondaryPoints[i].y} r="3.5" fill="#38bdf8" />
-                        <text x={pt.x} y={chartHeight - padding.bottom + 18} textAnchor="middle" className="text-[9px] font-mono-code fill-slate-500">
-                          D{pt.data.day}
-                        </text>
-                      </g>
-                    ))}
-                  </svg>
-                </div>
-              </div>
-            )}
-
-            {/* =========================================================================
-                CHART MODE 3: 10-BIOMARKER MULTI-PAD HEATMAP TIMELINE MATRIX
-            ========================================================================== */}
-            {chartMode === 'heatmap' && (
-              <div className="mt-6">
-                <div className="mb-4 flex items-center justify-between text-xs font-mono-code">
-                  <span className={isDark ? 'text-slate-300' : 'text-slate-700'}>
-                    Complete 10-Pad Multi-Organ Strip Matrix across all {activeHistory.length} Test Days:
-                  </span>
-                  <div className="flex items-center space-x-3 text-[10px]">
-                    <span className="flex items-center space-x-1"><span className="w-2.5 h-2.5 rounded bg-emerald-500"></span><span>Optimal</span></span>
-                    <span className="flex items-center space-x-1"><span className="w-2.5 h-2.5 rounded bg-amber-500"></span><span>Trace / Warning</span></span>
-                    <span className="flex items-center space-x-1"><span className="w-2.5 h-2.5 rounded bg-rose-500"></span><span>Elevated</span></span>
-                  </div>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left font-mono-code text-xs border-collapse">
-                    <thead>
-                      <tr className={`border-b ${isDark ? 'border-white/10 text-slate-400' : 'border-slate-200 text-slate-600'}`}>
-                        <th className="py-2 px-3 sticky left-0 z-10 bg-inherit font-bold">Biomarker</th>
-                        {activeHistory.map((d) => (
-                          <th key={d.day} className="py-2 px-2 text-center text-[10px]">D{d.day}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className={`divide-y ${isDark ? 'divide-white/5' : 'divide-slate-200'}`}>
-                      {BIOMARKER_DEFINITIONS.map((bio) => (
-                        <tr key={bio.id} className="hover:bg-white/5 transition-colors">
-                          <td className={`py-2 px-3 sticky left-0 z-10 font-medium ${isDark ? 'bg-[#090e18] text-white' : 'bg-white text-slate-900'}`}>
-                            {bio.name}
-                          </td>
-                          {activeHistory.map((d) => {
-                            const val = d[bio.id] ?? 0;
-                            const isElevated = val > bio.criticalThreshold;
-                            const isWarning = val > bio.baselineMax;
-                            return (
-                              <td key={d.day} className="py-1 px-1 text-center">
-                                <div
-                                  onClick={() => setSelectedBiomarker(bio.id)}
-                                  className={`w-7 h-6 mx-auto rounded flex items-center justify-center text-[9px] font-bold cursor-pointer transition-transform hover:scale-110 ${isElevated
-                                    ? 'bg-rose-500/80 text-white shadow-xs'
-                                    : isWarning
-                                      ? 'bg-amber-500/80 text-slate-950 shadow-xs'
-                                      : isDark ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-500/20' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                                    }`}
-                                  title={`${bio.name} on Day ${d.day}: ${val} ${bio.unit}`}
-                                >
-                                  {val}
-                                </div>
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* =========================================================================
-                CHART MODE 4: DISTRIBUTION & ROLLING MEDIAN (IQR) BOX BREAKDOWN
-            ========================================================================== */}
-            {chartMode === 'distribution' && (
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className={`p-5 rounded-xl border md:col-span-2 ${isDark ? 'bg-slate-950 border-white/10' : 'bg-slate-50 border-slate-200'
-                  }`}>
-                  <h4 className="text-xs font-mono-code uppercase font-bold text-amber-500 mb-2">
-                    Non-Parametric Rolling Median & Interquartile Corridor (IQR)
-                  </h4>
-                  <p className={`text-xs leading-relaxed mb-4 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                    Personal baselines avoid sensitive arithmetic means that get warped by temporary post-workout dehydration spikes. Non-parametric rolling medians protect against acute single-day distortion.
-                  </p>
-
-                  <div className="space-y-4 font-mono-code text-xs">
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span>Personal Median ($M$):</span>
-                        <strong className="text-emerald-400">{currentBiomarkerMeta.baselineMean} {currentBiomarkerMeta.unit}</strong>
-                      </div>
-                      <div className="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
-                        <div className="bg-emerald-500 h-full w-2/5"></div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span>Interquartile Range ($Q_1$ – $Q_3$):</span>
-                        <strong className="text-amber-400">{currentBiomarkerMeta.baselineMin} – {currentBiomarkerMeta.baselineMax} {currentBiomarkerMeta.unit}</strong>
-                      </div>
-                      <div className="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
-                        <div className="bg-amber-400 h-full w-3/5"></div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span>Critical Persistence Threshold:</span>
-                        <strong className="text-rose-400">&gt; {currentBiomarkerMeta.criticalThreshold} {currentBiomarkerMeta.unit} for 3+ logs</strong>
-                      </div>
-                      <div className="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
-                        <div className="bg-rose-500 h-full w-4/5"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className={`p-5 rounded-xl border flex flex-col justify-between ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white border-slate-200 shadow-sm'
-                  }`}>
-                  <div>
-                    <span className="text-[10px] font-mono-code uppercase tracking-wider text-slate-400 block mb-1">
-                      Algorithmic Integrity
-                    </span>
-                    <h5 className={`font-cinzel text-base font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                      No Fake Composite Scores
-                    </h5>
-                    <p className={`text-xs mt-2 leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                      BioTrajectory avoids combining disparate biomarkers into an arbitrary single score. Each biological subsystem is evaluated in its natural physiological and biochemical units.
-                    </p>
-                  </div>
-                  <div className="mt-4 p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-[11px] text-emerald-400 font-mono-code">
-                    ✓ Verified: Isolated Subsystem Evaluation
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* =========================================================================
-                CHART MODE 5: ATTRACTIVE MULTI-STREAM OVERLAY (STRIP + BLE SENSORS)
-            ========================================================================== */}
-            {chartMode === 'multistream' && (
-              <div className="mt-6">
-                <AttractiveLineChart
-                  history={activeHistory}
-                  activePersona={activePersona}
-                  selectedBiomarker={selectedBiomarker}
-                  selectedBleMetric={selectedBleMetric}
-                />
-              </div>
-            )}
-
-            {/* =========================================================================
-                CHART MODE 6: ATTRACTIVE DONUT & PIE CHART BREAKDOWN
-            ========================================================================== */}
-            {chartMode === 'piechart' && (
-              <div className="mt-6">
-                <AttractivePieChart activePersona={activePersona} />
-              </div>
-            )}
-
-            {/* Click-to-Drill Inspection Drawer if user clicked a point */}
-            {inspectedSession && (
-              <div className={`mt-6 p-5 rounded-2xl border ${isDark ? 'bg-slate-950 border-amber-400/40' : 'bg-amber-50/80 border-amber-300'
-                } animate-fadeIn`}>
-                <div className="flex items-center justify-between pb-3 border-b border-amber-400/20">
-                  <div className="flex items-center space-x-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                    <h4 className={`text-sm font-bold font-cinzel ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                      Detailed Session Inspector: Day {inspectedSession.day} ({inspectedSession.date} at {inspectedSession.time})
-                    </h4>
-                  </div>
-                  <button
-                    onClick={() => setInspectedSession(null)}
-                    className="text-xs font-mono-code text-slate-400 hover:text-white"
-                  >
-                    ✕ Close
-                  </button>
-                </div>
-
-                <div className="mt-4 grid grid-cols-2 sm:grid-cols-5 gap-3 font-mono-code text-xs">
-                  <div className="p-2.5 rounded bg-white/5 border border-white/5">
-                    <span className="block text-[9px] uppercase text-slate-400">Protein</span>
-                    <strong className={inspectedSession.protein > 20 ? 'text-rose-400' : 'text-emerald-400'}>
-                      {inspectedSession.protein} mg/dL
-                    </strong>
-                  </div>
-                  <div className="p-2.5 rounded bg-white/5 border border-white/5">
-                    <span className="block text-[9px] uppercase text-slate-400">Spec. Gravity</span>
-                    <strong>{inspectedSession.specificGravity}</strong>
-                  </div>
-                  <div className="p-2.5 rounded bg-white/5 border border-white/5">
-                    <span className="block text-[9px] uppercase text-slate-400">pH</span>
-                    <strong>{inspectedSession.pH}</strong>
-                  </div>
-                  <div className="p-2.5 rounded bg-white/5 border border-white/5">
-                    <span className="block text-[9px] uppercase text-slate-400">Glucose</span>
-                    <strong>{inspectedSession.glucose} mg/dL</strong>
-                  </div>
-                  <div className="p-2.5 rounded bg-white/5 border border-white/5">
-                    <span className="block text-[9px] uppercase text-slate-400">Ketones</span>
-                    <strong>{inspectedSession.ketones} mg/dL</strong>
-                  </div>
-                </div>
-
-                <div className="mt-3 text-xs">
-                  <span className="font-semibold text-amber-500">Recorded Context: </span>
-                  <span className={isDark ? 'text-slate-300' : 'text-slate-700'}>{inspectedSession.notes}</span>
-                </div>
-              </div>
-            )}
-
-          </div>
-        )}
-
-        {/* =========================================================================
-            TAB: ATTRACTIVE MULTI-STREAM LINE CHART (DIRECT FULL TAB)
-        ========================================================================== */}
-        {activeTab === 'multistream' && (
-          <div className={`rounded-2xl border p-6 sm:p-8 shadow-xl ${isDark ? 'bg-[#090e18] border-white/10' : 'bg-white border-amber-900/10'
-            }`}>
-            <AttractiveLineChart
-              history={activeHistory}
-              activePersona={activePersona}
-              selectedBiomarker={selectedBiomarker}
-              selectedBleMetric={selectedBleMetric}
-            />
-          </div>
-        )}
-
-        {/* =========================================================================
-            TAB: ATTRACTIVE DONUT & PIE CHART (DIRECT FULL TAB)
-        ========================================================================== */}
-        {activeTab === 'piechart' && (
-          <div className={`rounded-2xl border p-6 sm:p-8 shadow-xl ${isDark ? 'bg-[#090e18] border-white/10' : 'bg-white border-amber-900/10'
-            }`}>
-            <AttractivePieChart activePersona={activePersona} />
-          </div>
-        )}
-
-        {/* =========================================================================
-            TAB: CONTINUOUS BLUETOOTH LOW ENERGY DEVICE HUB
-        ========================================================================== */}
-        {activeTab === 'bluetooth' && (
-          <div className="space-y-6">
-            <BluetoothHub
-              onSelectMetricForChart={(metricKey) => {
-                setSelectedBleMetric(metricKey);
-                setActiveTab('multistream');
-              }}
-              onSyncDeviceData={() => {
-                const now = new Date();
-                const newEntry = {
-                  day: history.length + 1,
-                  date: now.toISOString().split('T')[0],
-                  time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                  protein: activePersona.baselines?.protein?.median || 6.2,
-                  specificGravity: 1.018,
-                  pH: 6.5,
-                  glucose: 0,
-                  ketones: 0,
-                  blood: 0,
-                  leukocytes: 0,
-                  nitrite: 0,
-                  urobilinogen: 0.2,
-                  bilirubin: 0,
-                  bleCgmGlucose: activeHistory[activeHistory.length - 1]?.bleCgmGlucose || 95,
-                  bleBpSystolic: 118,
-                  bleBpDiastolic: 76,
-                  bleHeartRate: 68,
-                  bleSpo2: 98.5,
-                  bleHydration: 58.2,
-                  notes: 'Live BLE synchronized packet: continuous CGM, blood pressure, and resting heart rate data integrated.',
-                  flagged: false,
-                  confirmed: true
-                };
-                setHistory(prev => [...prev, newEntry]);
-                setSimulatedReadingsLimit(prev => prev + 1);
-              }}
-            />
-          </div>
-        )}
-
-        {/* =========================================================================
-            TAB 3: GROUNDED GEMINI AI & REASONING COPILOT (PDF Section 8 & 16)
-        ========================================================================== */}
-        {activeTab === 'gemini' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-
-            {/* Left 4 Cols: Clinical Prompt Selector */}
-            <div className={`lg:col-span-4 rounded-2xl border p-6 shadow-xl ${isDark ? 'bg-[#090e18] border-white/10' : 'bg-white border-amber-900/10'
-              }`}>
-              <div className="flex items-center space-x-2 text-xs font-mono-code uppercase text-amber-500 font-bold mb-4">
-                <Sparkles className="w-4 h-4" />
-                <span>Grounded AI Explanatory Prompts</span>
-              </div>
-              <h3 className={`text-base font-cinzel font-bold mb-4 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                Grounded Explanation Prompts
-              </h3>
-
-              <div className="space-y-2.5">
-                {GEMINI_PROMPT_PRESETS.map((p) => {
-                  const isSelected = selectedGeminiPrompt.id === p.id;
-                  return (
-                    <button
-                      key={p.id}
-                      onClick={() => {
-                        setSelectedGeminiPrompt(p);
-                        setIsAiThinking(true);
-                        setTimeout(() => setIsAiThinking(false), 500);
-                      }}
-                      className={`w-full text-left p-3.5 rounded-xl border transition-all text-xs ${isSelected
-                        ? isDark
-                          ? 'bg-amber-400/20 border-amber-400/60 text-white font-semibold'
-                          : 'bg-amber-50 border-amber-400 text-amber-950 font-bold shadow-xs'
-                        : isDark
-                          ? 'bg-slate-900/50 border-white/5 text-slate-400 hover:text-white'
-                          : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-                        }`}
-                    >
-                      <span className="block font-medium mb-1">{p.title}</span>
-                      <p className={`text-[11px] font-light line-clamp-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                        {p.prompt}
-                      </p>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Custom Query Box */}
-              <form onSubmit={handleCustomGeminiSubmit} className="mt-5 pt-4 border-t border-white/10">
-                <label className={`text-[11px] font-mono-code uppercase block mb-1.5 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-                  Ask Custom Health Trajectory Question:
-                </label>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="text"
-                    value={customGeminiQuery}
-                    onChange={(e) => setCustomGeminiQuery(e.target.value)}
-                    placeholder="e.g. Could low water intake explain my SG?"
-                    className={`flex-1 text-xs px-3 py-2 rounded-xl border focus:outline-none ${isDark ? 'bg-slate-950 border-white/10 text-white focus:border-amber-400' : 'bg-white border-slate-300 text-slate-900 focus:border-amber-500'
-                      }`}
-                  />
-                  <button
-                    type="submit"
-                    className="p-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </form>
-
-              {/* Grounding Toggle */}
-              <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs">
-                <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>Show Grounding JSON:</span>
-                <button
-                  onClick={() => setShowGroundingPayload(!showGroundingPayload)}
-                  className={`px-2.5 py-1 rounded font-mono-code text-[10px] ${showGroundingPayload ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-slate-800 text-slate-300'
-                    }`}
-                >
-                  {showGroundingPayload ? 'Hide' : 'Inspect'}
-                </button>
-              </div>
-            </div>
-
-            {/* Right 8 Cols: Grounded Gemini AI Response (PDF Section 8) */}
-            <div className={`lg:col-span-8 rounded-2xl border p-6 sm:p-8 shadow-xl ${isDark ? 'bg-[#090e18] border-white/10' : 'bg-white border-amber-900/10'
-              }`}>
-              <div className={`flex flex-wrap items-center justify-between gap-3 pb-4 border-b ${isDark ? 'border-white/10' : 'border-slate-100'
+              <div className={`lg:col-span-7 rounded-xl p-5 border ${isDark ? 'bg-[#070b14] border-slate-800' : 'bg-slate-50 border-slate-200'
                 }`}>
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
-                    <span className={`text-xs font-mono-code uppercase font-semibold ${isDark ? 'text-amber-300' : 'text-amber-800'
-                      }`}>
-                      Gemini 3.8 Flash (High) • Deterministic Grounded Output
-                    </span>
-                  </div>
-                  <h4 className={`text-base font-bold font-cinzel mt-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                    {selectedGeminiPrompt.title}
-                  </h4>
+                <div className="flex items-center gap-2 pb-3 border-b border-inherit">
+                  <Sparkles className="w-4 h-4 text-[#00685f]" />
+                  <span className="font-sans text-xs font-bold uppercase tracking-wider text-[#00685f]">
+                    Gemini 1.5 Pro Deterministic Output
+                  </span>
                 </div>
 
-                <div className="flex items-center space-x-2 text-xs font-mono-code">
-                  <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                    ✓ Zero Diagnosis Guardrail
-                  </span>
+                <div className="mt-4 space-y-3 font-sans text-xs">
+                  <div className="p-3 rounded bg-white dark:bg-slate-900 border border-inherit">
+                    <span className="font-bold text-[#00685f] block mb-1">1. Confirmed Telemetry Facts:</span>
+                    <p className="leading-relaxed text-slate-300">{selectedGeminiPrompt.response.facts}</p>
+                  </div>
+                  <div className="p-3 rounded bg-white dark:bg-slate-900 border border-inherit">
+                    <span className="font-bold text-[#00687a] block mb-1">2. Physiological Explanations:</span>
+                    <p className="leading-relaxed text-slate-300">{selectedGeminiPrompt.response.context}</p>
+                  </div>
+                  <div className="p-3 rounded bg-white dark:bg-slate-900 border border-inherit">
+                    <span className="font-bold text-amber-500 block mb-1">3. Measurement Boundaries:</span>
+                    <p className="leading-relaxed text-slate-300">{selectedGeminiPrompt.response.limitations}</p>
+                  </div>
+                  <div className="p-3 rounded bg-white dark:bg-slate-900 border border-inherit">
+                    <span className="font-bold text-[#006947] block mb-1">4. Action & Clinician Guidance:</span>
+                    <p className="leading-relaxed text-slate-300">{selectedGeminiPrompt.response.recommendation}</p>
+                  </div>
                 </div>
               </div>
-
-              {isAiThinking ? (
-                <div className="py-20 flex flex-col items-center justify-center space-y-3">
-                  <div className="w-8 h-8 rounded-full border-2 border-amber-400 border-t-transparent animate-spin"></div>
-                  <span className="text-xs font-mono-code text-slate-400">
-                    Querying confirmed structured telemetry across {activeHistory.length} sessions...
-                  </span>
-                </div>
-              ) : (
-                <div className="mt-6 space-y-5">
-                  {/* Prompt Box */}
-                  <div className={`p-3.5 rounded-xl border text-xs font-mono-code ${isDark ? 'bg-slate-950 border-white/5 text-amber-200' : 'bg-slate-100 border-slate-200 text-amber-900'
-                    }`}>
-                    <strong>User Inquiry: </strong>“{selectedGeminiPrompt.prompt}”
-                  </div>
-
-                  {/* 4 Grounded Sections Required by PDF Section 6 & 8 */}
-                  <div className="space-y-4">
-                    {/* Section 1: Facts */}
-                    <div className={`p-4 rounded-xl border ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-slate-50 border-slate-200'
-                      }`}>
-                      <h5 className="text-xs font-mono-code uppercase font-bold text-amber-500 mb-1 flex items-center space-x-1.5">
-                        <Check className="w-3.5 h-3.5" />
-                        <span>1. Confirmed Trend Facts (Observed Telemetry)</span>
-                      </h5>
-                      <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
-                        {selectedGeminiPrompt.response.facts}
-                      </p>
-                    </div>
-
-                    {/* Section 2: Physiological Context */}
-                    <div className={`p-4 rounded-xl border ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-slate-50 border-slate-200'
-                      }`}>
-                      <h5 className="text-xs font-mono-code uppercase font-bold text-cyan-400 mb-1 flex items-center space-x-1.5">
-                        <Info className="w-3.5 h-3.5" />
-                        <span>2. Possible Physiological & Lifestyle Explanations</span>
-                      </h5>
-                      <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
-                        {selectedGeminiPrompt.response.context}
-                      </p>
-                    </div>
-
-                    {/* Section 3: Limitations & Uncertainty */}
-                    <div className={`p-4 rounded-xl border ${isDark ? 'bg-amber-950/20 border-amber-500/30' : 'bg-amber-50 border-amber-200'
-                      }`}>
-                      <h5 className="text-xs font-mono-code uppercase font-bold text-amber-600 dark:text-amber-400 mb-1 flex items-center space-x-1.5">
-                        <AlertTriangle className="w-3.5 h-3.5" />
-                        <span>3. Measurement Limitations & Diagnostic Boundaries</span>
-                      </h5>
-                      <p className={`text-xs leading-relaxed ${isDark ? 'text-amber-200/90' : 'text-amber-950'}`}>
-                        {selectedGeminiPrompt.response.limitations}
-                      </p>
-                    </div>
-
-                    {/* Section 4: Action & Clinician Handover */}
-                    <div className={`p-4 rounded-xl border ${isDark ? 'bg-emerald-950/20 border-emerald-500/30' : 'bg-emerald-50 border-emerald-200'
-                      }`}>
-                      <h5 className="text-xs font-mono-code uppercase font-bold text-emerald-600 dark:text-emerald-400 mb-1 flex items-center space-x-1.5">
-                        <FileText className="w-3.5 h-3.5" />
-                        <span>4. Next Steps & Clinician Consultation Guidance</span>
-                      </h5>
-                      <p className={`text-xs leading-relaxed ${isDark ? 'text-emerald-200/90' : 'text-emerald-950'}`}>
-                        {selectedGeminiPrompt.response.recommendation}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Optional Raw JSON Grounding Inspector */}
-                  {showGroundingPayload && (
-                    <div className="mt-4 p-4 rounded-xl bg-slate-950 border border-amber-400/40 text-[10px] font-mono-code text-slate-300">
-                      <span className="text-amber-400 uppercase font-bold block mb-1">
-                        Exact Grounding JSON Sent to Gemini API (Deterministic Boundary):
-                      </span>
-                      <pre className="overflow-x-auto p-2 bg-black/60 rounded">
-                        {JSON.stringify({
-                          patientId: activePersona.id,
-                          biomarker: currentBiomarkerMeta.id,
-                          baseline: { median: currentBiomarkerMeta.baselineMean, iqr: [currentBiomarkerMeta.baselineMin, currentBiomarkerMeta.baselineMax] },
-                          totalLogs: activeHistory.length,
-                          recentReading: activeHistory[activeHistory.length - 1],
-                          safetyInstructions: 'Prohibit medical diagnosis. Cite confirmed readings and state colorimetry tolerances.'
-                        }, null, 2)}
-                      </pre>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
+          )}
 
-          </div>
-        )}
-
-        {/* =========================================================================
-            TAB 4: CLINICIAN SUMMARY & DOCTOR BRIEF (PDF Section 7 & 21)
-        ========================================================================== */}
-        {activeTab === 'clinician' && (
-          <div className={`rounded-2xl border p-6 sm:p-8 shadow-xl ${isDark ? 'bg-[#090e18] border-white/10' : 'bg-white border-amber-900/10'
-            }`}>
-            <div className={`flex flex-wrap items-center justify-between gap-4 pb-6 border-b ${isDark ? 'border-white/10' : 'border-slate-100'
+          {/* VIEW TAB 7: DOCTOR HANDOVER REPORT */}
+          {activeTab === 'clinician' && (
+            <div className={`rounded-xl p-6 border mt-2 ${isDark ? 'bg-[#070b14] border-slate-800' : 'bg-slate-50 border-slate-200'
               }`}>
-              <div>
-                <span className={`text-xs font-mono-code uppercase font-semibold ${isDark ? 'text-amber-300' : 'text-amber-800'}`}>
-                  Clinician Appointment Brief & Chronology
-                </span>
-                <h3 className={`text-2xl font-bold font-cinzel mt-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  Doctor-Ready Longitudinal Chronology
-                </h3>
-                <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Prepares an objective, non-diagnostic timeline of confirmed measurements to save clinic consultation minutes.
-                </p>
-              </div>
-
-              <div className="flex items-center space-x-3">
+              <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-inherit">
+                <div>
+                  <h3 className="font-sans text-lg font-bold">Doctor-Ready Longitudinal Chronology</h3>
+                  <p className="text-xs text-slate-400">
+                    Prepares an objective, non-diagnostic timeline of confirmed measurements to save clinic consultation minutes.
+                  </p>
+                </div>
                 <button
                   onClick={onOpenReportModal}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-bold font-mono-code uppercase flex items-center space-x-2 transition-all shadow-md ${isDark ? 'bg-amber-400 hover:bg-amber-300 text-slate-950' : 'bg-amber-600 hover:bg-amber-700 text-white'
-                    }`}
+                  className="px-4 py-2 rounded-lg bg-[#00685f] text-white font-sans text-xs font-bold flex items-center gap-1.5 shadow-xs"
                 >
-                  <Printer className="w-4 h-4" />
+                  <Printer className="w-3.5 h-3.5" />
                   <span>Launch Official Printable Report</span>
                 </button>
               </div>
-            </div>
 
-            {/* Quick Summary Cards */}
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4 text-xs font-mono-code">
-              <div className={`p-4 rounded-xl border ${isDark ? 'bg-slate-950 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
-                <span className="block text-[10px] uppercase text-slate-400">Patient</span>
-                <strong className={`text-sm ${isDark ? 'text-white' : 'text-slate-900'}`}>{activePersona.name} ({activePersona.age}y)</strong>
-                <p className="text-[10px] text-slate-500 mt-1">{activePersona.profileType}</p>
-              </div>
-
-              <div className={`p-4 rounded-xl border ${isDark ? 'bg-slate-950 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
-                <span className="block text-[10px] uppercase text-slate-400">Monitoring Window</span>
-                <strong className={`text-sm ${isDark ? 'text-white' : 'text-slate-900'}`}>{activeHistory.length} Test Sessions</strong>
-                <p className="text-[10px] text-emerald-500 mt-1">Rolling Median Baseline Active</p>
-              </div>
-
-              <div className={`p-4 rounded-xl border ${isDark ? 'bg-slate-950 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
-                <span className="block text-[10px] uppercase text-slate-400">Peak Recorded Variance</span>
-                <strong className="text-sm text-rose-500">Day 22 (32 mg/dL)</strong>
-                <p className="text-[10px] text-amber-500 mt-1">Normalized to 5 mg/dL by Day 28</p>
-              </div>
-
-              <div className={`p-4 rounded-xl border ${isDark ? 'bg-slate-950 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
-                <span className="block text-[10px] uppercase text-slate-400">Audit Status</span>
-                <strong className="text-sm text-emerald-400">100% User Audited</strong>
-                <p className="text-[10px] text-slate-500 mt-1">Cryptographic Local Store</p>
+              <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs font-sans">
+                <div className="p-3 rounded bg-white dark:bg-slate-900 border border-inherit">
+                  <span className="text-slate-400 text-[10px] uppercase block">Patient</span>
+                  <strong>{activePersona.name} ({activePersona.age}y)</strong>
+                </div>
+                <div className="p-3 rounded bg-white dark:bg-slate-900 border border-inherit">
+                  <span className="text-slate-400 text-[10px] uppercase block">Logged Sessions</span>
+                  <strong>{activeHistory.length} Sessions Active</strong>
+                </div>
+                <div className="p-3 rounded bg-white dark:bg-slate-900 border border-inherit">
+                  <span className="text-slate-400 text-[10px] uppercase block">Peak Variance</span>
+                  <strong className="text-rose-500">Day 22 (32 mg/dL PRO)</strong>
+                </div>
+                <div className="p-3 rounded bg-white dark:bg-slate-900 border border-inherit">
+                  <span className="text-slate-400 text-[10px] uppercase block">Audit Status</span>
+                  <strong className="text-[#006947]">100% Patient Verified</strong>
+                </div>
               </div>
             </div>
+          )}
+        </section>
 
-            {/* Chronological Table Preview */}
-            <div className="mt-6">
-              <h4 className={`text-xs font-mono-code uppercase font-bold mb-3 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                Chronological Test Ledger (Latest Logs)
-              </h4>
-              <div className="overflow-x-auto">
-                <table className={`w-full text-left font-mono-code text-xs border border-collapse ${isDark ? 'border-white/10' : 'border-slate-200'
+        {/* =========================================================================
+            5. RECENT STRIP SCANS & OPTICAL TELEMETRY TABLE (STITCH SPEC)
+        ========================================================================== */}
+        <section className={`rounded-xl p-6 sm:p-7 relative overflow-hidden transition-all border ${isDark
+            ? 'bg-[#0d1526] border-slate-800 shadow-[0_4px_24px_rgba(0,0,0,0.4)]'
+            : 'bg-white border-[#e2e8f0] shadow-xs'
+          }`}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3">
+            <div>
+              <h2 className="font-sans text-lg sm:text-xl font-bold tracking-tight">Recent Strip Scans & Optical Telemetry</h2>
+              <p className={`text-xs font-sans ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                Validated 10-pad spectrophotometric analysis with contextual biometrics
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setActiveTab('clinician')}
+                className="flex items-center gap-1 text-[#00685f] dark:text-[#6bd8cb] hover:underline text-xs font-semibold"
+              >
+                <span>View All 38 Scans</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Table Container */}
+          <div className="overflow-x-auto w-full mt-3">
+            <table className="w-full text-left border-collapse text-xs font-sans">
+              <thead>
+                <tr className={`border-b text-slate-400 uppercase tracking-wider text-[11px] ${isDark ? 'border-slate-800 bg-[#070b14]' : 'border-slate-200 bg-slate-50'
                   }`}>
-                  <thead className={`text-[10px] uppercase border-b ${isDark ? 'bg-slate-900 text-slate-400 border-white/10' : 'bg-slate-100 text-slate-600 border-slate-200'
-                    }`}>
-                    <tr>
-                      <th className="py-2.5 px-3">Session</th>
-                      <th className="py-2.5 px-3">Timing</th>
-                      <th className="py-2.5 px-3">Protein</th>
-                      <th className="py-2.5 px-3">Spec. Gravity</th>
-                      <th className="py-2.5 px-3">pH</th>
-                      <th className="py-2.5 px-3">Ketones</th>
-                      <th className="py-2.5 px-3">Confounders / Notes</th>
-                    </tr>
-                  </thead>
-                  <tbody className={`divide-y ${isDark ? 'divide-white/5 text-slate-300' : 'divide-slate-200 text-slate-700'}`}>
-                    {activeHistory.slice(-7).map((entry) => (
-                      <tr key={entry.day} className={entry.flagged ? (isDark ? 'bg-rose-950/20' : 'bg-rose-50 font-semibold') : ''}>
-                        <td className="py-2 px-3">Day {entry.day} ({entry.date})</td>
-                        <td className="py-2 px-3">{entry.time}</td>
-                        <td className={`py-2 px-3 ${entry.protein > 20 ? 'text-rose-500 font-bold' : ''}`}>{entry.protein} mg/dL</td>
-                        <td className="py-2 px-3">{entry.specificGravity}</td>
-                        <td className="py-2 px-3">{entry.pH}</td>
-                        <td className="py-2 px-3">{entry.ketones} mg/dL</td>
-                        <td className="py-2 px-3 text-[11px] text-slate-500">{entry.notes}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                  <th className="py-3 px-4 rounded-l-lg">Timestamp & Context</th>
+                  <th className="py-3 px-4">Spectro Patch</th>
+                  <th className="py-3 px-4">Biomarkers Overview</th>
+                  <th className="py-3 px-4">Wearable Correlation</th>
+                  <th className="py-3 px-4">Optical Match</th>
+                  <th className="py-3 px-4 rounded-r-lg text-right">Verification</th>
+                </tr>
+              </thead>
+              <tbody className={`divide-y ${isDark ? 'divide-slate-800/60' : 'divide-slate-100'}`}>
+                {recentScansList.map((scan) => (
+                  <tr key={scan.id} className="hover:bg-[#00685f]/5 transition-colors">
+                    {/* Timestamp & Context */}
+                    <td className="py-3.5 px-4">
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-on-surface text-xs">{scan.timestamp}</span>
+                        <div className="flex items-center gap-1 text-slate-400 text-[11px]">
+                          <Sun className="w-3 h-3 text-[#f59e0b]" />
+                          <span>{scan.context}</span>
+                        </div>
+                      </div>
+                    </td>
 
-            {/* Clinician Handover Talking Points */}
-            <div className={`mt-6 p-4 rounded-xl border text-xs ${isDark ? 'bg-slate-950 border-white/10' : 'bg-slate-50 border-slate-200'
-              }`}>
-              <h5 className="font-mono-code uppercase font-bold text-amber-500 mb-1">
-                Suggested Appointment Conversation Starters for Doctor:
-              </h5>
-              <ul className={`space-y-1 list-disc list-inside ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-                <li>“I have tracked my urine chemistry longitudinally. On Oct 26 (Day 22), my protein spiked to 32 mg/dL with specific gravity 1.028 following an intense workout, but resolved to 5 mg/dL within 48 hours.”</li>
-                <li>“Given this recovery trajectory, would you recommend adding a spot urine albumin-to-creatinine ratio (uACR) at my upcoming annual physical to double-check baseline glomerular filtration?”</li>
-              </ul>
+                    {/* Spectro Patch Thumbnail */}
+                    <td className="py-3.5 px-4">
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={scan.img}
+                          alt="Spectro diagnostic test strip patch"
+                          className="w-12 h-6 object-cover rounded shadow-xs border border-slate-200 dark:border-slate-700"
+                        />
+                        <span className="text-[10px] font-mono text-slate-400">{scan.id}</span>
+                      </div>
+                    </td>
+
+                    {/* Biomarkers Overview Chips */}
+                    <td className="py-3.5 px-4">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {scan.biomarkers.map((b, idx) => (
+                          <span
+                            key={idx}
+                            className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${b.type === 'variance'
+                                ? 'bg-[#f59e0b]/15 text-[#f59e0b]'
+                                : 'bg-[#006947]/10 text-[#006947] dark:text-[#6ffbbe]'
+                              }`}
+                          >
+                            {b.label}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+
+                    {/* Wearable Correlation */}
+                    <td className="py-3.5 px-4">
+                      <div className="flex flex-col text-slate-400 text-[11px]">
+                        <span className="font-medium text-on-surface">{scan.wearable.split('•')[0]}</span>
+                        <span className="text-slate-500">{scan.wearable.split('•').slice(1).join('•')}</span>
+                      </div>
+                    </td>
+
+                    {/* Optical Match */}
+                    <td className="py-3.5 px-4">
+                      <div className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-[#006947]"></span>
+                        <span className="font-semibold text-[#006947] dark:text-[#6ffbbe] text-xs">
+                          {scan.validity}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Verification Action */}
+                    <td className="py-3.5 px-4 text-right">
+                      <button
+                        onClick={() => setInspectedScanModal(scan)}
+                        className="text-[#00685f] dark:text-[#6bd8cb] hover:underline font-semibold text-xs"
+                      >
+                        View Spectrum
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* =========================================================================
+            6. PERSISTENT ACTION & SAFETY GUIDANCE DOCK (STITCH SPEC)
+        ========================================================================== */}
+        <section className={`rounded-xl p-5 flex flex-col md:flex-row items-center justify-between gap-4 border ${isDark
+            ? 'bg-[#0d1526] border-slate-800'
+            : 'bg-white border-[#e2e8f0] shadow-xs'
+          }`}>
+          <div className="flex items-center gap-3 text-left">
+            <div className="w-10 h-10 rounded-full bg-[#00685f]/10 text-[#00685f] flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-5 h-5 text-[#00685f]" />
+            </div>
+            <div className="flex flex-col font-sans">
+              <span className="text-xs sm:text-sm font-bold text-on-surface">
+                Continuous Longitudinal Integrity Active
+              </span>
+              <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                Optical color chart #BT-CAL-2024 verified with ambient temperature compensation (21.4°C).
+              </span>
             </div>
           </div>
-        )}
 
-        {/* 4 Key Guiding Pillars */}
-        <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 text-left">
-          <div className={`p-5 rounded-2xl border transition-all ${isDark
-            ? 'bg-slate-900/40 border-white/5 hover:border-amber-400/30'
-            : 'bg-white border-amber-900/10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-amber-400/50'
-            }`}>
-            <div className={`flex items-center space-x-2 text-xs font-mono-code uppercase tracking-wider mb-1 ${isDark ? 'text-amber-300' : 'text-amber-700'
-              }`}>
-              <Compass className="w-3.5 h-3.5" />
-              <span>Signal Input</span>
-            </div>
-            <div className={`text-lg font-semibold font-cinzel ${isDark ? 'text-white' : 'text-slate-900'}`}>
-              10 Biomarkers
-            </div>
-            <p className={`text-xs mt-1 leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-              Commercial reagent strips with guided optical camera framing & manual validation.
-            </p>
-          </div>
+          <div className="flex items-center gap-2.5 shrink-0 font-sans">
+            <button
+              onClick={() => {
+                alert("Reminder scheduled for tomorrow at 8:00 AM for your second morning void test strip.");
+              }}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors border ${isDark
+                  ? 'bg-slate-900 hover:bg-slate-800 text-slate-200 border-slate-800'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200'
+                }`}
+              type="button"
+            >
+              <Clock className="w-3.5 h-3.5 text-[#00687a]" />
+              <span>Schedule Tomorrow's Test</span>
+            </button>
 
-          <div className={`p-5 rounded-2xl border transition-all ${isDark
-            ? 'bg-slate-900/40 border-white/5 hover:border-emerald-400/30'
-            : 'bg-white border-amber-900/10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-emerald-400/50'
-            }`}>
-            <div className={`flex items-center space-x-2 text-xs font-mono-code uppercase tracking-wider mb-1 ${isDark ? 'text-emerald-300' : 'text-emerald-700'
-              }`}>
-              <BarChart2 className="w-3.5 h-3.5" />
-              <span>Trajectory Engine</span>
-            </div>
-            <div className={`text-lg font-semibold font-cinzel ${isDark ? 'text-white' : 'text-slate-900'}`}>
-              Personal Baseline
-            </div>
-            <p className={`text-xs mt-1 leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-              Constructed after 10+ entries using rolling medians, eliminating arbitrary single scores.
-            </p>
+            <button
+              onClick={onOpenReportModal}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#00685f] hover:bg-[#008378] text-white font-bold text-xs transition-all shadow-xs"
+              type="button"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              <span>Share with Physician</span>
+            </button>
           </div>
-
-          <div className={`p-5 rounded-2xl border transition-all ${isDark
-            ? 'bg-slate-900/40 border-white/5 hover:border-cyan-400/30'
-            : 'bg-white border-amber-900/10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-cyan-400/50'
-            }`}>
-            <div className={`flex items-center space-x-2 text-xs font-mono-code uppercase tracking-wider mb-1 ${isDark ? 'text-cyan-300' : 'text-sky-700'
-              }`}>
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Grounded AI</span>
-            </div>
-            <div className={`text-lg font-semibold font-cinzel ${isDark ? 'text-white' : 'text-slate-900'}`}>
-              Gemini Copilot
-            </div>
-            <p className={`text-xs mt-1 leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-              Explains confirmed facts and uncertainty without hallucinating diagnoses.
-            </p>
-          </div>
-
-          <div className={`p-5 rounded-2xl border transition-all ${isDark
-            ? 'bg-slate-900/40 border-white/5 hover:border-amber-400/30'
-            : 'bg-white border-amber-900/10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-amber-400/50'
-            }`}>
-            <div className={`flex items-center space-x-2 text-xs font-mono-code uppercase tracking-wider mb-1 ${isDark ? 'text-amber-300' : 'text-amber-700'
-              }`}>
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Clinical Ethos</span>
-            </div>
-            <div className={`text-lg font-semibold font-cinzel ${isDark ? 'text-white' : 'text-slate-900'}`}>
-              Doctor in the Loop
-            </div>
-            <p className={`text-xs mt-1 leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-              Doctor-ready timeline export; symptoms always take absolute priority.
-            </p>
-          </div>
-        </div>
+        </section>
 
       </div>
 
@@ -2290,6 +1698,65 @@ export default function LiveDemo({ onOpenReportModal }) {
         onClose={() => setIsManualModalOpen(false)}
         onSave={handleManualAdd}
       />
+
+      {/* Spectrum Inspection Modal */}
+      {inspectedScanModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className={`w-full max-w-lg rounded-2xl p-6 border shadow-2xl ${isDark ? 'bg-[#0d1526] border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'
+            }`}>
+            <div className="flex items-center justify-between pb-3 border-b border-inherit">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#00685f]"></span>
+                <h3 className="font-sans text-base font-bold">Spectrophotometric Log {inspectedScanModal.id}</h3>
+              </div>
+              <button
+                onClick={() => setInspectedScanModal(null)}
+                className="text-slate-400 hover:text-white text-xs font-bold"
+              >
+                ✕ Close
+              </button>
+            </div>
+
+            <div className="mt-4 flex flex-col gap-4 font-sans text-xs">
+              <div className="flex items-center gap-4">
+                <img
+                  src={inspectedScanModal.img}
+                  alt="Raw strip macro"
+                  className="w-28 h-14 object-cover rounded border border-slate-200 dark:border-slate-700"
+                />
+                <div>
+                  <span className="font-bold text-sm block">{inspectedScanModal.timestamp}</span>
+                  <p className="text-slate-400">{inspectedScanModal.context}</p>
+                  <p className="text-[#006947] font-semibold mt-1">Optical Match: {inspectedScanModal.validity}</p>
+                </div>
+              </div>
+
+              <div className="p-3 rounded bg-slate-50 dark:bg-slate-900 border border-inherit">
+                <span className="font-bold block mb-1 text-slate-400 uppercase text-[10px]">Wearable Sync:</span>
+                <p>{inspectedScanModal.wearable}</p>
+              </div>
+
+              <div className="p-3 rounded bg-slate-50 dark:bg-slate-900 border border-inherit">
+                <span className="font-bold block mb-1 text-slate-400 uppercase text-[10px]">Analyte Deltas:</span>
+                <div className="flex flex-wrap gap-2">
+                  {inspectedScanModal.biomarkers.map((b, i) => (
+                    <span key={i} className="px-2 py-0.5 rounded bg-[#00685f]/10 text-[#00685f] font-semibold">
+                      {b.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                onClick={() => setInspectedScanModal(null)}
+                className="w-full py-2.5 rounded-lg bg-[#00685f] hover:bg-[#008378] text-white font-bold transition-colors"
+              >
+                Close Inspector
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

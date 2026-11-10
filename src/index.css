@@ -4,46 +4,77 @@
 
 @layer base {
   :root {
-    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-display: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
-    /* Light Theme Palette - Clean Medical Technology SaaS */
-    --bg-main: #F5F8FC;
+    /* Light Theme Palette - Stitch Precision Humanism: Clinical Clarity & Longitudinal Vitality */
+    --bg-main: #FAF8FF;
     --bg-card: #FFFFFF;
-    --bg-card-glass: rgba(255, 255, 255, 0.85);
-    --bg-secondary: #EDF2F7;
-    --bg-accent: #008FAE;
-    --text-head: #0F172A;
-    --text-body: #334155;
-    --text-muted: #64748B;
+    --bg-card-glass: rgba(255, 255, 255, 0.92);
+    --bg-secondary: #F2F3FF;
+    --bg-container: #EAEDFF;
+    --bg-container-high: #E2E7FF;
+    
+    --primary: #00685F;
+    --primary-container: #008378;
+    --on-primary: #FFFFFF;
+    --primary-fixed: #89F5E7;
+    
+    --secondary: #00687A;
+    --secondary-container: #57DFFE;
+    
+    --tertiary: #006947;
+    --tertiary-container: #00855B;
+    --tertiary-fixed: #6FFBBE;
+    
+    --amber-shift: #F59E0B;
+    --amber-dark: #B45309;
+    
+    --text-head: #131B2E;
+    --text-body: #3D4947;
+    --text-muted: #6D7A77;
+    --outline: #6D7A77;
     --border-subtle: #E2E8F0;
-    --border-glass: rgba(0, 143, 174, 0.15);
-    --color-cyan: #008FAE;
-    --color-blue: #3B82F6;
-    --color-teal: #0D9488;
-    --cyan-glow: rgba(0, 143, 174, 0.12);
-    --card-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
-    --card-shadow-hover: 0 12px 30px -4px rgba(0, 143, 174, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+    --border-glass: rgba(0, 104, 95, 0.14);
+    
+    --card-shadow: 0 1px 4px 0 rgba(19, 27, 46, 0.04), 0 4px 16px -2px rgba(19, 27, 46, 0.05);
+    --card-shadow-hover: 0 4px 20px -2px rgba(0, 104, 95, 0.12), 0 2px 8px -1px rgba(19, 27, 46, 0.06);
   }
 
   .dark {
-    /* Dark Theme Palette - Deep Futuristic BioTrajectory Healthcare */
+    /* Dark Theme Palette - Deep Clinical Obsidian */
     --bg-main: #070B14;
-    --bg-card: #101827;
-    --bg-card-glass: rgba(16, 24, 39, 0.75);
-    --bg-secondary: #131E30;
-    --bg-accent: #00D9FF;
-    --text-head: #F4F7FB;
+    --bg-card: #0D1526;
+    --bg-card-glass: rgba(13, 21, 38, 0.82);
+    --bg-secondary: #131D33;
+    --bg-container: #182542;
+    --bg-container-high: #1E2E52;
+    
+    --primary: #008378;
+    --primary-container: #0D9488;
+    --on-primary: #FFFFFF;
+    --primary-fixed: #6BD8CB;
+    
+    --secondary: #00A6C7;
+    --secondary-container: #006172;
+    
+    --tertiary: #10B981;
+    --tertiary-container: #00855B;
+    --tertiary-fixed: #4EDEA3;
+    
+    --amber-shift: #F59E0B;
+    --amber-dark: #D97706;
+    
+    --text-head: #F8FAFC;
     --text-body: #CBD5E1;
-    --text-muted: #8292A6;
-    --border-subtle: #1E293B;
-    --border-glass: rgba(0, 217, 255, 0.16);
-    --color-cyan: #00D9FF;
-    --color-blue: #5479FF;
-    --color-teal: #14B8A6;
-    --cyan-glow: rgba(0, 217, 255, 0.22);
-    --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7), 0 0 15px rgba(0, 217, 255, 0.04);
-    --card-shadow-hover: 0 20px 40px -12px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 217, 255, 0.14);
+    --text-muted: #94A3B8;
+    --outline: #64748B;
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-glass: rgba(0, 131, 120, 0.22);
+    
+    --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7), 0 0 15px rgba(0, 131, 120, 0.04);
+    --card-shadow-hover: 0 20px 40px -12px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 131, 120, 0.18);
   }
 
   body {

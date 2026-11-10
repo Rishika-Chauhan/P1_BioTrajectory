@@ -50,7 +50,7 @@ export default function ManualEntryModal({ isOpen, onClose, onSave, onAddReading
         particleCount: 50,
         spread: 70,
         origin: { y: 0.6 },
-        colors: isDark ? ['#c5a880', '#10b981', '#ffffff'] : ['#b45309', '#059669', '#1e293b']
+        colors: isDark ? ['#00685f', '#006947', '#6bd8cb'] : ['#00685f', '#006947', '#57dffe']
       });
     } catch (err) {}
 
@@ -60,24 +60,22 @@ export default function ManualEntryModal({ isOpen, onClose, onSave, onAddReading
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/75 backdrop-blur-md animate-fadeIn">
       <div className={`relative w-full max-w-xl border rounded-2xl shadow-2xl overflow-hidden my-8 ${
-        isDark ? 'bg-[#090e18] border-amber-400/30' : 'bg-white border-amber-300 shadow-[0_20px_60px_rgba(0,0,0,0.12)]'
+        isDark ? 'bg-[#0d1526] border-slate-800' : 'bg-white border-slate-200'
       }`}>
         
         {/* Top Header */}
         <div className={`flex items-center justify-between px-6 py-4 border-b ${
-          isDark ? 'bg-slate-900 border-white/10' : 'bg-[#faf8f5] border-slate-200'
+          isDark ? 'bg-slate-900 border-slate-800' : 'bg-[#faf8ff] border-slate-200'
         }`}>
           <div className="flex items-center space-x-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-            <h3 className={`font-cinzel text-base font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+            <span className="w-2.5 h-2.5 rounded-full bg-[#00685f]"></span>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">
               Manual Reagent Strip Entry & Audit Log
             </h3>
           </div>
           <button
             onClick={onClose}
-            className={`p-1.5 rounded-lg transition-colors ${
-              isDark ? 'text-slate-400 hover:text-white hover:bg-slate-800' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
-            }`}
+            className="p-1.5 rounded-lg transition-colors text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
           >
             <X className="w-5 h-5" />
           </button>
@@ -85,22 +83,20 @@ export default function ManualEntryModal({ isOpen, onClose, onSave, onAddReading
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-5">
-          <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+          <p className="text-xs text-slate-600 dark:text-slate-400">
             Enter readings directly by hand from any supported commercial 10-parameter test strip. All values will be plotted immediately on your personal trajectory.
           </p>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={`block text-xs font-mono-code uppercase mb-1 font-semibold ${
-                isDark ? 'text-slate-300' : 'text-slate-700'
-              }`}>
+              <label className="block text-xs font-mono uppercase mb-1 font-semibold text-slate-700 dark:text-slate-300">
                 Protein (mg/dL)
               </label>
               <select
                 value={form.protein}
                 onChange={(e) => setForm({ ...form, protein: Number(e.target.value) })}
-                className={`w-full p-2.5 rounded-xl border text-xs font-mono-code ${
-                  isDark ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                className={`w-full p-2.5 rounded-xl border text-xs font-mono ${
+                  isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                 }`}
               >
                 <option value={0}>Negative (0 mg/dL)</option>
@@ -113,16 +109,14 @@ export default function ManualEntryModal({ isOpen, onClose, onSave, onAddReading
             </div>
 
             <div>
-              <label className={`block text-xs font-mono-code uppercase mb-1 font-semibold ${
-                isDark ? 'text-slate-300' : 'text-slate-700'
-              }`}>
+              <label className="block text-xs font-mono uppercase mb-1 font-semibold text-slate-700 dark:text-slate-300">
                 Specific Gravity
               </label>
               <select
                 value={form.specificGravity}
                 onChange={(e) => setForm({ ...form, specificGravity: Number(e.target.value) })}
-                className={`w-full p-2.5 rounded-xl border text-xs font-mono-code ${
-                  isDark ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                className={`w-full p-2.5 rounded-xl border text-xs font-mono ${
+                  isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                 }`}
               >
                 <option value={1.005}>1.005 (Dilute / High Hydration)</option>
@@ -134,16 +128,14 @@ export default function ManualEntryModal({ isOpen, onClose, onSave, onAddReading
             </div>
 
             <div>
-              <label className={`block text-xs font-mono-code uppercase mb-1 font-semibold ${
-                isDark ? 'text-slate-300' : 'text-slate-700'
-              }`}>
+              <label className="block text-xs font-mono uppercase mb-1 font-semibold text-slate-700 dark:text-slate-300">
                 pH Level
               </label>
               <select
                 value={form.pH}
                 onChange={(e) => setForm({ ...form, pH: Number(e.target.value) })}
-                className={`w-full p-2.5 rounded-xl border text-xs font-mono-code ${
-                  isDark ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                className={`w-full p-2.5 rounded-xl border text-xs font-mono ${
+                  isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                 }`}
               >
                 <option value={5.5}>5.5 (Acidic)</option>
@@ -155,16 +147,14 @@ export default function ManualEntryModal({ isOpen, onClose, onSave, onAddReading
             </div>
 
             <div>
-              <label className={`block text-xs font-mono-code uppercase mb-1 font-semibold ${
-                isDark ? 'text-slate-300' : 'text-slate-700'
-              }`}>
+              <label className="block text-xs font-mono uppercase mb-1 font-semibold text-slate-700 dark:text-slate-300">
                 Glucose (mg/dL)
               </label>
               <select
                 value={form.glucose}
                 onChange={(e) => setForm({ ...form, glucose: Number(e.target.value) })}
-                className={`w-full p-2.5 rounded-xl border text-xs font-mono-code ${
-                  isDark ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                className={`w-full p-2.5 rounded-xl border text-xs font-mono ${
+                  isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                 }`}
               >
                 <option value={0}>Negative (0 mg/dL)</option>
@@ -174,16 +164,14 @@ export default function ManualEntryModal({ isOpen, onClose, onSave, onAddReading
             </div>
 
             <div>
-              <label className={`block text-xs font-mono-code uppercase mb-1 font-semibold ${
-                isDark ? 'text-slate-300' : 'text-slate-700'
-              }`}>
+              <label className="block text-xs font-mono uppercase mb-1 font-semibold text-slate-700 dark:text-slate-300">
                 Ketones (mg/dL)
               </label>
               <select
                 value={form.ketones}
                 onChange={(e) => setForm({ ...form, ketones: Number(e.target.value) })}
-                className={`w-full p-2.5 rounded-xl border text-xs font-mono-code ${
-                  isDark ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                className={`w-full p-2.5 rounded-xl border text-xs font-mono ${
+                  isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                 }`}
               >
                 <option value={0}>Negative (0 mg/dL)</option>
@@ -194,16 +182,14 @@ export default function ManualEntryModal({ isOpen, onClose, onSave, onAddReading
             </div>
 
             <div>
-              <label className={`block text-xs font-mono-code uppercase mb-1 font-semibold ${
-                isDark ? 'text-slate-300' : 'text-slate-700'
-              }`}>
+              <label className="block text-xs font-mono uppercase mb-1 font-semibold text-slate-700 dark:text-slate-300">
                 Leukocytes (Leu/µL)
               </label>
               <select
                 value={form.leukocytes}
                 onChange={(e) => setForm({ ...form, leukocytes: Number(e.target.value) })}
-                className={`w-full p-2.5 rounded-xl border text-xs font-mono-code ${
-                  isDark ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                className={`w-full p-2.5 rounded-xl border text-xs font-mono ${
+                  isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                 }`}
               >
                 <option value={0}>Negative (0 Leu/µL)</option>
@@ -214,9 +200,7 @@ export default function ManualEntryModal({ isOpen, onClose, onSave, onAddReading
           </div>
 
           <div>
-            <label className={`block text-xs font-mono-code uppercase mb-1 font-semibold ${
-              isDark ? 'text-slate-300' : 'text-slate-700'
-            }`}>
+            <label className="block text-xs font-mono uppercase mb-1 font-semibold text-slate-700 dark:text-slate-300">
               Contextual Notes (Exercise, Hydration, Food)
             </label>
             <input
@@ -224,16 +208,16 @@ export default function ManualEntryModal({ isOpen, onClose, onSave, onAddReading
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               className={`w-full p-2.5 rounded-xl border text-xs ${
-                isDark ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
               }`}
               placeholder="e.g. Post-marathon workout, 14hr fasting"
             />
           </div>
 
-          <div className={`p-3 rounded-xl border text-[11px] font-mono-code flex items-center space-x-2 ${
-            isDark ? 'bg-amber-950/20 border-amber-500/30 text-amber-300' : 'bg-amber-50 border-amber-300 text-amber-900'
+          <div className={`p-3 rounded-xl border text-[11px] font-mono flex items-center space-x-2 ${
+            isDark ? 'bg-[#00685f]/15 border-[#00685f]/30 text-[#6bd8cb]' : 'bg-[#00685f]/5 border-[#00685f]/20 text-[#00685f]'
           }`}>
-            <AlertCircle className="w-4 h-4 shrink-0 text-amber-500" />
+            <AlertCircle className="w-4 h-4 shrink-0 text-[#00685f] dark:text-[#6bd8cb]" />
             <span>Audit Guarantee: You are confirming these values before saving. No auto-diagnosis.</span>
           </div>
 
@@ -241,15 +225,15 @@ export default function ManualEntryModal({ isOpen, onClose, onSave, onAddReading
             <button
               type="button"
               onClick={onClose}
-              className={`px-4 py-2 rounded-xl text-xs font-mono-code border ${
-                isDark ? 'border-white/10 text-slate-400 hover:text-white' : 'border-slate-300 text-slate-600 hover:text-slate-900'
+              className={`px-4 py-2 rounded-xl text-xs font-mono border ${
+                isDark ? 'border-slate-800 text-slate-400 hover:text-white' : 'border-slate-300 text-slate-600 hover:text-slate-900'
               }`}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-mono-code font-bold uppercase tracking-wider transition-colors shadow-md flex items-center space-x-1.5"
+              className="px-6 py-2.5 rounded-xl bg-[#00685f] hover:bg-[#008378] text-white text-xs font-mono font-bold uppercase tracking-wider transition-all shadow-sm flex items-center space-x-1.5"
             >
               <CheckCircle className="w-3.5 h-3.5" />
               <span>Confirm & Append to Trajectory</span>

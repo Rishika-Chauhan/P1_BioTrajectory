@@ -82,33 +82,31 @@ export default function AttractivePieChart() {
     : segmentsWithAngles[0];
 
   return (
-    <div className={`p-6 sm:p-8 rounded-3xl border shadow-xl relative overflow-hidden transition-all ${
-      isDark ? 'bg-[#090e18] border-amber-400/25' : 'bg-white border-amber-900/10'
+    <div className={`p-6 sm:p-7 rounded-xl border shadow-xs relative overflow-hidden transition-all ${
+      isDark ? 'bg-[#0d1526] border-slate-800' : 'bg-white border-[#e2e8f0]'
     }`}>
       {/* Top Header & Preset Switchers */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-inherit">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-inherit">
         <div>
           <div className="flex items-center space-x-2">
-            <div className="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-400/30 text-amber-500 flex items-center justify-center">
-              <PieIcon className="w-4 h-4 animate-spin-slow" />
+            <div className="w-6 h-6 rounded-md bg-[#00685f]/10 text-[#00685f] flex items-center justify-center">
+              <PieIcon className="w-3.5 h-3.5" />
             </div>
-            <span className={`text-xs font-mono-code font-bold uppercase tracking-wider ${
-              isDark ? 'text-amber-300' : 'text-amber-800'
-            }`}>
+            <span className="text-[11px] font-sans font-bold uppercase tracking-wider text-[#00685f] dark:text-[#6bd8cb]">
               Longitudinal Proportion Analytics
             </span>
           </div>
-          <h3 className={`font-cinzel text-xl sm:text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+          <h3 className={`font-sans text-xl font-bold mt-1 ${isDark ? 'text-white' : 'text-[#131b2e]'}`}>
             {preset.title}
           </h3>
-          <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+          <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
             {preset.subtitle}
           </p>
         </div>
 
         {/* Preset Selector Buttons */}
-        <div className={`inline-flex p-1 rounded-xl border text-xs font-mono-code self-start md:self-auto shrink-0 ${
-          isDark ? 'bg-slate-950 border-white/10' : 'bg-slate-100 border-slate-200'
+        <div className={`inline-flex p-1 rounded-lg border text-xs font-sans self-start md:self-auto shrink-0 ${
+          isDark ? 'bg-[#070b14] border-slate-800' : 'bg-slate-100 border-slate-200'
         }`}>
           {PIE_CHART_PRESETS.map((p, idx) => (
             <button
@@ -117,10 +115,10 @@ export default function AttractivePieChart() {
                 setActivePresetIndex(idx);
                 setHoveredSegmentId(null);
               }}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-md font-semibold transition-all ${
                 activePresetIndex === idx
-                  ? isDark ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-amber-700 text-white font-bold'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-[#00685f] text-white shadow-xs font-bold'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               {idx === 0 ? 'Time in Corridor (TIC)' : idx === 1 ? 'Data Ingestion Sources' : 'Organ Systems'}

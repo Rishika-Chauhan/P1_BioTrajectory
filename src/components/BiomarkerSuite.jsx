@@ -6,7 +6,7 @@ import { useTheme } from '../context/ThemeContext';
 export default function BiomarkerSuite() {
   const { isDark } = useTheme();
   const [selectedBio, setSelectedBio] = useState(BIOMARKER_DEFINITIONS[0]);
-  
+
   // Interactive Confounder Simulator State
   const [activeConfounder, setActiveConfounder] = useState('baseline'); // 'baseline', 'dehydration', 'exercise', 'diet', 'vitaminc'
 
@@ -73,37 +73,36 @@ export default function BiomarkerSuite() {
 
   return (
     <section
-      className={`relative py-24 border-t transition-colors ${
-        isDark ? 'bg-[#070b14] border-white/[0.07]' : 'bg-[#f4efe8]/70 border-amber-900/10'
-      }`}
+      className={`relative py-20 border-t transition-colors ${isDark ? 'bg-[#070b14] border-slate-800' : 'bg-[#faf8ff] border-slate-200'
+        }`}
       id="biomarkers"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Biomarker Reagent Panel Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 pb-6 border-b border-inherit">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-5 border-b border-inherit">
           <div className="max-w-2xl">
-            <span className={`text-[11px] font-mono-code uppercase tracking-wider font-bold block mb-2 ${isDark ? 'text-cyan-400' : 'text-cyan-700'}`}>
+            <span className="text-[11px] font-sans uppercase tracking-wider font-bold block mb-1 text-[#00685f] dark:text-[#6bd8cb]">
               Biochemical Specifications & Confounder Mechanics
             </span>
-            <h2 className={`font-cinzel text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+            <h2 className={`font-sans text-2xl sm:text-3xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-[#131b2e]'}`}>
               The 10-Parameter Reagent Suite & Physiological Confounders
             </h2>
             <p className={`mt-2 text-sm leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
               Grounded in multi-parameter dry chemistry kinetics. Evaluates genuine chronic trends while mathematically filtering transient exercise, dehydration, and diet shifts.
             </p>
           </div>
-          <div className={`text-xs font-mono-code px-3.5 py-1.5 rounded-xl border shrink-0 ${isDark ? 'bg-slate-900 border-white/10 text-cyan-300' : 'bg-white border-slate-200 text-teal-800 shadow-xs'}`}>
+          <div className={`text-xs font-sans px-3 py-1.5 rounded-lg border shrink-0 ${isDark ? 'bg-[#0d1526] border-slate-800 text-[#6bd8cb]' : 'bg-white border-slate-200 text-[#00685f] shadow-xs'}`}>
             Standard Multistix 10SG Reagents
           </div>
         </div>
 
         {/* Master-Detail Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
           {/* Biomarker List Selectors (10 Biomarkers) */}
           <div className="lg:col-span-5 space-y-2">
-            <span className="text-[10px] font-mono-code uppercase text-slate-400 font-bold block mb-2 px-1">
+            <span className="text-[11px] font-sans uppercase text-slate-400 font-bold block mb-2 px-1">
               Select Biomarker from Multistix 10SG Reagent Strip:
             </span>
             {BIOMARKER_DEFINITIONS.map((bio) => {
@@ -115,85 +114,76 @@ export default function BiomarkerSuite() {
                     setSelectedBio(bio);
                     setActiveConfounder('baseline');
                   }}
-                  className={`p-3.5 rounded-xl cursor-pointer border transition-all duration-200 flex items-center justify-between ${
-                    isSelected
-                      ? isDark
-                        ? 'bg-gradient-to-r from-amber-400/20 via-slate-900 to-slate-900 border-amber-400/60 shadow-[0_5px_20px_rgba(245,158,11,0.15)] font-bold'
-                        : 'bg-amber-50/90 border-amber-500 shadow-sm font-bold ring-1 ring-amber-400/40'
+                  className={`p-3.5 rounded-xl cursor-pointer border transition-all duration-200 flex items-center justify-between ${isSelected
+                      ? 'bg-[#00685f]/15 border-[#00685f] shadow-xs font-bold text-on-surface'
                       : isDark
-                      ? 'bg-[#090e18]/70 border-white/5 hover:border-white/15 hover:bg-slate-800/40 text-slate-300'
-                      : 'bg-white border-slate-200 hover:border-amber-300 text-slate-700 hover:bg-slate-50'
-                  }`}
+                        ? 'bg-[#0d1526]/80 border-slate-800 hover:border-slate-700 text-slate-300'
+                        : 'bg-white border-[#e2e8f0] hover:border-slate-300 text-slate-700 shadow-xs'
+                    }`}
                 >
                   <div className="flex items-center space-x-3">
                     <div
-                      className={`w-3 h-3 rounded-full ${
-                        isSelected
-                          ? isDark ? 'bg-amber-400 shadow-[0_0_10px_#f59e0b]' : 'bg-amber-600 shadow-sm'
+                      className={`w-2.5 h-2.5 rounded-full ${isSelected
+                          ? 'bg-[#00685f] shadow-xs'
                           : isDark ? 'bg-slate-700' : 'bg-slate-300'
-                      }`}
+                        }`}
                     ></div>
                     <div>
-                      <h4 className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{bio.name}</h4>
-                      <p className={`text-[10px] font-mono-code ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                      <h4 className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-[#131b2e]'}`}>{bio.name}</h4>
+                      <p className="text-[10px] font-sans text-slate-400">
                         Range: {bio.normalRange} • Unit: {bio.unit}
                       </p>
                     </div>
                   </div>
-                  <ChevronRight className={`w-3.5 h-3.5 transition-transform ${
-                    isSelected ? (isDark ? 'text-amber-400 translate-x-1' : 'text-amber-700 translate-x-1') : 'text-slate-400'
-                  }`} />
+                  <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isSelected ? 'text-[#00685f] translate-x-1' : 'text-slate-400'
+                    }`} />
                 </div>
               );
             })}
           </div>
 
           {/* Detailed Inspector Panel + Confounder Simulator */}
-          <div className={`lg:col-span-7 rounded-2xl border p-6 sm:p-8 shadow-xl relative overflow-hidden ${
-            isDark ? 'bg-[#090e18] border-white/10' : 'bg-white border-amber-900/10'
-          }`}>
-            <div className={`flex flex-wrap items-center justify-between gap-3 pb-5 border-b ${
-              isDark ? 'border-white/10' : 'border-slate-100'
+          <div className={`lg:col-span-7 rounded-xl border p-6 shadow-xs relative overflow-hidden ${isDark ? 'bg-[#0d1526] border-slate-800' : 'bg-white border-[#e2e8f0]'
             }`}>
+            <div className={`flex flex-wrap items-center justify-between gap-3 pb-4 border-b ${isDark ? 'border-slate-800' : 'border-slate-100'
+              }`}>
               <div>
-                <span className={`text-[10px] font-mono-code uppercase tracking-wider font-semibold ${
-                  isDark ? 'text-amber-300' : 'text-amber-700'
-                }`}>
+                <span className="text-[10px] font-sans uppercase tracking-wider font-bold text-[#00685f] dark:text-[#6bd8cb]">
                   Biomarker Telemetry Inspector
                 </span>
-                <h3 className={`font-cinzel text-2xl font-bold mt-0.5 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                <h3 className={`font-sans text-xl font-bold mt-0.5 ${isDark ? 'text-white' : 'text-[#131b2e]'}`}>
                   {selectedBio.name}
                 </h3>
               </div>
-              <div className="text-right">
-                <span className={`text-[10px] font-mono-code block uppercase ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Clinical Normal</span>
-                <span className={`text-xs font-mono-code font-bold ${isDark ? 'text-emerald-300' : 'text-emerald-700'}`}>{selectedBio.normalRange}</span>
+              <div className="text-right font-sans">
+                <span className="text-[10px] block uppercase text-slate-400">Clinical Normal</span>
+                <span className="text-xs font-bold text-[#006947] dark:text-[#6ffbbe]">{selectedBio.normalRange}</span>
               </div>
             </div>
 
             {/* Description */}
-            <div className="mt-4">
-              <h4 className={`text-xs font-mono-code uppercase tracking-wider mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            <div className="mt-4 font-sans">
+              <h4 className="text-[11px] uppercase tracking-wider mb-1 font-bold text-slate-400">
                 Physiological Mechanism & Significance
               </h4>
-              <p className={`text-xs leading-relaxed font-light ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+              <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                 {selectedBio.description}
               </p>
             </div>
 
             {/* Colorimetric Reagent Pad Scale */}
-            <div className={`mt-5 p-4 rounded-xl border ${isDark ? 'bg-slate-950 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
-              <span className={`text-xs font-mono-code uppercase block mb-2.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            <div className={`mt-4 p-4 rounded-lg border ${isDark ? 'bg-[#070b14] border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
+              <span className="text-[11px] font-sans uppercase font-bold block mb-2 text-slate-400">
                 Commercial Colorimetric Pad Spectrum (Multistix 10SG):
               </span>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                 {selectedBio.colorScale.map((pad, idx) => (
                   <div key={idx} className="flex flex-col items-center">
                     <div
-                      className="w-full h-7 rounded-md border shadow-xs"
+                      className="w-full h-6 rounded border shadow-xs"
                       style={{ backgroundColor: pad.color }}
                     ></div>
-                    <span className={`text-[10px] font-mono-code mt-1 font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                    <span className="text-[10px] font-sans mt-1 font-medium text-slate-400">
                       {pad.label}
                     </span>
                   </div>
@@ -204,28 +194,26 @@ export default function BiomarkerSuite() {
             {/* =========================================================================
                 INTERACTIVE PHYSIOLOGICAL CONFOUNDER SIMULATOR (PDF Section 11 & 12)
             ========================================================================== */}
-            <div className={`mt-6 p-5 rounded-xl border ${
-              isDark ? 'bg-slate-950/90 border-amber-400/30' : 'bg-amber-50/80 border-amber-300'
-            }`}>
+            <div className={`mt-5 p-4 rounded-lg border ${isDark ? 'bg-[#070b14] border-slate-800' : 'bg-[#00685f]/5 border-[#00685f]/20'
+              }`}>
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-mono-code uppercase font-bold text-amber-500 flex items-center space-x-1.5">
+                <span className="text-xs font-sans uppercase font-bold text-[#00685f] dark:text-[#6bd8cb] flex items-center space-x-1.5">
                   <Sliders className="w-3.5 h-3.5" />
                   <span>Simulate Real-World Physiological Confounders</span>
                 </span>
-                <span className="text-[10px] font-mono-code text-slate-400">Biological Variations</span>
+                <span className="text-[10px] font-sans text-slate-400">Biological Variations</span>
               </div>
 
               {/* Confounder Switcher Pills */}
-              <div className="flex flex-wrap gap-1.5 mb-4">
+              <div className="flex flex-wrap gap-1.5 mb-3">
                 {confounders.map((c) => (
                   <button
                     key={c.id}
                     onClick={() => setActiveConfounder(c.id)}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-mono-code transition-all ${
-                      activeConfounder === c.id
-                        ? isDark ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-amber-700 text-white font-bold'
-                        : isDark ? 'bg-slate-900 text-slate-400 hover:text-white border border-white/5' : 'bg-white text-slate-600 border border-slate-200'
-                    }`}
+                    className={`px-2.5 py-1 rounded-md text-[11px] font-sans transition-all ${activeConfounder === c.id
+                        ? 'bg-[#00685f] text-white font-bold shadow-xs'
+                        : isDark ? 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800' : 'bg-white text-slate-600 border border-slate-200'
+                      }`}
                   >
                     {c.name.split('(')[0]}
                   </button>
@@ -233,39 +221,27 @@ export default function BiomarkerSuite() {
               </div>
 
               {/* Confounder Simulation Result Box */}
-              <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center font-mono-code text-xs">
-                <div className="sm:col-span-5 p-3 rounded-lg bg-black/40 border border-white/10">
-                  <span className="block text-[9px] uppercase text-slate-400 mb-0.5">Simulated Reading:</span>
-                  <strong className="text-amber-400 text-sm">{currentConfounderInfo.impactOnCurrent.readingShift}</strong>
-                  <span className={`block text-[10px] mt-1 ${
-                    activeConfounder === 'baseline' ? 'text-emerald-400' : 'text-rose-400 font-bold'
-                  }`}>
-                    Status: {currentConfounderInfo.impactOnCurrent.status}
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center font-sans text-xs">
+                <div className="sm:col-span-5 p-3 rounded-lg bg-black/20 border border-slate-700/40">
+                  <span className="block text-[10px] uppercase text-slate-400 mb-0.5">Simulated Reading:</span>
+                  <strong className="text-[#00685f] dark:text-[#6bd8cb] text-sm">{currentConfounderInfo.impactOnCurrent.readingShift}</strong>
+                  <span className="block text-[10px] mt-1 text-[#006947] dark:text-[#6ffbbe] font-semibold">
+                    {currentConfounderInfo.impactOnCurrent.status}
                   </span>
                 </div>
-
-                <div className="sm:col-span-7 text-xs font-sans">
-                  <span className="block font-semibold text-amber-500 text-[11px] font-mono-code mb-0.5">
-                    Biological Mechanism:
-                  </span>
-                  <p className={`text-[11px] leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                <div className="sm:col-span-7">
+                  <p className={`text-[11px] leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
                     {currentConfounderInfo.impactOnCurrent.explanation}
                   </p>
                 </div>
-              </div>
-
-              <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between text-[10px] font-mono-code text-slate-400">
-                <span>BioTrajectory Defense: Specific Gravity correlation + 48h recovery rule</span>
-                <span className="text-emerald-400 font-bold">Prevents False Panic</span>
               </div>
             </div>
 
             {/* Baseline Strategy & Non-Pathological Confounders Grid */}
             <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className={`p-4 rounded-xl border ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
-                <span className={`text-xs font-mono-code uppercase tracking-wider block mb-1 font-semibold ${
-                  isDark ? 'text-emerald-400' : 'text-emerald-800'
-                }`}>
+                <span className={`text-xs font-mono-code uppercase tracking-wider block mb-1 font-semibold ${isDark ? 'text-emerald-400' : 'text-emerald-800'
+                  }`}>
                   Baseline Corridor Strategy
                 </span>
                 <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
@@ -274,9 +250,8 @@ export default function BiomarkerSuite() {
               </div>
 
               <div className={`p-4 rounded-xl border ${isDark ? 'bg-amber-950/20 border-amber-500/25' : 'bg-amber-50 border-amber-200'}`}>
-                <span className={`text-xs font-mono-code uppercase tracking-wider block mb-1 font-semibold ${
-                  isDark ? 'text-amber-300' : 'text-amber-900'
-                }`}>
+                <span className={`text-xs font-mono-code uppercase tracking-wider block mb-1 font-semibold ${isDark ? 'text-amber-300' : 'text-amber-900'
+                  }`}>
                   Measurement Confounders
                 </span>
                 <p className={`text-xs leading-relaxed ${isDark ? 'text-amber-200/90' : 'text-amber-950'}`}>
@@ -286,9 +261,8 @@ export default function BiomarkerSuite() {
             </div>
 
             {/* Footer */}
-            <div className={`mt-5 pt-4 border-t flex items-center justify-between text-xs ${
-              isDark ? 'border-white/10 text-slate-400' : 'border-slate-100 text-slate-500'
-            }`}>
+            <div className={`mt-5 pt-4 border-t flex items-center justify-between text-xs ${isDark ? 'border-white/10 text-slate-400' : 'border-slate-100 text-slate-500'
+              }`}>
               <span className={`font-serif-lux italic ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                 “A single snapshot is a riddle. A personal trajectory is an actionable story.”
               </span>

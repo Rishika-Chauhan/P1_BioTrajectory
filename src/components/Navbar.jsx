@@ -7,7 +7,9 @@ import {
   Menu,
   X,
   Sun,
-  Moon
+  Moon,
+  Camera,
+  ShieldCheck
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
@@ -19,10 +21,10 @@ export default function Navbar({ onOpenDemo, onOpenReport }) {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 25);
+      setScrolled(window.scrollY > 20);
 
       // Section spy
-      const sections = ['live-prototype', 'problem', 'biomarkers', 'clinical-rigor', 'architecture', 'pitch'];
+      const sections = ['live-prototype', 'problem', 'biomarkers'];
       const scrollPos = window.scrollY + 200;
 
       for (const sectionId of sections) {
@@ -43,23 +45,20 @@ export default function Navbar({ onOpenDemo, onOpenReport }) {
   }, []);
 
   const navLinks = [
-    { label: 'Patient Dashboard', href: '#live-prototype', id: 'live-prototype', highlight: true },
-    { label: 'Clinical Continuity', href: '#problem', id: 'problem' },
-    { label: 'Biomarkers', href: '#biomarkers', id: 'biomarkers' },
-    { label: 'Safety Governance', href: '#clinical-rigor', id: 'clinical-rigor' },
-    { label: 'Architecture', href: '#architecture', id: 'architecture' },
-    { label: 'Clinical FAQ', href: '#pitch', id: 'pitch' },
+    { label: 'Dashboard', href: '#live-prototype', id: 'live-prototype', highlight: true },
+    { label: 'Continuity & Blindspot', href: '#problem', id: 'problem' },
+    { label: 'Biomarkers Suite', href: '#biomarkers', id: 'biomarkers' },
   ];
 
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
         ? isDark
-          ? 'bg-[#05070c]/90 backdrop-blur-2xl border-b border-white/[0.08] shadow-[0_10px_35px_rgba(0,0,0,0.8)]'
-          : 'bg-[#faf9f6]/92 backdrop-blur-2xl border-b border-amber-950/10 shadow-[0_4px_25px_rgba(180,145,95,0.06)]'
+          ? 'bg-[#080d18]/92 backdrop-blur-2xl border-b border-white/[0.08] shadow-[0_4px_25px_rgba(0,0,0,0.6)]'
+          : 'bg-[#ffffff]/94 backdrop-blur-2xl border-b border-slate-200/80 shadow-[0_1px_12px_rgba(0,0,0,0.04)]'
         : isDark
-          ? 'bg-[#05070c]/70 backdrop-blur-md border-b border-white/[0.05]'
-          : 'bg-[#faf9f6]/85 backdrop-blur-md border-b border-amber-900/5'
+          ? 'bg-[#080d18]/75 backdrop-blur-md border-b border-white/[0.05]'
+          : 'bg-[#faf8ff]/85 backdrop-blur-md border-b border-slate-200/60'
         }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -71,36 +70,44 @@ export default function Navbar({ onOpenDemo, onOpenReport }) {
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
             <div
-              className={`relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300 ${isDark
-                ? 'bg-gradient-to-br from-amber-500/20 via-slate-900 to-[#05070c] border border-amber-400/30 group-hover:border-amber-400/60 shadow-[0_0_20px_rgba(245,158,11,0.15)]'
-                : 'bg-gradient-to-br from-amber-100 via-amber-50 to-white border border-amber-300 group-hover:border-amber-400 shadow-[0_4px_15px_rgba(180,145,95,0.15)]'
+              className={`relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300 shadow-sm ${isDark
+                ? 'bg-gradient-to-br from-[#008378]/30 via-slate-900 to-[#080d18] border border-[#008378]/40 group-hover:border-[#008378]/70 shadow-[0_0_15px_rgba(0,131,120,0.2)]'
+                : 'bg-gradient-to-br from-[#00685f] to-[#008378] text-white border border-[#00685f]/20 shadow-[0_2px_10px_rgba(0,104,95,0.2)]'
                 }`}
             >
-              <Activity className={`w-4 h-4 ${isDark ? 'text-amber-400' : 'text-amber-700'} animate-pulse`} />
-              <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-inherit"></div>
+              <Activity className={`w-5 h-5 ${isDark ? 'text-teal-400' : 'text-white'}`} />
+              <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-inherit"></div>
             </div>
 
             <div>
               <div className="flex items-center space-x-2">
-                <span className={`font-cinzel text-lg sm:text-xl font-bold tracking-wider ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  BIO<span className={isDark ? 'text-amber-400' : 'text-amber-700'}>TRAJECTORY</span>
+                <span className={`font-sans text-lg sm:text-xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-[#131b2e]'}`}>
+                  Bio<span className={isDark ? 'text-teal-400' : 'text-[#00685f]'}>Trajectory</span>
                 </span>
                 <span
-                  className={`text-[9px] uppercase font-mono-code font-bold tracking-wider px-2 py-0.5 rounded-full border ${isDark
-                    ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
-                    : 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                  className={`text-[10px] font-sans font-semibold tracking-wide px-2 py-0.5 rounded-full border ${isDark
+                    ? 'bg-teal-500/10 text-teal-300 border-teal-500/30'
+                    : 'bg-[#f2f3ff] text-[#00685f] border-[#dae2fd]'
                     }`}
                 >
-                  PGHD Platform
+                  Preventive Baseline Engine
                 </span>
               </div>
-              <p className={`text-[10px] font-mono-code tracking-wide hidden sm:block ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              <p className={`text-[11px] font-sans tracking-tight hidden sm:block ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                 Longitudinal Biomarker Intelligence
               </p>
             </div>
           </div>
 
-          {/* Center Navigation Links (Clean & Professional) */}
+          {/* Center Personal Baseline Status Pill (from Stitch design) */}
+          <div className="hidden xl:flex items-center gap-2 bg-slate-100/80 dark:bg-slate-900/60 border border-slate-200/70 dark:border-white/10 px-3.5 py-1.5 rounded-full shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className={`text-xs font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+              Personal Baseline: <strong className="text-emerald-600 dark:text-emerald-400">42 Days Active</strong> · Stable
+            </span>
+          </div>
+
+          {/* Center Navigation Links (Clean Precision Humanism) */}
           <nav className="hidden lg:flex items-center space-x-1">
             {navLinks.map((item) => {
               const isActive = activeSection === item.id;
@@ -108,21 +115,21 @@ export default function Navbar({ onOpenDemo, onOpenReport }) {
                 <a
                   key={item.label}
                   href={item.href}
-                  className={`relative px-3 py-1.5 rounded-lg text-xs font-mono-code uppercase tracking-wider transition-all duration-200 ${item.highlight
+                  className={`relative px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all duration-200 ${item.highlight
                     ? isDark
-                      ? 'text-amber-300 font-bold bg-amber-400/10 border border-amber-400/30 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
-                      : 'text-amber-900 font-bold bg-amber-100 border border-amber-300 shadow-xs'
+                      ? 'text-teal-300 font-bold bg-teal-500/10 border border-teal-500/30 shadow-[0_0_15px_rgba(0,131,120,0.15)]'
+                      : 'text-[#00685f] font-bold bg-[#f2f3ff] border border-[#dae2fd] shadow-xs'
                     : isActive
                       ? isDark
                         ? 'text-white font-bold bg-white/10'
-                        : 'text-slate-900 font-bold bg-slate-200/80'
+                        : 'text-slate-900 font-bold bg-slate-200/70'
                       : isDark
                         ? 'text-slate-400 hover:text-white hover:bg-white/5'
                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
                     }`}
                 >
-                  <span className="flex items-center space-x-1">
-                    {item.highlight && <Sparkles className="w-3 h-3 text-amber-500" />}
+                  <span className="flex items-center space-x-1.5">
+                    {item.highlight && <Sparkles className="w-3 h-3 text-teal-500" />}
                     <span>{item.label}</span>
                   </span>
                 </a>
@@ -137,8 +144,8 @@ export default function Navbar({ onOpenDemo, onOpenReport }) {
             <button
               onClick={toggleTheme}
               className={`p-2 rounded-xl border transition-all flex items-center justify-center ${isDark
-                ? 'border-white/10 text-amber-300 bg-slate-900/80 hover:bg-slate-800 hover:border-amber-400/40 shadow-xs'
-                : 'border-slate-300 text-amber-800 bg-white hover:bg-amber-50 shadow-xs'
+                ? 'border-white/10 text-teal-300 bg-slate-900/80 hover:bg-slate-800 hover:border-teal-400/40 shadow-xs'
+                : 'border-slate-200 text-[#00685f] bg-white hover:bg-slate-50 shadow-xs'
                 }`}
               title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
             >
@@ -148,25 +155,25 @@ export default function Navbar({ onOpenDemo, onOpenReport }) {
             {/* Clinician Brief Button */}
             <button
               onClick={onOpenReport}
-              className={`text-xs font-mono-code uppercase font-semibold tracking-wider px-3 py-2 rounded-xl border transition-all flex items-center space-x-1.5 ${isDark
-                ? 'border-white/10 hover:border-amber-400/40 text-slate-300 hover:text-white bg-slate-900/60 hover:bg-slate-800'
-                : 'border-slate-300 hover:border-amber-500 text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 shadow-xs'
+              className={`text-xs font-semibold tracking-wide px-3 py-2 rounded-xl border transition-all flex items-center space-x-1.5 ${isDark
+                ? 'border-white/10 hover:border-teal-400/40 text-slate-300 hover:text-white bg-slate-900/60 hover:bg-slate-800'
+                : 'border-slate-200 hover:border-[#00685f] text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 shadow-xs'
                 }`}
             >
-              <FileText className={`w-3.5 h-3.5 ${isDark ? 'text-amber-400' : 'text-amber-700'}`} />
-              <span>Clinician Brief</span>
+              <FileText className={`w-3.5 h-3.5 ${isDark ? 'text-teal-400' : 'text-[#00685f]'}`} />
+              <span>Export Doctor Packet</span>
             </button>
 
-            {/* Launch Interactive Prototype CTA */}
+            {/* Launch Interactive Strip Scan CTA */}
             <button
               onClick={onOpenDemo}
-              className={`group text-xs font-mono-code uppercase font-bold tracking-wider px-3.5 py-2 rounded-xl transition-all duration-300 flex items-center space-x-1.5 shadow-md ${isDark
-                ? 'bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-slate-950 shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:shadow-[0_0_30px_rgba(245,158,11,0.5)]'
-                : 'bg-gradient-to-r from-amber-700 via-amber-800 to-amber-900 text-white shadow-[0_4px_15px_rgba(180,145,95,0.3)] hover:shadow-[0_6px_20px_rgba(180,145,95,0.45)]'
+              className={`group text-xs font-bold tracking-wide px-4 py-2 rounded-xl transition-all duration-300 flex items-center space-x-2 shadow-sm ${isDark
+                ? 'bg-gradient-to-r from-teal-500 to-cyan-600 text-white shadow-[0_0_20px_rgba(0,131,120,0.3)] hover:shadow-[0_0_30px_rgba(0,131,120,0.5)]'
+                : 'bg-[#00685f] hover:bg-[#008378] text-white shadow-md shadow-[#00685f]/20 hover:shadow-lg'
                 }`}
             >
-              <Activity className="w-3.5 h-3.5" />
-              <span>Telemetry Console</span>
+              <Camera className="w-3.5 h-3.5" />
+              <span>+ Log Strip Scan</span>
               <ChevronRight className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform" />
             </button>
           </div>
@@ -175,7 +182,7 @@ export default function Navbar({ onOpenDemo, onOpenReport }) {
           <div className="lg:hidden flex items-center space-x-2">
             <button
               onClick={toggleTheme}
-              className={`p-2 rounded-xl border ${isDark ? 'border-white/10 text-amber-300 bg-slate-900' : 'border-slate-300 text-amber-800 bg-white'
+              className={`p-2 rounded-xl border ${isDark ? 'border-white/10 text-teal-300 bg-slate-900' : 'border-slate-200 text-[#00685f] bg-white'
                 }`}
             >
               {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -183,7 +190,7 @@ export default function Navbar({ onOpenDemo, onOpenReport }) {
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`p-2 rounded-xl border ${isDark ? 'border-white/10 text-slate-300 bg-slate-900' : 'border-slate-300 text-slate-700 bg-white'
+              className={`p-2 rounded-xl border ${isDark ? 'border-white/10 text-slate-300 bg-slate-900' : 'border-slate-200 text-slate-700 bg-white'
                 }`}
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -195,15 +202,15 @@ export default function Navbar({ onOpenDemo, onOpenReport }) {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className={`lg:hidden px-5 pt-3 pb-6 space-y-2 border-b animate-fadeIn ${isDark ? 'bg-[#090e18]/95 backdrop-blur-2xl border-white/10' : 'bg-white/95 backdrop-blur-2xl border-slate-200 shadow-2xl'
+        <div className={`lg:hidden px-5 pt-3 pb-6 space-y-2 border-b animate-fadeIn ${isDark ? 'bg-[#080d18]/95 backdrop-blur-2xl border-white/10' : 'bg-white/95 backdrop-blur-2xl border-slate-200 shadow-2xl'
           }`}>
           {navLinks.map((item) => (
             <a
               key={item.label}
               href={item.href}
               onClick={() => setMobileMenuOpen(false)}
-              className={`block py-2.5 px-3 rounded-lg text-xs font-mono-code uppercase tracking-wider transition-colors ${item.highlight
-                ? isDark ? 'text-amber-300 bg-amber-400/10 font-bold' : 'text-amber-900 bg-amber-100 font-bold'
+              className={`block py-2.5 px-3 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors ${item.highlight
+                ? isDark ? 'text-teal-300 bg-teal-400/10 font-bold' : 'text-[#00685f] bg-teal-50 font-bold'
                 : isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
                 }`}
             >
@@ -217,11 +224,11 @@ export default function Navbar({ onOpenDemo, onOpenReport }) {
                 setMobileMenuOpen(false);
                 onOpenReport();
               }}
-              className={`w-full py-2.5 rounded-xl border text-xs font-mono-code uppercase font-semibold flex items-center justify-center space-x-2 ${isDark ? 'border-white/10 text-slate-200 bg-slate-800' : 'border-slate-300 text-slate-800 bg-slate-50'
+              className={`w-full py-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center space-x-2 ${isDark ? 'border-white/10 text-slate-200 bg-slate-800' : 'border-slate-200 text-slate-800 bg-slate-50'
                 }`}
             >
-              <FileText className="w-4 h-4 text-amber-500" />
-              <span>Clinician Summary PDF</span>
+              <FileText className="w-4 h-4 text-teal-500" />
+              <span>Export Doctor Packet</span>
             </button>
 
             <button
@@ -229,10 +236,10 @@ export default function Navbar({ onOpenDemo, onOpenReport }) {
                 setMobileMenuOpen(false);
                 onOpenDemo();
               }}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800 text-white text-xs font-mono-code font-bold uppercase tracking-wider flex items-center justify-center space-x-2 shadow-md"
+              className="w-full py-3 rounded-xl bg-[#00685f] text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center space-x-2 shadow-md"
             >
-              <Activity className="w-4 h-4" />
-              <span>Open Telemetry Console</span>
+              <Camera className="w-4 h-4" />
+              <span>+ Log Strip Scan</span>
             </button>
           </div>
         </div>

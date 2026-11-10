@@ -140,57 +140,50 @@ export default function AttractiveLineChart({
   const activeHoverData = hoveredIdx !== null ? activeData[hoveredIdx] : null;
 
   return (
-    <div className={`p-6 sm:p-8 rounded-3xl border shadow-xl relative overflow-hidden transition-all ${
-      isDark ? 'bg-[#090e18] border-amber-400/25' : 'bg-white border-amber-900/10'
-    }`}>
+    <div className={`p-6 sm:p-7 rounded-xl border shadow-xs relative overflow-hidden transition-all ${isDark ? 'bg-[#0d1526] border-slate-800' : 'bg-white border-[#e2e8f0]'
+      }`}>
       {/* Top Header & Interactive Stream Controls */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-inherit">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-inherit">
         <div>
           <div className="flex items-center space-x-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className={`text-xs font-mono-code font-bold uppercase tracking-wider ${
-              isDark ? 'text-amber-300' : 'text-amber-800'
-            }`}>
-              Multi-Stream Longitudinal Telemetry Canvas
+            <span className="w-2 h-2 rounded-full bg-[#00685f] animate-pulse"></span>
+            <span className="text-[11px] font-sans font-bold uppercase tracking-wider text-[#00685f] dark:text-[#6bd8cb]">
+              Cross-Modal Telemetry Synchronization
             </span>
           </div>
-          <h3 className={`font-cinzel text-xl sm:text-2xl font-bold mt-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+          <h3 className={`font-sans text-xl font-bold mt-1 ${isDark ? 'text-white' : 'text-[#131b2e]'}`}>
             Cross-Modal Urinalysis & Bluetooth Biometric Curves
           </h3>
         </div>
 
         {/* Display Mode Selector */}
         <div className="flex flex-wrap items-center gap-2">
-          <div className={`inline-flex p-1 rounded-xl border text-xs font-mono-code ${
-            isDark ? 'bg-slate-950 border-white/10' : 'bg-slate-100 border-slate-200'
-          }`}>
+          <div className={`inline-flex p-1 rounded-lg border text-xs font-sans ${isDark ? 'bg-[#070b14] border-slate-800' : 'bg-slate-100 border-slate-200'
+            }`}>
             <button
               onClick={() => setDisplayMode('overlay')}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
-                displayMode === 'overlay'
-                  ? isDark ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-amber-700 text-white font-bold'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
+              className={`px-3 py-1.5 rounded-md font-semibold transition-all ${displayMode === 'overlay'
+                  ? 'bg-[#00685f] text-white shadow-xs font-bold'
+                  : 'text-slate-400 hover:text-white'
+                }`}
             >
               Dual Multi-Stream Overlay
             </button>
             <button
               onClick={() => setDisplayMode('biomarker')}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
-                displayMode === 'biomarker'
-                  ? isDark ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-amber-700 text-white font-bold'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
+              className={`px-3 py-1.5 rounded-md font-semibold transition-all ${displayMode === 'biomarker'
+                  ? 'bg-[#00685f] text-white shadow-xs font-bold'
+                  : 'text-slate-400 hover:text-white'
+                }`}
             >
               Strip Reagent Only
             </button>
             <button
               onClick={() => setDisplayMode('bluetooth')}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
-                displayMode === 'bluetooth'
-                  ? isDark ? 'bg-blue-500 text-white font-bold' : 'bg-blue-600 text-white font-bold'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
+              className={`px-3 py-1.5 rounded-md font-semibold transition-all ${displayMode === 'bluetooth'
+                  ? 'bg-[#00687a] text-white shadow-xs font-bold'
+                  : 'text-slate-400 hover:text-white'
+                }`}
             >
               Bluetooth Telemetry Only
             </button>
@@ -198,18 +191,16 @@ export default function AttractiveLineChart({
 
           {/* Time range switcher */}
           {setTimeRange && (
-            <div className={`inline-flex p-1 rounded-xl border text-xs font-mono-code ${
-              isDark ? 'bg-slate-950 border-white/10' : 'bg-slate-100 border-slate-200'
-            }`}>
+            <div className={`inline-flex p-1 rounded-xl border text-xs font-mono-code ${isDark ? 'bg-slate-950 border-white/10' : 'bg-slate-100 border-slate-200'
+              }`}>
               {[7, 14, 30].map((r) => (
                 <button
                   key={r}
                   onClick={() => setTimeRange(r)}
-                  className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
-                    timeRange === r
+                  className={`px-2.5 py-1 rounded-lg font-bold transition-all ${timeRange === r
                       ? isDark ? 'bg-white/20 text-white' : 'bg-white text-slate-900 shadow-xs'
                       : 'text-slate-400 hover:text-slate-200'
-                  }`}
+                    }`}
                 >
                   {r}D
                 </button>
@@ -228,11 +219,10 @@ export default function AttractiveLineChart({
             <button
               key={bio.id}
               onClick={() => onSelectBiomarker && onSelectBiomarker(bio.id)}
-              className={`px-2.5 py-1 rounded-lg border transition-all ${
-                selectedBiomarker === bio.id
+              className={`px-2.5 py-1 rounded-lg border transition-all ${selectedBiomarker === bio.id
                   ? isDark ? 'bg-amber-400/20 text-amber-300 border-amber-400/60 font-bold' : 'bg-amber-100 text-amber-900 border-amber-400 font-bold'
                   : isDark ? 'bg-slate-900 text-slate-400 border-white/5 hover:text-white' : 'bg-slate-50 text-slate-600 border-slate-200'
-              }`}
+                }`}
             >
               {bio.shortName} ({bio.name})
             </button>
@@ -249,11 +239,10 @@ export default function AttractiveLineChart({
             <button
               key={key}
               onClick={() => onSelectBleMetric && onSelectBleMetric(key)}
-              className={`px-2.5 py-1 rounded-lg border transition-all ${
-                selectedBleMetric === key
+              className={`px-2.5 py-1 rounded-lg border transition-all ${selectedBleMetric === key
                   ? 'bg-blue-500/20 text-blue-400 border-blue-400/60 font-bold'
                   : isDark ? 'bg-slate-900 text-slate-400 border-white/5 hover:text-white' : 'bg-slate-50 text-slate-600 border-slate-200'
-              }`}
+                }`}
             >
               {cfg.shortLabel}
             </button>
@@ -271,8 +260,8 @@ export default function AttractiveLineChart({
           <defs>
             {/* Shaded Area Gradients */}
             <linearGradient id="bioGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.32" />
-              <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.0" />
+              <stop offset="0%" stopColor="#00685f" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="#00685f" stopOpacity="0.0" />
             </linearGradient>
 
             <linearGradient id="bleGradient" x1="0" y1="0" x2="0" y2="1">
@@ -282,7 +271,7 @@ export default function AttractiveLineChart({
 
             {/* Glowing Line Drop Shadow */}
             <filter id="glowBio" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#f59e0b" floodOpacity="0.45" />
+              <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#00685f" floodOpacity="0.45" />
             </filter>
             <filter id="glowBle" x="-20%" y="-20%" width="140%" height="140%">
               <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor={bleMeta.color} floodOpacity="0.4" />
@@ -313,16 +302,16 @@ export default function AttractiveLineChart({
                 y={corridorTop}
                 width={width - pad.left - pad.right}
                 height={corridorHeight}
-                fill="rgba(16, 185, 129, 0.12)"
-                stroke="rgba(16, 185, 129, 0.35)"
+                fill="rgba(0, 105, 71, 0.12)"
+                stroke="rgba(0, 105, 71, 0.35)"
                 strokeDasharray="2 2"
               />
               <text
                 x={pad.left + 8}
                 y={corridorTop + 13}
-                fill="#10b981"
+                fill="#006947"
                 fontSize="9"
-                fontFamily="monospace"
+                fontFamily="sans-serif"
                 fontWeight="bold"
               >
                 10-Session Baseline Corridor [{bioMeta.baselineMin} – {bioMeta.baselineMax} {bioMeta.unit}]
@@ -337,7 +326,7 @@ export default function AttractiveLineChart({
               <path
                 d={bioPath}
                 fill="none"
-                stroke="#f59e0b"
+                stroke="#00685f"
                 strokeWidth="2.8"
                 strokeLinecap="round"
                 filter="url(#glowBio)"
@@ -476,9 +465,8 @@ export default function AttractiveLineChart({
         {/* Floating Scrubber HUD Tooltip */}
         {activeHoverData && (
           <div
-            className={`absolute top-4 left-1/2 -translate-x-1/2 p-3.5 rounded-2xl border shadow-2xl backdrop-blur-xl z-30 transition-all font-mono-code text-xs pointer-events-none ${
-              isDark ? 'bg-slate-950/95 border-amber-400/40 text-slate-200' : 'bg-white/95 border-amber-500/40 text-slate-800'
-            }`}
+            className={`absolute top-4 left-1/2 -translate-x-1/2 p-3.5 rounded-2xl border shadow-2xl backdrop-blur-xl z-30 transition-all font-mono-code text-xs pointer-events-none ${isDark ? 'bg-slate-950/95 border-amber-400/40 text-slate-200' : 'bg-white/95 border-amber-500/40 text-slate-800'
+              }`}
           >
             <div className="flex items-center justify-between gap-6 pb-2 border-b border-inherit mb-2">
               <span className="font-bold text-amber-500">

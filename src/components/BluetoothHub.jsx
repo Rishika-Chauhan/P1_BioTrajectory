@@ -187,38 +187,35 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
   };
 
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="space-y-5 animate-fadeIn">
       {/* Top Controller Bar */}
-      <div className={`p-6 rounded-2xl border flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg ${isDark ? 'bg-[#090e18] border-amber-400/20' : 'bg-white border-amber-900/10'
+      <div className={`p-6 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs ${isDark ? 'bg-[#0d1526] border-slate-800' : 'bg-white border-[#e2e8f0]'
         }`}>
         <div>
           <div className="flex items-center space-x-2 mb-1">
-            <div className="w-7 h-7 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-500 flex items-center justify-center">
-              <Bluetooth className="w-4 h-4 animate-pulse" />
+            <div className="w-6 h-6 rounded-md bg-[#00687a]/10 text-[#00687a] dark:text-[#57dffe] flex items-center justify-center">
+              <Bluetooth className="w-3.5 h-3.5 animate-pulse" />
             </div>
-            <h3 className={`font-cinzel text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+            <h3 className={`font-sans text-lg font-bold ${isDark ? 'text-white' : 'text-[#131b2e]'}`}>
               Connected Bluetooth Health Sensors Hub
             </h3>
-            <span className={`text-[10px] font-mono-code font-bold uppercase px-2 py-0.5 rounded-full border ${isDark ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30' : 'bg-emerald-50 text-emerald-800 border-emerald-300'
-              }`}>
+            <span className="text-[11px] font-sans font-semibold px-2.5 py-0.5 rounded-full bg-[#006947]/10 text-[#006947] dark:text-[#6ffbbe]">
               {devices.filter((d) => d.status === 'connected').length} Active Sensors
             </span>
           </div>
-          <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-            Retrieve continuous biometric streams (Dexcom CGM, Omron BP, WHOOP) directly via Web Bluetooth API GATT services.
+          <p className={`text-xs font-sans ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            Retrieve continuous biometric streams (Dexcom CGM, Omron BP, Apple Watch) directly via Web Bluetooth API GATT services.
           </p>
         </div>
 
         {/* Pairing Actions */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           <button
             onClick={handleScanBluetooth}
             disabled={isScanning}
-            className={`px-4 py-2.5 rounded-xl text-xs font-mono-code font-bold uppercase tracking-wider flex items-center space-x-2 transition-all shadow-md ${isScanning
-                ? 'bg-blue-600/50 text-white cursor-wait'
-                : isDark
-                  ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:scale-105'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white hover:scale-105'
+            className={`px-3.5 py-2 rounded-lg text-xs font-sans font-bold uppercase tracking-wider flex items-center space-x-1.5 transition-all shadow-xs ${isScanning
+                ? 'bg-[#00687a]/50 text-white cursor-wait'
+                : 'bg-[#00687a] hover:bg-[#00505f] text-white'
               }`}
           >
             <Radio className={`w-3.5 h-3.5 ${isScanning ? 'animate-spin' : ''}`} />
@@ -233,12 +230,12 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
                   confetti({ particleCount: 30, spread: 45, origin: { y: 0.7 } });
                 } catch (e) { }
               }}
-              className={`px-4 py-2.5 rounded-xl text-xs font-mono-code font-semibold uppercase tracking-wider border flex items-center space-x-2 transition-all ${isDark
-                  ? 'bg-slate-900 border-white/10 hover:border-amber-400/40 text-slate-200'
-                  : 'bg-slate-50 border-slate-300 hover:bg-white text-slate-700 shadow-xs'
+              className={`px-3.5 py-2 rounded-lg text-xs font-sans font-semibold uppercase tracking-wider border flex items-center space-x-1.5 transition-all ${isDark
+                  ? 'bg-slate-900 border-slate-800 hover:bg-slate-800 text-slate-200'
+                  : 'bg-slate-100 border-slate-200 hover:bg-slate-200 text-slate-700 shadow-xs'
                 }`}
             >
-              <RefreshCw className="w-3.5 h-3.5 text-amber-500" />
+              <RefreshCw className="w-3.5 h-3.5 text-[#00685f]" />
               <span>Sync All to Timeline</span>
             </button>
           )}
@@ -248,8 +245,8 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
       {/* Real-time scan banner alert */}
       {scanMessage && (
         <div className={`p-3.5 rounded-xl border text-xs flex items-center space-x-2.5 animate-fadeIn ${isScanning
-            ? isDark ? 'bg-blue-950/40 border-blue-500/40 text-blue-200' : 'bg-blue-50 border-blue-300 text-blue-900'
-            : isDark ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200' : 'bg-emerald-50 border-emerald-300 text-emerald-900'
+          ? isDark ? 'bg-blue-950/40 border-blue-500/40 text-blue-200' : 'bg-blue-50 border-blue-300 text-blue-900'
+          : isDark ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200' : 'bg-emerald-50 border-emerald-300 text-emerald-900'
           }`}>
           <Radio className="w-4 h-4 shrink-0 animate-pulse text-blue-400" />
           <span className="font-mono-code">{scanMessage}</span>
@@ -274,8 +271,8 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
                 key={f.id}
                 onClick={() => setActiveTab(f.id)}
                 className={`px-3 py-1.5 rounded-lg transition-all ${activeTab === f.id
-                    ? isDark ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-amber-700 text-white font-bold'
-                    : isDark ? 'bg-slate-900/80 text-slate-400 hover:text-white' : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
+                  ? isDark ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-amber-700 text-white font-bold'
+                  : isDark ? 'bg-slate-900/80 text-slate-400 hover:text-white' : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
                   }`}
               >
                 {f.label}
@@ -294,12 +291,12 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
                   key={device.id}
                   onClick={() => setSelectedDevice(device)}
                   className={`p-5 rounded-2xl border cursor-pointer transition-all duration-300 flex flex-col justify-between ${isSelected
-                      ? isDark
-                        ? 'bg-gradient-to-b from-[#11192e] to-[#090e18] border-amber-400 shadow-[0_10px_30px_rgba(245,158,11,0.15)] ring-1 ring-amber-400/40'
-                        : 'bg-white border-amber-500 shadow-md ring-1 ring-amber-400/50'
-                      : isDark
-                        ? 'bg-[#090e18]/80 border-white/10 hover:border-white/20'
-                        : 'bg-white border-slate-200 hover:border-amber-300 shadow-xs'
+                    ? isDark
+                      ? 'bg-gradient-to-b from-[#11192e] to-[#090e18] border-amber-400 shadow-[0_10px_30px_rgba(245,158,11,0.15)] ring-1 ring-amber-400/40'
+                      : 'bg-white border-amber-500 shadow-md ring-1 ring-amber-400/50'
+                    : isDark
+                      ? 'bg-[#090e18]/80 border-white/10 hover:border-white/20'
+                      : 'bg-white border-slate-200 hover:border-amber-300 shadow-xs'
                     }`}
                 >
                   <div>
@@ -395,8 +392,8 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
                         handleToggleConnection(device.id);
                       }}
                       className={`text-[11px] px-2.5 py-1 rounded transition-colors ${isConn
-                          ? 'bg-rose-500/10 text-rose-400 hover:bg-rose-500/20'
-                          : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
+                        ? 'bg-rose-500/10 text-rose-400 hover:bg-rose-500/20'
+                        : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
                         }`}
                     >
                       {isConn ? 'Disconnect' : 'Connect'}
