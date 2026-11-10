@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { X, CheckCircle, Plus, Sparkles, AlertCircle } from 'lucide-react';
+import { X, CheckCircle, AlertCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useTheme } from '../context/ThemeContext';
 
-export default function ManualEntryModal({ isOpen, onClose, onAddReading }) {
+export default function ManualEntryModal({ isOpen, onClose, onSave, onAddReading }) {
   const { isDark } = useTheme();
 
   const [form, setForm] = useState({
@@ -13,6 +13,8 @@ export default function ManualEntryModal({ isOpen, onClose, onAddReading }) {
     glucose: 0,
     leukocytes: 0,
     ketones: 0,
+    nitrite: 0,
+    blood: 0,
     sampleType: 'First morning',
     notes: 'Routine test session. Well-hydrated.'
   });
@@ -30,13 +32,18 @@ export default function ManualEntryModal({ isOpen, onClose, onAddReading }) {
       glucose: Number(form.glucose),
       leukocytes: Number(form.leukocytes),
       ketones: Number(form.ketones),
+      nitrite: Number(form.nitrite || 0),
+      blood: Number(form.blood || 0),
       sampleType: form.sampleType,
       notes: form.notes,
       confirmed: true,
       flagged: Number(form.protein) > 20
     };
 
-    onAddReading(newEntry);
+    const callback = onSave || onAddReading;
+    if (callback) {
+      callback(newEntry);
+    }
 
     try {
       confetti({
@@ -63,7 +70,7 @@ export default function ManualEntryModal({ isOpen, onClose, onAddReading }) {
           <div className="flex items-center space-x-2">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
             <h3 className={`font-cinzel text-base font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-              Manual Test Strip Log (Slide 3 & 5)
+              Manual Reagent Strip Entry & Audit Log
             </h3>
           </div>
           <button

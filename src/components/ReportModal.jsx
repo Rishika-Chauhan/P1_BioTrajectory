@@ -59,7 +59,7 @@ export default function ReportModal({ isOpen, onClose }) {
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
             <span className={`text-xs font-mono-code uppercase font-semibold ${isDark ? 'text-amber-300' : 'text-amber-800'
               }`}>
-              Official Patient Longitudinal Clinician Brief (PDF §7 & §21)
+              Official Patient Longitudinal Clinician Brief
             </span>
 
             {/* Persona Switcher in Modal */}
@@ -261,11 +261,11 @@ export default function ReportModal({ isOpen, onClose }) {
             </ul>
           </div>
 
-          {/* Non-Diagnostic Clinical Boundary Disclaimer (PDF Section 12) */}
+          {/* Non-Diagnostic Clinical Boundary Disclaimer */}
           <div className={`p-4 rounded-xl border text-[10px] leading-relaxed mb-6 ${isDark ? 'bg-slate-950 border-amber-400/20 text-slate-400' : 'bg-amber-50/70 border-amber-200 text-slate-600'
             }`}>
             <strong className={`block mb-1 ${isDark ? 'text-amber-300' : 'text-amber-900'}`}>
-              CLINICAL SCOPE & LEGAL BOUNDARY NOTICE (PDF SECTION 12 & APPENDIX):
+              CLINICAL SCOPE & REGULATORY BOUNDARY NOTICE:
             </strong>
             This summary is an informational document compiled from patient-recorded urine test strips. It does not constitute a clinical laboratory diagnosis, medical decision, treatment prescription, or triage protocol. Real-world medical symptoms and clinician advice take absolute priority over any app reading.
           </div>

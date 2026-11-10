@@ -91,31 +91,26 @@ const padsRGB = wasmCV.extractPads(cameraFrame);
   ];
 
   return (
-    <section className={`relative py-28 transition-colors border-t ${
-      isDark ? 'bg-[#070b14] border-white/5' : 'bg-[#f4efe8]/50 border-amber-900/10'
-    }`} id="stack">
+    <section className={`relative py-28 transition-colors border-t ${isDark ? 'bg-[#070b14] border-white/5' : 'bg-[#f4efe8]/50 border-amber-900/10'
+      }`} id="stack">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Editorial Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className={`inline-flex items-center space-x-2 px-3.5 py-1 rounded-full border text-xs font-mono-code uppercase tracking-widest mb-4 ${
-            isDark ? 'bg-indigo-500/10 border-indigo-500/25 text-indigo-300' : 'bg-indigo-50 border-indigo-300 text-indigo-900 shadow-xs'
-          }`}>
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-            <span>Technology Stack • PDF Slide 6</span>
+
+        {/* Architecture & Engineering Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 pb-6 border-b border-inherit">
+          <div className="max-w-2xl">
+            <span className={`text-[11px] font-mono-code uppercase tracking-wider font-bold block mb-2 ${isDark ? 'text-indigo-400' : 'text-indigo-700'}`}>
+              Deterministic Engineering & Privacy Stacks
+            </span>
+            <h2 className={`font-cinzel text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              Platform Architecture & Verifiable Code Stacks
+            </h2>
+            <p className={`mt-2 text-sm leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+              Engineered with zero raw-image transmission, client-side WebAssembly colorimetry, rolling IQR persistence, and grounded Gemini 3.8 Flash synthesis.
+            </p>
           </div>
-
-          <h2 className={`font-cinzel text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight ${
-            isDark ? 'text-white' : 'text-slate-900'
-          }`}>
-            Built With
-          </h2>
-
-          <p className={`mt-4 text-base sm:text-lg font-light leading-relaxed ${
-            isDark ? 'text-slate-400' : 'text-slate-600'
-          }`}>
-            Modern, verifiable, deterministic engineering. Every tier designed for privacy, clinical transparency, and high performance.
-          </p>
+          <div className={`text-xs font-mono-code px-3.5 py-1.5 rounded-xl border shrink-0 ${isDark ? 'bg-slate-900 border-white/10 text-indigo-300' : 'bg-white border-slate-200 text-indigo-900 shadow-xs'}`}>
+            Click any component to inspect implementation
+          </div>
         </div>
 
         {/* 8-Card Tech Grid */}
@@ -127,50 +122,44 @@ const padsRGB = wasmCV.extractPads(cameraFrame);
               <div
                 key={item.category}
                 onClick={() => setActiveStackIndex(idx)}
-                className={`p-5 rounded-2xl border cursor-pointer transition-all duration-200 flex flex-col justify-between ${
-                  isSelected
-                    ? isDark
-                      ? 'bg-[#11192e] border-amber-400 shadow-[0_10px_30px_rgba(217,119,6,0.15)] ring-1 ring-amber-400/40'
-                      : 'bg-white border-amber-500 shadow-[0_10px_25px_rgba(180,145,95,0.1)] ring-1 ring-amber-400/60'
-                    : isDark
+                className={`p-5 rounded-2xl border cursor-pointer transition-all duration-200 flex flex-col justify-between ${isSelected
+                  ? isDark
+                    ? 'bg-[#11192e] border-amber-400 shadow-[0_10px_30px_rgba(217,119,6,0.15)] ring-1 ring-amber-400/40'
+                    : 'bg-white border-amber-500 shadow-[0_10px_25px_rgba(180,145,95,0.1)] ring-1 ring-amber-400/60'
+                  : isDark
                     ? 'bg-[#090e18] border-white/5 hover:border-white/15'
                     : 'bg-white border-slate-200 hover:border-amber-300 shadow-xs'
-                }`}
+                  }`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <span className={`text-[10px] font-mono-code uppercase font-bold tracking-wider ${
-                      isSelected
-                        ? isDark ? 'text-amber-300' : 'text-amber-700'
-                        : isDark ? 'text-slate-500' : 'text-slate-400'
-                    }`}>
+                    <span className={`text-[10px] font-mono-code uppercase font-bold tracking-wider ${isSelected
+                      ? isDark ? 'text-amber-300' : 'text-amber-700'
+                      : isDark ? 'text-slate-500' : 'text-slate-400'
+                      }`}>
                       {item.category}
                     </span>
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${
-                      isSelected
-                        ? isDark ? 'bg-amber-400 text-slate-950 border-amber-300' : 'bg-amber-700 text-white border-amber-800'
-                        : isDark ? 'bg-slate-900 text-slate-400 border-white/5' : 'bg-slate-50 text-slate-600 border-slate-200'
-                    }`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${isSelected
+                      ? isDark ? 'bg-amber-400 text-slate-950 border-amber-300' : 'bg-amber-700 text-white border-amber-800'
+                      : isDark ? 'bg-slate-900 text-slate-400 border-white/5' : 'bg-slate-50 text-slate-600 border-slate-200'
+                      }`}>
                       <Icon className="w-4 h-4" />
                     </div>
                   </div>
 
-                  <h4 className={`font-cinzel text-base font-bold mb-1 ${
-                    isDark ? 'text-white' : 'text-slate-900'
-                  }`}>
+                  <h4 className={`font-cinzel text-base font-bold mb-1 ${isDark ? 'text-white' : 'text-slate-900'
+                    }`}>
                     {item.title}
                   </h4>
 
-                  <p className={`text-xs leading-snug ${
-                    isDark ? 'text-slate-300' : 'text-slate-600'
-                  }`}>
+                  <p className={`text-xs leading-snug ${isDark ? 'text-slate-300' : 'text-slate-600'
+                    }`}>
                     {item.description}
                   </p>
                 </div>
 
-                <div className={`mt-4 pt-2 border-t text-[10px] font-mono-code flex items-center justify-between ${
-                  isDark ? 'border-white/5 text-amber-300/80' : 'border-slate-100 text-amber-900/80'
-                }`}>
+                <div className={`mt-4 pt-2 border-t text-[10px] font-mono-code flex items-center justify-between ${isDark ? 'border-white/5 text-amber-300/80' : 'border-slate-100 text-amber-900/80'
+                  }`}>
                   <span>{isSelected ? 'Inspecting code' : 'Click to inspect'}</span>
                   <Code className="w-3 h-3" />
                 </div>
@@ -180,23 +169,20 @@ const padsRGB = wasmCV.extractPads(cameraFrame);
         </div>
 
         {/* Live Code / Implementation Inspector */}
-        <div className={`rounded-2xl border p-6 sm:p-8 mb-14 shadow-xl ${
-          isDark ? 'bg-[#090e18] border-white/10' : 'bg-white border-amber-900/10 shadow-[0_10px_35px_rgba(0,0,0,0.04)]'
-        }`}>
+        <div className={`rounded-2xl border p-6 sm:p-8 mb-14 shadow-xl ${isDark ? 'bg-[#090e18] border-white/10' : 'bg-white border-amber-900/10 shadow-[0_10px_35px_rgba(0,0,0,0.04)]'
+          }`}>
           <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-inherit mb-4">
             <div>
-              <span className={`text-xs font-mono-code uppercase font-bold ${
-                isDark ? 'text-amber-300' : 'text-amber-800'
-              }`}>
+              <span className={`text-xs font-mono-code uppercase font-bold ${isDark ? 'text-amber-300' : 'text-amber-800'
+                }`}>
                 Layer Implementation: {PDF_TECH_STACK[activeStackIndex].category}
               </span>
               <h3 className={`font-cinzel text-xl font-bold mt-0.5 ${isDark ? 'text-white' : 'text-slate-900'}`}>
                 {stackCodeSamples[activeStackIndex].title}
               </h3>
             </div>
-            <span className={`text-xs font-mono-code px-3 py-1 rounded border ${
-              isDark ? 'bg-slate-900 text-slate-300 border-white/10' : 'bg-slate-100 text-slate-700 border-slate-300'
-            }`}>
+            <span className={`text-xs font-mono-code px-3 py-1 rounded border ${isDark ? 'bg-slate-900 text-slate-300 border-white/10' : 'bg-slate-100 text-slate-700 border-slate-300'
+              }`}>
               {PDF_TECH_STACK[activeStackIndex].role}
             </span>
           </div>
@@ -208,12 +194,11 @@ const padsRGB = wasmCV.extractPads(cameraFrame);
           </div>
         </div>
 
-        {/* The Open Source Guarantee Banner (Exact from Slide 6) */}
-        <div className={`rounded-2xl p-6 sm:p-8 border shadow-lg text-center ${
-          isDark
-            ? 'bg-gradient-to-r from-slate-900 via-amber-950/20 to-slate-900 border-amber-400/30'
-            : 'bg-gradient-to-r from-amber-50 via-white to-amber-50 border-amber-300/80 shadow-[0_10px_30px_rgba(180,145,95,0.06)]'
-        }`}>
+        {/* The Open Source Guarantee Banner */}
+        <div className={`rounded-2xl p-6 sm:p-8 border shadow-lg text-center ${isDark
+          ? 'bg-gradient-to-r from-slate-900 via-amber-950/20 to-slate-900 border-amber-400/30'
+          : 'bg-gradient-to-r from-amber-50 via-white to-amber-50 border-amber-300/80 shadow-[0_10px_30px_rgba(180,145,95,0.06)]'
+          }`}>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-4xl mx-auto">
             <div className="flex items-center space-x-3 text-left">
               <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-400/30 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
@@ -233,11 +218,10 @@ const padsRGB = wasmCV.extractPads(cameraFrame);
               href="https://github.com/Rishika-Chauhan/BioTrajectory"
               target="_blank"
               rel="noreferrer"
-              className={`px-5 py-2.5 rounded-xl text-xs font-mono-code font-bold uppercase tracking-wider flex items-center space-x-2 transition-all ${
-                isDark
-                  ? 'bg-amber-400 text-slate-950 hover:bg-amber-300 shadow-[0_0_20px_rgba(217,119,6,0.2)]'
-                  : 'bg-amber-700 text-white hover:bg-amber-800 shadow-sm'
-              }`}
+              className={`px-5 py-2.5 rounded-xl text-xs font-mono-code font-bold uppercase tracking-wider flex items-center space-x-2 transition-all ${isDark
+                ? 'bg-amber-400 text-slate-950 hover:bg-amber-300 shadow-[0_0_20px_rgba(217,119,6,0.2)]'
+                : 'bg-amber-700 text-white hover:bg-amber-800 shadow-sm'
+                }`}
             >
               <span>Inspect Repository</span>
               <ExternalLink className="w-3.5 h-3.5" />

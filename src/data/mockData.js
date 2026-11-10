@@ -214,78 +214,108 @@ export const PATIENT_PERSONAS = [
     id: 'arjun',
     name: 'Arjun Patel',
     age: 34,
+    gender: 'Male',
+    patientId: 'BT-9428',
+    initials: 'AP',
     profileType: 'Endurance Athlete & Tech Worker',
     clinicalStory: 'Underwent half-marathon cross-training. Demonstrates a classic post-exercise dehydration spike on Day 22 followed by full spontaneous normalization.',
     baselineReadingsCount: 15,
     isBaselineEstablished: true,
+    baselines: {
+      protein: { normalCorridor: '5.2 ± 1.1 mg/dL' },
+      specificGravity: { normalCorridor: '1.018 ± 0.003' },
+      pH: { normalCorridor: '6.4 ± 0.2' },
+      glucose: { normalCorridor: '0.0 mg/dL' },
+      ketones: { normalCorridor: '0.0 – 5.0 mg/dL' }
+    },
     history: [
-      { day: 1, date: '2026-10-05', time: '07:15', protein: 5, specificGravity: 1.018, pH: 6.4, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Baseline calibration 1. Normal hydration.', confirmed: true, sampleType: 'First morning' },
-      { day: 3, date: '2026-10-07', time: '07:22', protein: 6, specificGravity: 1.019, pH: 6.3, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Baseline collection 2.', confirmed: true, sampleType: 'First morning' },
-      { day: 5, date: '2026-10-09', time: '07:30', protein: 4, specificGravity: 1.017, pH: 6.5, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, notes: 'Normal routine recovery.', confirmed: true, sampleType: 'First morning' },
-      { day: 7, date: '2026-10-11', time: '08:05', protein: 5, specificGravity: 1.020, pH: 6.2, glucose: 0, leukocytes: 0, ketones: 5, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Sunday morning 14h intermittent fast.', confirmed: true, sampleType: 'First morning' },
-      { day: 9, date: '2026-10-13', time: '07:10', protein: 5, specificGravity: 1.018, pH: 6.4, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, notes: 'Workday check.', confirmed: true, sampleType: 'First morning' },
-      { day: 11, date: '2026-10-15', time: '07:18', protein: 6, specificGravity: 1.019, pH: 6.5, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.3, bilirubin: 0, notes: 'Baseline stability confirmed.', confirmed: true, sampleType: 'First morning' },
-      { day: 13, date: '2026-10-17', time: '07:45', protein: 5, specificGravity: 1.016, pH: 6.6, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Well hydrated with electrolyte water.', confirmed: true, sampleType: 'First morning' },
-      { day: 15, date: '2026-10-19', time: '07:12', protein: 4, specificGravity: 1.018, pH: 6.4, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: '10-session rolling baseline active.', confirmed: true, sampleType: 'First morning' },
-      { day: 17, date: '2026-10-21', time: '07:20', protein: 6, specificGravity: 1.020, pH: 6.3, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Normal routine.', confirmed: true, sampleType: 'First morning' },
-      { day: 19, date: '2026-10-23', time: '07:35', protein: 7, specificGravity: 1.021, pH: 6.3, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, notes: 'Moderate evening track session.', confirmed: true, sampleType: 'First morning' },
-      { day: 22, date: '2026-10-26', time: '07:15', protein: 32, specificGravity: 1.028, pH: 6.1, glucose: 0, leukocytes: 0, ketones: 10, nitrite: 0, blood: 0, urobilinogen: 0.6, bilirubin: 0, notes: 'Intense 18km run in heat + low hydration. Flagged for review.', confirmed: true, flagged: true, deviationReason: 'Protein +3.8σ above baseline corridor; high SG indicates concentrated urine', sampleType: 'First morning' },
-      { day: 24, date: '2026-10-28', time: '07:25', protein: 18, specificGravity: 1.023, pH: 6.3, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Rest day + rehydration. Protein returning toward baseline.', confirmed: true, flagged: false, sampleType: 'First morning' },
-      { day: 26, date: '2026-10-30', time: '07:15', protein: 8, specificGravity: 1.019, pH: 6.4, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Near baseline corridor (8 mg/dL).', confirmed: true, sampleType: 'First morning' },
-      { day: 28, date: '2026-11-01', time: '07:40', protein: 5, specificGravity: 1.018, pH: 6.4, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Fully returned to personal baseline.', confirmed: true, sampleType: 'First morning' },
-      { day: 30, date: '2026-11-03', time: '07:15', protein: 5, specificGravity: 1.017, pH: 6.5, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Latest test session. Homeostasis stable.', confirmed: true, sampleType: 'First morning' },
+      { day: 1, date: '2026-10-05', time: '07:15', protein: 5, specificGravity: 1.018, pH: 6.4, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 92, bleBpSystolic: 118, bleBpDiastolic: 78, bleHeartRate: 62, bleSpo2: 99, bleHydration: 58.4, notes: 'Baseline calibration 1. Normal hydration.', confirmed: true, sampleType: 'First morning' },
+      { day: 3, date: '2026-10-07', time: '07:22', protein: 6, specificGravity: 1.019, pH: 6.3, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 94, bleBpSystolic: 120, bleBpDiastolic: 79, bleHeartRate: 64, bleSpo2: 98, bleHydration: 58.1, notes: 'Baseline collection 2.', confirmed: true, sampleType: 'First morning' },
+      { day: 5, date: '2026-10-09', time: '07:30', protein: 4, specificGravity: 1.017, pH: 6.5, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, bleCgmGlucose: 91, bleBpSystolic: 119, bleBpDiastolic: 78, bleHeartRate: 61, bleSpo2: 99, bleHydration: 58.8, notes: 'Normal routine recovery.', confirmed: true, sampleType: 'First morning' },
+      { day: 7, date: '2026-10-11', time: '08:05', protein: 5, specificGravity: 1.020, pH: 6.2, glucose: 0, leukocytes: 0, ketones: 5, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 88, bleBpSystolic: 121, bleBpDiastolic: 80, bleHeartRate: 63, bleSpo2: 98, bleHydration: 57.6, notes: 'Sunday morning 14h intermittent fast.', confirmed: true, sampleType: 'First morning' },
+      { day: 9, date: '2026-10-13', time: '07:10', protein: 5, specificGravity: 1.018, pH: 6.4, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, bleCgmGlucose: 95, bleBpSystolic: 122, bleBpDiastolic: 79, bleHeartRate: 65, bleSpo2: 99, bleHydration: 58.2, notes: 'Workday check.', confirmed: true, sampleType: 'First morning' },
+      { day: 11, date: '2026-10-15', time: '07:18', protein: 6, specificGravity: 1.019, pH: 6.5, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.3, bilirubin: 0, bleCgmGlucose: 93, bleBpSystolic: 120, bleBpDiastolic: 78, bleHeartRate: 63, bleSpo2: 98, bleHydration: 58.0, notes: 'Baseline stability confirmed.', confirmed: true, sampleType: 'First morning' },
+      { day: 13, date: '2026-10-17', time: '07:45', protein: 5, specificGravity: 1.016, pH: 6.6, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 90, bleBpSystolic: 118, bleBpDiastolic: 77, bleHeartRate: 60, bleSpo2: 99, bleHydration: 59.2, notes: 'Well hydrated with electrolyte water.', confirmed: true, sampleType: 'First morning' },
+      { day: 15, date: '2026-10-19', time: '07:12', protein: 4, specificGravity: 1.018, pH: 6.4, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 93, bleBpSystolic: 119, bleBpDiastolic: 79, bleHeartRate: 62, bleSpo2: 99, bleHydration: 58.5, notes: '10-session rolling baseline active.', confirmed: true, sampleType: 'First morning' },
+      { day: 17, date: '2026-10-21', time: '07:20', protein: 6, specificGravity: 1.020, pH: 6.3, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 96, bleBpSystolic: 122, bleBpDiastolic: 80, bleHeartRate: 64, bleSpo2: 98, bleHydration: 57.9, notes: 'Normal routine.', confirmed: true, sampleType: 'First morning' },
+      { day: 19, date: '2026-10-23', time: '07:35', protein: 7, specificGravity: 1.021, pH: 6.3, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, bleCgmGlucose: 98, bleBpSystolic: 124, bleBpDiastolic: 81, bleHeartRate: 67, bleSpo2: 98, bleHydration: 56.8, notes: 'Moderate evening track session.', confirmed: true, sampleType: 'First morning' },
+      { day: 22, date: '2026-10-26', time: '07:15', protein: 32, specificGravity: 1.028, pH: 6.1, glucose: 0, leukocytes: 0, ketones: 10, nitrite: 0, blood: 0, urobilinogen: 0.6, bilirubin: 0, bleCgmGlucose: 106, bleBpSystolic: 142, bleBpDiastolic: 88, bleHeartRate: 86, bleSpo2: 97, bleHydration: 51.2, notes: 'Intense 18km run in heat + low hydration. Flagged for review.', confirmed: true, flagged: true, deviationReason: 'Protein +3.8σ above baseline corridor; high SG indicates concentrated urine', sampleType: 'First morning' },
+      { day: 24, date: '2026-10-28', time: '07:25', protein: 18, specificGravity: 1.023, pH: 6.3, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 97, bleBpSystolic: 128, bleBpDiastolic: 82, bleHeartRate: 72, bleSpo2: 98, bleHydration: 55.4, notes: 'Rest day + rehydration. Protein returning toward baseline.', confirmed: true, flagged: false, sampleType: 'First morning' },
+      { day: 26, date: '2026-10-30', time: '07:15', protein: 8, specificGravity: 1.019, pH: 6.4, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 94, bleBpSystolic: 122, bleBpDiastolic: 79, bleHeartRate: 65, bleSpo2: 99, bleHydration: 57.5, notes: 'Near baseline corridor (8 mg/dL).', confirmed: true, sampleType: 'First morning' },
+      { day: 28, date: '2026-11-01', time: '07:40', protein: 5, specificGravity: 1.018, pH: 6.4, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 92, bleBpSystolic: 119, bleBpDiastolic: 78, bleHeartRate: 63, bleSpo2: 99, bleHydration: 58.2, notes: 'Fully returned to personal baseline.', confirmed: true, sampleType: 'First morning' },
+      { day: 30, date: '2026-11-03', time: '07:15', protein: 5, specificGravity: 1.017, pH: 6.5, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 93, bleBpSystolic: 120, bleBpDiastolic: 78, bleHeartRate: 62, bleSpo2: 99, bleHydration: 58.6, notes: 'Latest test session. Homeostasis stable.', confirmed: true, sampleType: 'First morning' },
     ]
   },
   {
     id: 'sunita',
     name: 'Sunita Rao',
     age: 58,
+    gender: 'Female',
+    patientId: 'BT-8812',
+    initials: 'SR',
     profileType: 'Prediabetes & Metabolic Tracking',
     clinicalStory: 'Demonstrates subtle, non-acute upward creep in morning urinary glucose and persistent trace protein over 4 weeks—the classic silent progression that point-tests miss.',
     baselineReadingsCount: 15,
     isBaselineEstablished: true,
+    baselines: {
+      protein: { normalCorridor: '8.0 – 24.0 mg/dL (Upward Drift)' },
+      specificGravity: { normalCorridor: '1.023 ± 0.002' },
+      pH: { normalCorridor: '5.8 ± 0.2' },
+      glucose: { normalCorridor: '0 → 100 mg/dL (Creep Detected)' },
+      ketones: { normalCorridor: '0.0 mg/dL' }
+    },
     history: [
-      { day: 1, date: '2026-10-05', time: '06:50', protein: 8, specificGravity: 1.020, pH: 6.0, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Baseline day 1. Fasting morning.', confirmed: true, sampleType: 'First morning' },
-      { day: 3, date: '2026-10-07', time: '07:05', protein: 10, specificGravity: 1.021, pH: 5.9, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Routine test.', confirmed: true, sampleType: 'First morning' },
-      { day: 5, date: '2026-10-09', time: '07:00', protein: 9, specificGravity: 1.020, pH: 6.1, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, notes: 'Normal morning.', confirmed: true, sampleType: 'First morning' },
-      { day: 7, date: '2026-10-11', time: '07:15', protein: 11, specificGravity: 1.022, pH: 5.8, glucose: 15, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Trace glucose noted post festival dinner.', confirmed: true, sampleType: 'First morning' },
-      { day: 9, date: '2026-10-13', time: '06:55', protein: 12, specificGravity: 1.021, pH: 5.9, glucose: 10, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Trace glucose recurring.', confirmed: true, sampleType: 'First morning' },
-      { day: 11, date: '2026-10-15', time: '07:10', protein: 14, specificGravity: 1.023, pH: 5.8, glucose: 25, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, notes: 'Glucose persistent above zero.', confirmed: true, sampleType: 'First morning' },
-      { day: 13, date: '2026-10-17', time: '07:00', protein: 15, specificGravity: 1.022, pH: 5.9, glucose: 30, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, notes: 'Morning fasting glucose confirmed.', confirmed: true, sampleType: 'First morning' },
-      { day: 15, date: '2026-10-19', time: '06:50', protein: 16, specificGravity: 1.024, pH: 5.7, glucose: 45, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Baseline corridor breached on glucose.', confirmed: true, flagged: true, deviationReason: 'Persistent upward glucose drift (45 mg/dL across 4 consecutive logs)', sampleType: 'First morning' },
-      { day: 17, date: '2026-10-21', time: '07:12', protein: 18, specificGravity: 1.023, pH: 5.8, glucose: 60, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Protein and glucose concurrent elevation.', confirmed: true, flagged: true, deviationReason: 'Protein reaching 18 mg/dL + Glucose 60 mg/dL', sampleType: 'First morning' },
-      { day: 19, date: '2026-10-23', time: '07:05', protein: 20, specificGravity: 1.025, pH: 5.7, glucose: 75, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, notes: 'Continuing drift. Diet diary updated.', confirmed: true, flagged: true, sampleType: 'First morning' },
-      { day: 22, date: '2026-10-26', time: '06:58', protein: 22, specificGravity: 1.024, pH: 5.8, glucose: 80, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, notes: 'Persistent metabolic trend.', confirmed: true, flagged: true, sampleType: 'First morning' },
-      { day: 24, date: '2026-10-28', time: '07:00', protein: 21, specificGravity: 1.023, pH: 5.7, glucose: 85, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Consistent 85 mg/dL glucose.', confirmed: true, flagged: true, sampleType: 'First morning' },
-      { day: 26, date: '2026-10-30', time: '07:15', protein: 23, specificGravity: 1.024, pH: 5.8, glucose: 90, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, notes: 'Clinician summary generated.', confirmed: true, flagged: true, sampleType: 'First morning' },
-      { day: 28, date: '2026-11-01', time: '07:00', protein: 22, specificGravity: 1.023, pH: 5.7, glucose: 95, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, notes: 'Scheduled physician consult.', confirmed: true, flagged: true, sampleType: 'First morning' },
-      { day: 30, date: '2026-11-03', time: '06:45', protein: 24, specificGravity: 1.025, pH: 5.8, glucose: 100, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, notes: 'Ready for doctor review with 30-day timeline.', confirmed: true, flagged: true, sampleType: 'First morning' },
+      { day: 1, date: '2026-10-05', time: '06:50', protein: 8, specificGravity: 1.020, pH: 6.0, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 98, bleBpSystolic: 126, bleBpDiastolic: 82, bleHeartRate: 71, bleSpo2: 98, bleHydration: 54.2, notes: 'Baseline day 1. Fasting morning.', confirmed: true, sampleType: 'First morning' },
+      { day: 3, date: '2026-10-07', time: '07:05', protein: 10, specificGravity: 1.021, pH: 5.9, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 102, bleBpSystolic: 127, bleBpDiastolic: 83, bleHeartRate: 72, bleSpo2: 98, bleHydration: 53.9, notes: 'Routine test.', confirmed: true, sampleType: 'First morning' },
+      { day: 5, date: '2026-10-09', time: '07:00', protein: 9, specificGravity: 1.020, pH: 6.1, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, bleCgmGlucose: 104, bleBpSystolic: 128, bleBpDiastolic: 82, bleHeartRate: 70, bleSpo2: 99, bleHydration: 54.0, notes: 'Normal morning.', confirmed: true, sampleType: 'First morning' },
+      { day: 7, date: '2026-10-11', time: '07:15', protein: 11, specificGravity: 1.022, pH: 5.8, glucose: 15, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 115, bleBpSystolic: 130, bleBpDiastolic: 84, bleHeartRate: 74, bleSpo2: 97, bleHydration: 53.5, notes: 'Trace glucose noted post festival dinner.', confirmed: true, sampleType: 'First morning' },
+      { day: 9, date: '2026-10-13', time: '06:55', protein: 12, specificGravity: 1.021, pH: 5.9, glucose: 10, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 118, bleBpSystolic: 131, bleBpDiastolic: 85, bleHeartRate: 73, bleSpo2: 98, bleHydration: 53.8, notes: 'Trace glucose recurring.', confirmed: true, sampleType: 'First morning' },
+      { day: 11, date: '2026-10-15', time: '07:10', protein: 14, specificGravity: 1.023, pH: 5.8, glucose: 25, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, bleCgmGlucose: 126, bleBpSystolic: 133, bleBpDiastolic: 86, bleHeartRate: 75, bleSpo2: 97, bleHydration: 53.2, notes: 'Glucose persistent above zero.', confirmed: true, sampleType: 'First morning' },
+      { day: 13, date: '2026-10-17', time: '07:00', protein: 15, specificGravity: 1.022, pH: 5.9, glucose: 30, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, bleCgmGlucose: 134, bleBpSystolic: 134, bleBpDiastolic: 86, bleHeartRate: 76, bleSpo2: 97, bleHydration: 53.0, notes: 'Morning fasting glucose confirmed.', confirmed: true, sampleType: 'First morning' },
+      { day: 15, date: '2026-10-19', time: '06:50', protein: 16, specificGravity: 1.024, pH: 5.7, glucose: 45, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 142, bleBpSystolic: 136, bleBpDiastolic: 87, bleHeartRate: 77, bleSpo2: 98, bleHydration: 52.6, notes: 'Baseline corridor breached on glucose.', confirmed: true, flagged: true, deviationReason: 'Persistent upward glucose drift (45 mg/dL across 4 consecutive logs)', sampleType: 'First morning' },
+      { day: 17, date: '2026-10-21', time: '07:12', protein: 18, specificGravity: 1.023, pH: 5.8, glucose: 60, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 155, bleBpSystolic: 137, bleBpDiastolic: 88, bleHeartRate: 78, bleSpo2: 97, bleHydration: 52.4, notes: 'Protein and glucose concurrent elevation.', confirmed: true, flagged: true, deviationReason: 'Protein reaching 18 mg/dL + Glucose 60 mg/dL', sampleType: 'First morning' },
+      { day: 19, date: '2026-10-23', time: '07:05', protein: 20, specificGravity: 1.025, pH: 5.7, glucose: 75, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, bleCgmGlucose: 164, bleBpSystolic: 139, bleBpDiastolic: 89, bleHeartRate: 79, bleSpo2: 96, bleHydration: 52.0, notes: 'Continuing drift. Diet diary updated.', confirmed: true, flagged: true, sampleType: 'First morning' },
+      { day: 22, date: '2026-10-26', time: '06:58', protein: 22, specificGravity: 1.024, pH: 5.8, glucose: 80, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, bleCgmGlucose: 172, bleBpSystolic: 141, bleBpDiastolic: 90, bleHeartRate: 80, bleSpo2: 97, bleHydration: 51.8, notes: 'Persistent metabolic trend.', confirmed: true, flagged: true, sampleType: 'First morning' },
+      { day: 24, date: '2026-10-28', time: '07:00', protein: 21, specificGravity: 1.023, pH: 5.7, glucose: 85, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 176, bleBpSystolic: 140, bleBpDiastolic: 89, bleHeartRate: 81, bleSpo2: 97, bleHydration: 51.5, notes: 'Consistent 85 mg/dL glucose.', confirmed: true, flagged: true, sampleType: 'First morning' },
+      { day: 26, date: '2026-10-30', time: '07:15', protein: 23, specificGravity: 1.024, pH: 5.8, glucose: 90, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, bleCgmGlucose: 181, bleBpSystolic: 142, bleBpDiastolic: 91, bleHeartRate: 82, bleSpo2: 96, bleHydration: 51.2, notes: 'Clinician summary generated.', confirmed: true, flagged: true, sampleType: 'First morning' },
+      { day: 28, date: '2026-11-01', time: '07:00', protein: 22, specificGravity: 1.023, pH: 5.7, glucose: 95, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, bleCgmGlucose: 184, bleBpSystolic: 143, bleBpDiastolic: 91, bleHeartRate: 82, bleSpo2: 97, bleHydration: 51.0, notes: 'Scheduled physician consult.', confirmed: true, flagged: true, sampleType: 'First morning' },
+      { day: 30, date: '2026-11-03', time: '06:45', protein: 24, specificGravity: 1.025, pH: 5.8, glucose: 100, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, bleCgmGlucose: 188, bleBpSystolic: 144, bleBpDiastolic: 92, bleHeartRate: 83, bleSpo2: 96, bleHydration: 50.8, notes: 'Ready for doctor review with 30-day timeline.', confirmed: true, flagged: true, sampleType: 'First morning' },
     ]
   },
   {
     id: 'david',
     name: 'David Chen',
     age: 42,
+    gender: 'Male',
+    patientId: 'BT-7741',
+    initials: 'DC',
     profileType: 'Nephrolithiasis (Stone Prevention) Protocol',
     clinicalStory: 'Monitors urinary pH and Specific Gravity longitudinally to prevent calcium oxalate and uric acid crystallization following previous lithotripsy.',
     baselineReadingsCount: 15,
     isBaselineEstablished: true,
+    baselines: {
+      protein: { normalCorridor: '4.5 ± 0.8 mg/dL' },
+      specificGravity: { normalCorridor: '1.015 ± 0.002 (Dilute Target)' },
+      pH: { normalCorridor: '6.5 ± 0.2 (Therapeutic Goal)' },
+      glucose: { normalCorridor: '0.0 mg/dL' },
+      ketones: { normalCorridor: '0.0 mg/dL' }
+    },
     history: [
-      { day: 1, date: '2026-10-05', time: '07:30', protein: 4, specificGravity: 1.026, pH: 5.3, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, notes: 'High urine acidity (5.3) and density. Stone recurrence risk.', confirmed: true, flagged: true, deviationReason: 'pH <5.5 with high concentration increases uric acid stone precipitation risk', sampleType: 'First morning' },
-      { day: 3, date: '2026-10-07', time: '07:20', protein: 5, specificGravity: 1.022, pH: 5.7, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Added lemon water & citrate protocol.', confirmed: true, sampleType: 'First morning' },
-      { day: 5, date: '2026-10-09', time: '07:40', protein: 4, specificGravity: 1.018, pH: 6.2, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'pH entering target therapeutic zone (6.2-6.8).', confirmed: true, sampleType: 'First morning' },
-      { day: 7, date: '2026-10-11', time: '08:00', protein: 5, specificGravity: 1.015, pH: 6.5, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Hydration 3L/day achieved. SG 1.015 optimal.', confirmed: true, sampleType: 'First morning' },
-      { day: 9, date: '2026-10-13', time: '07:15', protein: 4, specificGravity: 1.014, pH: 6.4, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Optimal urine dilution.', confirmed: true, sampleType: 'First morning' },
-      { day: 11, date: '2026-10-15', time: '07:30', protein: 5, specificGravity: 1.016, pH: 6.6, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, notes: 'Target pH maintained.', confirmed: true, sampleType: 'First morning' },
-      { day: 13, date: '2026-10-17', time: '07:25', protein: 4, specificGravity: 1.015, pH: 6.5, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Hydration tracking on point.', confirmed: true, sampleType: 'First morning' },
-      { day: 15, date: '2026-10-19', time: '07:10', protein: 5, specificGravity: 1.015, pH: 6.5, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Baseline target firmly established.', confirmed: true, sampleType: 'First morning' },
-      { day: 17, date: '2026-10-21', time: '07:20', protein: 4, specificGravity: 1.016, pH: 6.4, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Routine check.', confirmed: true, sampleType: 'First morning' },
-      { day: 19, date: '2026-10-23', time: '07:35', protein: 6, specificGravity: 1.025, pH: 5.5, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, notes: 'Forgot afternoon water bottle. SG spiked to 1.025.', confirmed: true, flagged: true, deviationReason: 'Dehydration dip: SG 1.025, pH dropped to 5.5', sampleType: 'First morning' },
-      { day: 22, date: '2026-10-26', time: '07:15', protein: 5, specificGravity: 1.017, pH: 6.3, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Re-hydrated promptly. pH restored to 6.3.', confirmed: true, sampleType: 'First morning' },
-      { day: 24, date: '2026-10-28', time: '07:25', protein: 4, specificGravity: 1.014, pH: 6.5, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Dilution restored.', confirmed: true, sampleType: 'First morning' },
-      { day: 26, date: '2026-10-30', time: '07:15', protein: 5, specificGravity: 1.015, pH: 6.6, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Stable.', confirmed: true, sampleType: 'First morning' },
-      { day: 28, date: '2026-11-01', time: '07:40', protein: 4, specificGravity: 1.015, pH: 6.5, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Hydration goal achieved 7 days in a row.', confirmed: true, sampleType: 'First morning' },
-      { day: 30, date: '2026-11-03', time: '07:15', protein: 4, specificGravity: 1.014, pH: 6.6, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, notes: 'Current day. Kidney stone prevention corridor intact.', confirmed: true, sampleType: 'First morning' },
+      { day: 1, date: '2026-10-05', time: '07:30', protein: 4, specificGravity: 1.026, pH: 5.3, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, bleCgmGlucose: 89, bleBpSystolic: 122, bleBpDiastolic: 80, bleHeartRate: 64, bleSpo2: 99, bleHydration: 52.8, notes: 'High urine acidity (5.3) and density. Stone recurrence risk.', confirmed: true, flagged: true, deviationReason: 'pH <5.5 with high concentration increases uric acid stone precipitation risk', sampleType: 'First morning' },
+      { day: 3, date: '2026-10-07', time: '07:20', protein: 5, specificGravity: 1.022, pH: 5.7, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 91, bleBpSystolic: 120, bleBpDiastolic: 79, bleHeartRate: 63, bleSpo2: 98, bleHydration: 54.5, notes: 'Added lemon water & citrate protocol.', confirmed: true, sampleType: 'First morning' },
+      { day: 5, date: '2026-10-09', time: '07:40', protein: 4, specificGravity: 1.018, pH: 6.2, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 90, bleBpSystolic: 119, bleBpDiastolic: 78, bleHeartRate: 62, bleSpo2: 99, bleHydration: 56.2, notes: 'pH entering target therapeutic zone (6.2-6.8).', confirmed: true, sampleType: 'First morning' },
+      { day: 7, date: '2026-10-11', time: '08:00', protein: 5, specificGravity: 1.015, pH: 6.5, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 93, bleBpSystolic: 118, bleBpDiastolic: 77, bleHeartRate: 61, bleSpo2: 99, bleHydration: 58.6, notes: 'Hydration 3L/day achieved. SG 1.015 optimal.', confirmed: true, sampleType: 'First morning' },
+      { day: 9, date: '2026-10-13', time: '07:15', protein: 4, specificGravity: 1.014, pH: 6.4, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 89, bleBpSystolic: 117, bleBpDiastolic: 76, bleHeartRate: 60, bleSpo2: 99, bleHydration: 59.1, notes: 'Optimal urine dilution.', confirmed: true, sampleType: 'First morning' },
+      { day: 11, date: '2026-10-15', time: '07:30', protein: 5, specificGravity: 1.016, pH: 6.6, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, bleCgmGlucose: 92, bleBpSystolic: 119, bleBpDiastolic: 78, bleHeartRate: 63, bleSpo2: 98, bleHydration: 58.4, notes: 'Target pH maintained.', confirmed: true, sampleType: 'First morning' },
+      { day: 13, date: '2026-10-17', time: '07:25', protein: 4, specificGravity: 1.015, pH: 6.5, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 91, bleBpSystolic: 118, bleBpDiastolic: 77, bleHeartRate: 62, bleSpo2: 99, bleHydration: 58.7, notes: 'Hydration tracking on point.', confirmed: true, sampleType: 'First morning' },
+      { day: 15, date: '2026-10-19', time: '07:10', protein: 5, specificGravity: 1.015, pH: 6.5, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 90, bleBpSystolic: 118, bleBpDiastolic: 77, bleHeartRate: 61, bleSpo2: 99, bleHydration: 58.9, notes: 'Baseline target firmly established.', confirmed: true, sampleType: 'First morning' },
+      { day: 17, date: '2026-10-21', time: '07:20', protein: 4, specificGravity: 1.016, pH: 6.4, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 94, bleBpSystolic: 120, bleBpDiastolic: 78, bleHeartRate: 63, bleSpo2: 98, bleHydration: 58.2, notes: 'Routine check.', confirmed: true, sampleType: 'First morning' },
+      { day: 19, date: '2026-10-23', time: '07:35', protein: 6, specificGravity: 1.025, pH: 5.5, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.5, bilirubin: 0, bleCgmGlucose: 96, bleBpSystolic: 125, bleBpDiastolic: 81, bleHeartRate: 69, bleSpo2: 98, bleHydration: 53.0, notes: 'Forgot afternoon water bottle. SG spiked to 1.025.', confirmed: true, flagged: true, deviationReason: 'Dehydration dip: SG 1.025, pH dropped to 5.5', sampleType: 'First morning' },
+      { day: 22, date: '2026-10-26', time: '07:15', protein: 5, specificGravity: 1.017, pH: 6.3, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 92, bleBpSystolic: 119, bleBpDiastolic: 78, bleHeartRate: 63, bleSpo2: 99, bleHydration: 57.8, notes: 'Re-hydrated promptly. pH restored to 6.3.', confirmed: true, sampleType: 'First morning' },
+      { day: 24, date: '2026-10-28', time: '07:25', protein: 4, specificGravity: 1.014, pH: 6.5, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 89, bleBpSystolic: 117, bleBpDiastolic: 76, bleHeartRate: 60, bleSpo2: 99, bleHydration: 59.0, notes: 'Dilution restored.', confirmed: true, sampleType: 'First morning' },
+      { day: 26, date: '2026-10-30', time: '07:15', protein: 5, specificGravity: 1.015, pH: 6.6, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 91, bleBpSystolic: 118, bleBpDiastolic: 77, bleHeartRate: 61, bleSpo2: 99, bleHydration: 58.8, notes: 'Stable.', confirmed: true, sampleType: 'First morning' },
+      { day: 28, date: '2026-11-01', time: '07:40', protein: 4, specificGravity: 1.015, pH: 6.5, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 90, bleBpSystolic: 118, bleBpDiastolic: 77, bleHeartRate: 61, bleSpo2: 99, bleHydration: 59.2, notes: 'Hydration goal achieved 7 days in a row.', confirmed: true, sampleType: 'First morning' },
+      { day: 30, date: '2026-11-03', time: '07:15', protein: 4, specificGravity: 1.014, pH: 6.6, glucose: 0, leukocytes: 0, ketones: 0, nitrite: 0, blood: 0, urobilinogen: 0.4, bilirubin: 0, bleCgmGlucose: 91, bleBpSystolic: 117, bleBpDiastolic: 76, bleHeartRate: 60, bleSpo2: 99, bleHydration: 59.4, notes: 'Current day. Kidney stone prevention corridor intact.', confirmed: true, sampleType: 'First morning' },
     ]
   }
 ];
@@ -650,24 +680,21 @@ export const GLOSSARY_TERMS = [
 // ============================================================================
 
 export const PRESENTATION_INFO = {
-  event: 'ELITE CODERS PRESENTS',
-  competition: 'CodeSprint 2026',
-  lifecycle: 'IDEA → MVP → OPEN SOURCE → PITCH',
-  teamName: 'Chauhan.rishika2007',
+  organization: 'BioTrajectory Clinical Initiative',
+  initiative: 'Longitudinal Preventive Health Program',
+  platformType: 'PGHD Trajectory Intelligence',
   projectName: 'BioTrajectory',
   tagline: 'Healthcare that understands where your health is heading',
-  secondaryTagline: 'Others measure your health, We track where it is going.',
+  secondaryTagline: 'Others measure your health. We track where it is going.',
   philosophies: [
     'Marker-by-marker trends, never one misleading health score.',
     'No automated result is a diagnosis. Every reading is user-confirmed, and every AI summary links back to the data.',
-    'The core stack is open source. Anyone can inspect, extend and contribute.'
+    'The core stack is open and verifiable. Anyone can inspect, extend, and audit.'
   ],
-  presentedBy: ['Rishika Chauhan', 'Riya Baisoya', 'Pranjal Kumar Pandey', 'Priyanshu'],
-  socials: {
-    website: 'Elitecoders.in',
-    instagram: 'Elite_coders_',
-    linkedin: 'Elite-coders',
-    email: 'We@elitecoders.in'
+  clinicalAdvisors: ['Preventive Medicine Working Group', 'Clinical Nephrology Advisory Board'],
+  links: {
+    platform: '#live-prototype',
+    contact: 'mailto:contact@biotrajectory.health'
   }
 };
 
@@ -697,37 +724,6 @@ export const PDF_PROBLEM_SECTION = {
     }
   ]
 };
-
-export const PDF_SOLUTION_STEPS = [
-  {
-    step: '01',
-    title: 'Measurement and context',
-    description: 'A test strip is read using a phone camera or manual entry, with timestamp and metadata.',
-    badge: 'Hardware & Mobile',
-    detail: 'Combines optical image capture, lighting calibration (lux reticle), and optional manual override.'
-  },
-  {
-    step: '02',
-    title: 'Personal trajectory',
-    description: 'Repeated readings build an individual baseline. Reference ranges show appropriate context.',
-    badge: 'Personal Baseline',
-    detail: 'Forms rolling baseline after 10+ entries. Never evaluates a point in isolation.'
-  },
-  {
-    step: '03',
-    title: 'Pattern review',
-    description: 'Transparent rules flag persistent shifts for review. Never a diagnosis.',
-    badge: 'Rule-Based Logic',
-    detail: 'Monitors statistical deviations over consecutive readings. Rejects single-session noise.'
-  },
-  {
-    step: '04',
-    title: 'Explain and share',
-    description: 'Gemini explains in plain words. Summaries go to a clinician only with consent.',
-    badge: 'Grounded AI & Handover',
-    detail: 'Plain-language summaries citing confirmed facts, explicitly stating limits, and generating PDF briefs.'
-  }
-];
 
 export const FOUR_LAYERS = [
   {
@@ -957,3 +953,303 @@ export const PDF_HOW_IT_WORKS_STEPS = [
     actionLabel: 'Generate Doctor PDF'
   }
 ];
+
+
+export const PDF_SOLUTION_STEPS = [
+  {
+    step: '01',
+    title: 'Measurement and context',
+    description: 'A test strip is read using a phone camera or manual entry, with timestamp and metadata.',
+    badge: 'Hardware & Mobile',
+    detail: 'Combines optical image capture, lighting calibration (lux reticle), and optional manual override.'
+  },
+  {
+    step: '02',
+    title: 'Personal trajectory',
+    description: 'Repeated readings build an individual baseline. Reference ranges show appropriate context.',
+    badge: 'Personal Baseline',
+    detail: 'Forms rolling baseline after 10+ entries. Never evaluates a point in isolation.'
+  },
+  {
+    step: '03',
+    title: 'Pattern review',
+    description: 'Transparent rules flag persistent shifts for review. Never a diagnosis.',
+    badge: 'Rule-Based Logic',
+    detail: 'Monitors statistical deviations over consecutive readings. Rejects single-session noise.'
+  },
+  {
+    step: '04',
+    title: 'Explain and share',
+    description: 'Gemini explains in plain words. Summaries go to a clinician only with consent.',
+    badge: 'Grounded AI & Handover',
+    detail: 'Plain-language summaries citing confirmed facts, explicitly stating limits, and generating PDF briefs.'
+  }
+];
+
+// ============================================================================
+// 9. Connected Bluetooth Health Devices (BLE / Web Bluetooth Telemetry)
+// ============================================================================
+
+export const BLUETOOTH_DEVICES = [
+  {
+    id: 'dexcom-cgm',
+    name: 'Dexcom G7 Continuous Glucose Monitor',
+    shortName: 'Dexcom G7 BLE',
+    type: 'CGM',
+    category: 'Metabolic & Glycemic Telemetry',
+    icon: 'Activity',
+    battery: 88,
+    signalStrength: -62, // dBm
+    status: 'connected',
+    bleUuid: '0000181f-0000-1000-8000-00805f9b34fb',
+    serviceName: 'Continuous Glucose (0x181F)',
+    lastSync: 'Live (Every 5m)',
+    activeMetric: 'bleCgmGlucose',
+    metricLabel: 'CGM Glucose',
+    currentValue: 94,
+    unit: 'mg/dL',
+    trend: 'stable',
+    color: '#f59e0b',
+    description: 'Streams interstitial glucose every 5 minutes. Cross-correlates with urinalysis glucose when above renal threshold (~180 mg/dL).'
+  },
+  {
+    id: 'omron-bp',
+    name: 'Omron Evolv Wireless Blood Pressure Cuff',
+    shortName: 'Omron Evolv BLE',
+    type: 'BPM',
+    category: 'Hemodynamic & Cardiovascular',
+    icon: 'Heart',
+    battery: 94,
+    signalStrength: -58,
+    status: 'connected',
+    bleUuid: '00001810-0000-1000-8000-00805f9b34fb',
+    serviceName: 'Blood Pressure Service (0x1810)',
+    lastSync: 'Today 07:14 AM',
+    activeMetric: 'bleBpSystolic',
+    metricLabel: 'BP Systolic',
+    currentValue: 120,
+    secondaryMetric: 'bleBpDiastolic',
+    secondaryValue: 78,
+    unit: 'mmHg',
+    trend: 'optimal',
+    color: '#ef4444',
+    description: 'Oscillometric wireless cuff. Longitudinal blood pressure trends provide essential hemodynamic context for transient proteinuria spikes.'
+  },
+  {
+    id: 'whoop-strap',
+    name: 'WHOOP 4.0 Biometric Wearable',
+    shortName: 'WHOOP 4.0 BLE',
+    type: 'Wearable',
+    category: 'Autonomic & Recovery Tone',
+    icon: 'Watch',
+    battery: 76,
+    signalStrength: -65,
+    status: 'connected',
+    bleUuid: '0000180d-0000-1000-8000-00805f9b34fb',
+    serviceName: 'Heart Rate & HRV (0x180D)',
+    lastSync: 'Continuous Live Stream',
+    activeMetric: 'bleHeartRate',
+    metricLabel: 'Resting Heart Rate',
+    currentValue: 62,
+    unit: 'bpm',
+    trend: 'recovering',
+    color: '#10b981',
+    description: 'Continuous photoplethysmography (PPG) capturing resting heart rate, recovery strain, and nocturnal autonomic tone.'
+  },
+  {
+    id: 'withings-scale',
+    name: 'Withings Body Smart Bioimpedance Scale',
+    shortName: 'Withings Body BLE',
+    type: 'Scale',
+    category: 'Hydration & Body Composition',
+    icon: 'Scale',
+    battery: 92,
+    signalStrength: -71,
+    status: 'standby',
+    bleUuid: '0000181d-0000-1000-8000-00805f9b34fb',
+    serviceName: 'Weight Scale & Impedance (0x181D)',
+    lastSync: 'Today 07:10 AM',
+    activeMetric: 'bleHydration',
+    metricLabel: 'Body Water %',
+    currentValue: 58.4,
+    unit: '%',
+    trend: 'hydrated',
+    color: '#06b6d4',
+    description: 'Multi-frequency bioimpedance analysis measuring total body water percentage, directly correlating with urine Specific Gravity concentration.'
+  }
+];
+
+export const BLUETOOTH_METRIC_CONFIGS = {
+  bleCgmGlucose: {
+    label: 'Bluetooth CGM Blood Glucose',
+    shortLabel: 'CGM Glucose',
+    unit: 'mg/dL',
+    color: '#f59e0b',
+    baselineMin: 70,
+    baselineMax: 130,
+    normalRange: '70 – 130 mg/dL',
+    description: 'Continuous interstitial glucose via Bluetooth Low Energy CGM sensor'
+  },
+  bleBpSystolic: {
+    label: 'Bluetooth Blood Pressure (Systolic)',
+    shortLabel: 'BP Systolic',
+    unit: 'mmHg',
+    color: '#ef4444',
+    baselineMin: 100,
+    baselineMax: 130,
+    normalRange: '100 – 130 mmHg',
+    description: 'Oscillometric cuff systolic pressure'
+  },
+  bleHeartRate: {
+    label: 'Wearable Resting Heart Rate',
+    shortLabel: 'Heart Rate',
+    unit: 'bpm',
+    color: '#10b981',
+    baselineMin: 55,
+    baselineMax: 78,
+    normalRange: '55 – 78 bpm',
+    description: 'Continuous resting pulse rate via wearable PPG'
+  },
+  bleHydration: {
+    label: 'Smart Scale Hydration Percentage',
+    shortLabel: 'Body Water %',
+    unit: '%',
+    color: '#06b6d4',
+    baselineMin: 55,
+    baselineMax: 62,
+    normalRange: '55 – 62 %',
+    description: 'Bioimpedance total body water percentage'
+  }
+};
+
+// ============================================================================
+// 10. Multi-Modal Pie & Donut Chart Presets
+// ============================================================================
+
+export const PIE_CHART_PRESETS = [
+  {
+    id: 'time-in-corridor',
+    title: 'Time in Baseline Corridor (TIC)',
+    subtitle: 'Clinical KPI for Personalized Homeostasis Concordance',
+    unit: '% of Logs',
+    segments: [
+      {
+        id: 'homeostasis',
+        label: 'In Optimal Corridor',
+        value: 78,
+        count: '24 Sessions',
+        color: '#10b981', // Emerald
+        textColor: 'text-emerald-400',
+        badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+        description: 'Readings tracking within the patient’s established 10-session rolling IQR baseline corridor.'
+      },
+      {
+        id: 'transient',
+        label: 'Transient Physiological Variance',
+        value: 16,
+        count: '5 Sessions',
+        color: '#f59e0b', // Amber
+        textColor: 'text-amber-400',
+        badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+        description: 'Benign acute shifts explainable by vigorous exercise, hot climate sweat loss, or dietary buffers.'
+      },
+      {
+        id: 'review-flagged',
+        label: 'Clinical Review Flagged Zone',
+        value: 6,
+        count: '2 Sessions',
+        color: '#ef4444', // Rose/Red
+        textColor: 'text-rose-400',
+        badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
+        description: 'Statistically persistent deviations exceeding +3σ across consecutive tests requiring physician consult.'
+      }
+    ]
+  },
+  {
+    id: 'data-sources',
+    title: 'Multi-Modal Data Ingestion Sources',
+    subtitle: 'Distribution of Continuous PGHD Streams Across Modalities',
+    unit: '% Data Ingested',
+    segments: [
+      {
+        id: 'urinalysis',
+        label: 'Urinalysis Reagent Strip Colorimetry',
+        value: 38,
+        count: '30 Strip Scans',
+        color: '#10b981', // Emerald
+        textColor: 'text-emerald-400',
+        badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+        description: 'Chemical reagent pads capturing kidney filtration, specific gravity, pH, and metabolic ketones.'
+      },
+      {
+        id: 'cgm',
+        label: 'Bluetooth CGM Interstitial Glucose',
+        value: 30,
+        count: '8,640 Pings',
+        color: '#f59e0b', // Amber
+        textColor: 'text-amber-400',
+        badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+        description: 'Continuous 5-minute BLE telemetry capturing glycemic variability and meal response excursions.'
+      },
+      {
+        id: 'bp',
+        label: 'Bluetooth Blood Pressure Cuff',
+        value: 18,
+        count: '60 Cuff Syncs',
+        color: '#ef4444', // Red
+        textColor: 'text-rose-400',
+        badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
+        description: 'Twice-daily oscillometric blood pressure readings tracking systemic hemodynamic pressure.'
+      },
+      {
+        id: 'wearable',
+        label: 'Wearable Heart Rate & Autonomic PPG',
+        value: 14,
+        count: 'Continuous',
+        color: '#06b6d4', // Cyan
+        textColor: 'text-cyan-400',
+        badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
+        description: 'Nocturnal resting heart rate and HRV quantifying physiological exertion and recovery reserve.'
+      }
+    ]
+  },
+  {
+    id: 'organ-systems',
+    title: 'Physiological Systems Monitored',
+    subtitle: 'Comprehensive Multi-Organ Homeostasis Concordance',
+    unit: '% Biomarker Focus',
+    segments: [
+      {
+        id: 'renal',
+        label: 'Renal Glomerular Filtration & Integrity',
+        value: 44,
+        count: 'PRO • SG • pH',
+        color: '#3b82f6', // Blue
+        textColor: 'text-blue-400',
+        badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+        description: 'Tubular reabsorption, protein clearance, and urinary concentration capacity.'
+      },
+      {
+        id: 'metabolic',
+        label: 'Endocrine & Glycemic Homeostasis',
+        value: 32,
+        count: 'GLU • KET • CGM',
+        color: '#f59e0b', // Amber
+        textColor: 'text-amber-400',
+        badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+        description: 'Insulin sensitivity, carbohydrate turnover, and fasting ketone generation.'
+      },
+      {
+        id: 'cardiovascular',
+        label: 'Hemodynamics & Fluid Balance',
+        value: 24,
+        count: 'BP • HR • Body H2O',
+        color: '#ec4899', // Pink
+        textColor: 'text-pink-400',
+        badgeColor: 'bg-pink-500/20 text-pink-300 border-pink-500/30',
+        description: 'Vascular resistance, arterial elasticity, and total extracellular water preservation.'
+      }
+    ]
+  }
+];
+

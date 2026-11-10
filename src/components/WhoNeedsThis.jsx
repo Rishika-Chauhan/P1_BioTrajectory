@@ -41,23 +41,22 @@ export default function WhoNeedsThis({ onOpenDemo }) {
       }`} id="who-needs-this">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* Editorial Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className={`inline-flex items-center space-x-2 px-3.5 py-1 rounded-full border text-xs font-mono-code uppercase tracking-widest mb-4 ${isDark ? 'bg-amber-400/10 border-amber-400/25 text-amber-300' : 'bg-amber-50 border-amber-300 text-amber-900 shadow-xs'
-            }`}>
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-            <span>Target Stakeholders • PDF Slide 7</span>
+        {/* Target Population Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 pb-6 border-b border-inherit">
+          <div className="max-w-2xl">
+            <span className={`text-[11px] font-mono-code uppercase tracking-wider font-bold block mb-2 ${isDark ? 'text-amber-400' : 'text-amber-700'}`}>
+              Clinical Indications & Cohorts
+            </span>
+            <h2 className={`font-cinzel text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              Designed for Patients, Clinicians & Population Health
+            </h2>
+            <p className={`mt-2 text-sm leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+              Addressing the silent progression of chronic disease across individual at-home users, rural clinics, attending physicians, and health systems.
+            </p>
           </div>
-
-          <h2 className={`font-cinzel text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'
-            }`}>
-            Who Needs This?
-          </h2>
-
-          <p className={`mt-4 text-base sm:text-lg font-light leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'
-            }`}>
-            Addressing the silent progression of chronic disease across patients, clinics, and national health infrastructures.
-          </p>
+          <div className={`text-xs font-mono-code px-3.5 py-1.5 rounded-xl border shrink-0 ${isDark ? 'bg-slate-900 border-white/10 text-amber-300' : 'bg-white border-slate-200 text-amber-900 shadow-xs'}`}>
+            Select a cohort to inspect impact
+          </div>
         </div>
 
         {/* 4 Audience Cards */}
@@ -156,7 +155,7 @@ export default function WhoNeedsThis({ onOpenDemo }) {
           </div>
         </div>
 
-        {/* 2 Massive Scale Indicators (From Slide 7) */}
+        {/* 2 Massive Scale Indicators */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className={`p-8 rounded-2xl border shadow-lg ${isDark
               ? 'bg-gradient-to-br from-[#121b2d] to-[#090e18] border-amber-400/25'

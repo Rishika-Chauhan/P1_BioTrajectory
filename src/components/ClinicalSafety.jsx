@@ -57,40 +57,35 @@ export default function ClinicalSafety() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className={`inline-flex items-center space-x-2 px-3.5 py-1 rounded-full border text-xs font-mono-code uppercase tracking-wider mb-4 ${isDark ? 'bg-rose-500/10 border-rose-500/25 text-rose-300' : 'bg-rose-50 border-rose-300 text-rose-900 shadow-sm'
-            }`}>
-            <ShieldAlert className="w-3.5 h-3.5 text-rose-500" />
-            <span>Blueprint Section 12, 13 & 17 • Clinical Safety</span>
+        {/* Clinical Governance Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-6 border-b border-inherit">
+          <div className="max-w-2xl">
+            <span className={`text-[11px] font-mono-code uppercase tracking-wider font-bold block mb-2 ${isDark ? 'text-rose-400' : 'text-rose-700'}`}>
+              Clinical Governance & Safety Architecture
+            </span>
+            <h2 className={`font-cinzel text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              Multi-Tier Clinical Risk Mitigation & Safety Framework
+            </h2>
+            <p className={`mt-2 text-sm leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+              Enforces strict non-diagnostic boundaries: parameter-specific baseline corridors, zero single health scores, and an absolute rule that real symptoms override app readings.
+            </p>
           </div>
 
-          <h2 className={`font-cinzel text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'
-            }`}>
-            Safety by Architecture
-          </h2>
-
-          <p className={`mt-4 text-base sm:text-lg font-light leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'
-            }`}>
-            Healthcare technology demands uncompromising rigor. BioTrajectory enforces strict clinical boundaries: never diagnosing, never replacing clinicians, and prioritizing symptoms above all app charts.
-          </p>
-
-          {/* Golden Safety Priority Banner from PDF Section 12 */}
-          <div className={`mt-6 p-4 rounded-2xl border text-xs max-w-2xl mx-auto flex items-start space-x-3 text-left ${isDark ? 'bg-rose-950/20 border-rose-500/40 text-rose-200' : 'bg-rose-50 border-rose-300 text-rose-900 shadow-sm'
-            }`}>
-            <AlertOctagon className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
-            <div>
-              <strong className="font-bold uppercase tracking-wide block mb-0.5">
-                Golden Clinical Safety Rule (PDF Section 12):
+          {/* Golden Safety Priority Banner */}
+          <div className={`p-3.5 rounded-2xl border text-xs max-w-md flex items-start space-x-2.5 self-start md:self-auto shrink-0 ${isDark ? 'bg-rose-950/20 border-rose-500/40 text-rose-200' : 'bg-rose-50 border-rose-300 text-rose-900 shadow-xs'}`}>
+            <AlertOctagon className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+            <div className="text-[11px] leading-snug">
+              <strong className="font-bold uppercase tracking-wide block mb-0.5 text-rose-600 dark:text-rose-400">
+                Foundational Clinical Safety Rule
               </strong>
-              <span>
-                “Users must never delay medical care because an app shows no alert. Real-world symptoms and clinician advice take absolute priority over the dashboard.”
-              </span>
+              Symptoms and clinician advice take absolute priority over any app telemetry reading.
             </div>
           </div>
+        </div>
 
-          {/* Tab buttons */}
-          <div className={`mt-8 inline-flex p-1.5 rounded-2xl border shadow-sm ${isDark ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-200'
+        {/* Tab buttons */}
+        <div className="mb-8">
+          <div className={`inline-flex p-1.5 rounded-2xl border shadow-sm ${isDark ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-200'
             }`}>
             {[
               { id: 'risks', label: '1. Risk & Mitigation Sandbox', icon: ShieldAlert },
@@ -130,7 +125,7 @@ export default function ClinicalSafety() {
             <div className={`lg:col-span-5 rounded-2xl border p-6 shadow-xl ${isDark ? 'bg-[#090e18] border-white/10' : 'bg-white border-amber-900/10'
               }`}>
               <span className={`text-xs font-mono-code uppercase font-bold text-amber-500 block mb-3`}>
-                Select Clinical Risk from Section 17 Table:
+                Select Clinical Risk Scenario to Inspect:
               </span>
 
               <div className="space-y-2.5">
@@ -247,7 +242,7 @@ export default function ClinicalSafety() {
             }`}>
             <div className="max-w-3xl mb-8">
               <span className={`text-xs font-mono-code uppercase font-semibold ${isDark ? 'text-amber-300' : 'text-amber-800'}`}>
-                Section 12: Rigorous Validation Pathway
+                Rigorous Clinical Validation Pathway
               </span>
               <h3 className={`text-2xl font-bold font-cinzel mt-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
                 From Software Prototype to Regulatory Evidence
@@ -298,7 +293,7 @@ export default function ClinicalSafety() {
             }`}>
             <div className="max-w-3xl mb-8">
               <span className={`text-xs font-mono-code uppercase font-semibold ${isDark ? 'text-amber-300' : 'text-amber-800'}`}>
-                Section 13: Privacy & Responsible AI
+                Privacy Architecture & Responsible AI
               </span>
               <h3 className={`text-2xl font-bold font-cinzel mt-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
                 Zero Health Data Monetization

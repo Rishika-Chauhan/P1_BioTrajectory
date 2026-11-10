@@ -49,29 +49,23 @@ export default function SystemArchitecture() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className={`inline-flex items-center space-x-2 px-3.5 py-1 rounded-full border text-xs font-mono-code uppercase tracking-wider mb-4 ${isDark ? 'bg-indigo-500/10 border-indigo-500/25 text-indigo-300' : 'bg-indigo-50 border-indigo-300 text-indigo-900 shadow-sm'
-            }`}>
-            <Layers className="w-3.5 h-3.5 text-indigo-600" />
-            <span>Blueprint Section 6 & 9 • System Architecture</span>
+        {/* System Architecture Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-6 border-b border-inherit">
+          <div className="max-w-2xl">
+            <span className={`text-[11px] font-mono-code uppercase tracking-wider font-bold block mb-2 ${isDark ? 'text-indigo-400' : 'text-indigo-700'}`}>
+              Deterministic Architecture & Data Isolation
+            </span>
+            <h2 className={`font-cinzel text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              Deterministic Measurement Meets Grounded Intelligence
+            </h2>
+            <p className={`mt-2 text-sm leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+              Separates optical extraction, deterministic mathematical corridors, and conversational AI—guaranteeing verifiable truth with zero hallucination.
+            </p>
           </div>
 
-          <h2 className={`font-cinzel text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'
-            }`}>
-            Deterministic Precision Meets Generative AI
-          </h2>
-
-          <p className={`mt-4 text-base sm:text-lg font-light leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'
-            }`}>
-            A practical architecture strictly separating optical capture, deterministic statistical analytics, and natural language explanation—guaranteeing mathematical truth while leveraging Gemini for compassionate clarity.
-          </p>
-
-          {/* Architecture Golden Principle Pill */}
-          <div className={`mt-6 inline-block max-w-2xl px-5 py-2.5 rounded-2xl border text-xs leading-relaxed ${isDark ? 'bg-amber-950/20 border-amber-400/30 text-amber-200' : 'bg-amber-50 border-amber-300 text-amber-900 shadow-sm'
-            }`}>
-            <strong className="font-bold">Architecture Principle (PDF Section 6): </strong>
-            “Keep the measurement engine and trend calculations separate from the language model. Gemini receives structured, approved data to describe—never to fabricate numbers or diagnose.”
+          <div className={`p-3.5 rounded-2xl border text-xs max-w-md self-start md:self-auto shrink-0 ${isDark ? 'bg-amber-950/20 border-amber-400/30 text-amber-200' : 'bg-amber-50 border-amber-300 text-amber-900 shadow-xs'}`}>
+            <strong className="font-bold block mb-0.5 text-amber-600 dark:text-amber-400 font-mono-code uppercase text-[10px]">Core Architecture Guarantee</strong>
+            Gemini only synthesizes verified structured numbers—it never calculates raw statistics or makes clinical diagnoses.
           </div>
         </div>
 
@@ -83,7 +77,7 @@ export default function SystemArchitecture() {
           <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-white/10">
             <div>
               <span className={`text-xs font-mono-code uppercase font-semibold ${isDark ? 'text-amber-300' : 'text-amber-800'}`}>
-                Section 5 & 6: Live Data Flow Pipeline
+                Deterministic Data Flow Pipeline
               </span>
               <h3 className={`text-2xl font-bold font-cinzel mt-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
                 Stage {activeStage.stage}: {activeStage.layer} → {activeStage.title}
@@ -96,10 +90,10 @@ export default function SystemArchitecture() {
                 onClick={handleRunSimulation}
                 disabled={isRunningPipeline}
                 className={`px-4 py-2.5 rounded-xl text-xs font-bold font-mono-code uppercase flex items-center space-x-2 transition-all shadow-md ${isRunningPipeline
-                    ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
-                    : isDark
-                      ? 'bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.3)]'
-                      : 'bg-amber-600 hover:bg-amber-700 text-white'
+                  ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
+                  : isDark
+                    ? 'bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.3)]'
+                    : 'bg-amber-600 hover:bg-amber-700 text-white'
                   }`}
               >
                 <Play className="w-3.5 h-3.5" />
@@ -127,18 +121,18 @@ export default function SystemArchitecture() {
                   key={stg.stage}
                   onClick={() => setActiveStageIndex(idx)}
                   className={`p-3.5 rounded-2xl text-left border transition-all flex flex-col justify-between ${isSelected
-                      ? isDark
-                        ? 'bg-amber-400/20 border-amber-400/60 shadow-[0_0_20px_rgba(245,158,11,0.2)]'
-                        : 'bg-amber-50 border-amber-500 shadow-md ring-1 ring-amber-400/50'
-                      : isDark
-                        ? 'bg-slate-900/50 border-white/5 hover:bg-slate-800/60 text-slate-400'
-                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                    ? isDark
+                      ? 'bg-amber-400/20 border-amber-400/60 shadow-[0_0_20px_rgba(245,158,11,0.2)]'
+                      : 'bg-amber-50 border-amber-500 shadow-md ring-1 ring-amber-400/50'
+                    : isDark
+                      ? 'bg-slate-900/50 border-white/5 hover:bg-slate-800/60 text-slate-400'
+                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                     }`}
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isSelected
-                        ? isDark ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-amber-700 text-white font-bold'
-                        : isDark ? 'bg-slate-800 text-slate-400' : 'bg-slate-200 text-slate-600'
+                      ? isDark ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-amber-700 text-white font-bold'
+                      : isDark ? 'bg-slate-800 text-slate-400' : 'bg-slate-200 text-slate-600'
                       }`}>
                       <Icon className="w-4 h-4" />
                     </div>
@@ -221,10 +215,10 @@ export default function SystemArchitecture() {
           </div>
         </div>
 
-        {/* Tech Stack Cards Grid (Blueprint Section 9) */}
+        {/* Tech Stack Cards Grid */}
         <div>
           <h3 className={`text-xl font-bold font-cinzel text-center mb-8 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-            Implemented Technology Stack (Blueprint Section 9)
+            Implemented Architectural Tiers
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

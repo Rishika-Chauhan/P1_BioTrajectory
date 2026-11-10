@@ -70,59 +70,46 @@ export default function TheProblem() {
 
   return (
     <section
-      className={`relative py-28 transition-colors ${
-        isDark ? 'bg-[#05070c]' : 'bg-[#faf9f6]'
-      }`}
+      className={`relative py-28 transition-colors ${isDark ? 'bg-[#05070c]' : 'bg-[#faf9f6]'
+        }`}
       id="problem"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className={`inline-flex items-center space-x-2 px-3.5 py-1 rounded-full border text-xs font-mono-code uppercase tracking-widest mb-4 shadow-xs ${
-            isDark
-              ? 'bg-amber-400/10 border-amber-400/25 text-amber-300'
-              : 'bg-amber-50 border-amber-300/80 text-amber-900'
-          }`}>
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-            <span>The Clinical Dilemma • Blueprint Section 2</span>
+
+        {/* Clinical Problem & Paradigm Shift */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 pb-6 border-b border-inherit">
+          <div className="max-w-2xl">
+            <span className={`text-[11px] font-mono-code uppercase tracking-wider font-bold block mb-2 ${isDark ? 'text-amber-400' : 'text-amber-700'}`}>
+              Diagnostic Latency & Clinical Continuity
+            </span>
+            <h2 className={`font-cinzel text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              The Point-in-Time Diagnostic Blindspot
+            </h2>
+            <p className={`mt-2 text-sm leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+              Isolated annual urinalysis detects acute crises but misses insidious chronic trajectories. BioTrajectory captures the slope before irreversible tissue remodeling occurs.
+            </p>
           </div>
 
-          <h2 className={`font-cinzel text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight ${
-            isDark ? 'text-white' : 'text-slate-900'
-          }`}>
-            {PDF_PROBLEM_SECTION.headline}
-          </h2>
-          
-          <p className={`mt-4 text-base sm:text-lg font-light leading-relaxed max-w-2xl mx-auto ${
-            isDark ? 'text-slate-400' : 'text-slate-600'
-          }`}>
-            Traditional medicine reacts to acute crises. By the time symptoms surface, organ stress has compounded quietly for months.
-          </p>
-
           {/* Sub-view Switcher */}
-          <div className={`mt-6 inline-flex p-1 rounded-xl border ${
-            isDark ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-200'
-          }`}>
+          <div className={`inline-flex p-1 rounded-xl border self-start md:self-auto shrink-0 ${isDark ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-200'
+            }`}>
             <button
               onClick={() => setProblemTab('paradigm')}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all ${
-                problemTab === 'paradigm'
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all ${problemTab === 'paradigm'
                   ? isDark ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-amber-700 text-white font-bold'
                   : isDark ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
-              }`}
+                }`}
             >
-              Interactive Paradigm Simulator
+              Interactive Simulator
             </button>
             <button
               onClick={() => setProblemTab('epidemiology')}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all ${
-                problemTab === 'epidemiology'
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all ${problemTab === 'epidemiology'
                   ? isDark ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-amber-700 text-white font-bold'
                   : isDark ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
-              }`}
+                }`}
             >
-              Epidemiological Silent Progression
+              Epidemiological Model
             </button>
           </div>
         </div>
@@ -135,44 +122,38 @@ export default function TheProblem() {
             return (
               <div
                 key={issue.id}
-                className={`relative rounded-2xl p-7 border transition-all duration-300 group flex flex-col justify-between ${
-                  isDark
+                className={`relative rounded-2xl p-7 border transition-all duration-300 group flex flex-col justify-between ${isDark
                     ? 'bg-[#090e18] border-white/10 hover:border-amber-400/40 shadow-xl'
                     : 'bg-white border-amber-900/10 hover:border-amber-400/80 shadow-md'
-                }`}
+                  }`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-5">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center border transition-all ${
-                      isDark
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center border transition-all ${isDark
                         ? 'bg-slate-900 border-white/10 text-amber-300 group-hover:scale-105 group-hover:bg-amber-400/20'
                         : 'bg-amber-50 border-amber-200 text-amber-800 group-hover:scale-105 group-hover:bg-amber-100'
-                    }`}>
+                      }`}>
                       <Icon className="w-5 h-5" />
                     </div>
-                    <span className={`text-xs font-mono-code font-bold ${
-                      isDark ? 'text-slate-600' : 'text-slate-300'
-                    }`}>
+                    <span className={`text-xs font-mono-code font-bold ${isDark ? 'text-slate-600' : 'text-slate-300'
+                      }`}>
                       0{idx + 1}
                     </span>
                   </div>
 
-                  <h3 className={`font-cinzel text-xl font-bold mb-2 ${
-                    isDark ? 'text-white' : 'text-slate-900'
-                  }`}>
+                  <h3 className={`font-cinzel text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-slate-900'
+                    }`}>
                     {issue.title}
                   </h3>
 
-                  <p className={`text-sm leading-relaxed mb-4 font-light ${
-                    isDark ? 'text-slate-300' : 'text-slate-600'
-                  }`}>
+                  <p className={`text-sm leading-relaxed mb-4 font-light ${isDark ? 'text-slate-300' : 'text-slate-600'
+                    }`}>
                     {issue.description}
                   </p>
                 </div>
 
-                <div className={`pt-4 border-t text-xs font-mono-code flex items-center space-x-1.5 ${
-                  isDark ? 'border-white/5 text-amber-300/80' : 'border-amber-100 text-amber-900/80'
-                }`}>
+                <div className={`pt-4 border-t text-xs font-mono-code flex items-center space-x-1.5 ${isDark ? 'border-white/5 text-amber-300/80' : 'border-amber-100 text-amber-900/80'
+                  }`}>
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                   <span className="italic">“{issue.badScenario}”</span>
                 </div>
@@ -185,13 +166,12 @@ export default function TheProblem() {
             VIEW 1: INTERACTIVE PARADIGM SIMULATOR (SLIDER & DUAL-CARD VIEW)
         ========================================================================== */}
         {problemTab === 'paradigm' && (
-          <div className={`rounded-3xl border p-6 sm:p-10 shadow-2xl transition-all ${
-            isDark ? 'bg-[#090e18] border-white/10' : 'bg-white border-amber-900/10'
-          }`}>
+          <div className={`rounded-3xl border p-6 sm:p-10 shadow-2xl transition-all ${isDark ? 'bg-[#090e18] border-white/10' : 'bg-white border-amber-900/10'
+            }`}>
             <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-white/10">
               <div>
                 <span className={`text-xs font-mono-code uppercase font-semibold ${isDark ? 'text-amber-300' : 'text-amber-800'}`}>
-                  Live Paradigm Simulation (Blueprint Section 2 & 11)
+                  Live Interactive Comparison
                 </span>
                 <h3 className={`text-2xl font-bold font-cinzel mt-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
                   The Isolated Snapshot Trap vs. Longitudinal Reality
@@ -209,11 +189,10 @@ export default function TheProblem() {
                     <button
                       key={d}
                       onClick={() => setSliderDay(d)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-mono-code transition-all ${
-                        sliderDay === d
+                      className={`px-3 py-1.5 rounded-lg text-xs font-mono-code transition-all ${sliderDay === d
                           ? isDark ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-amber-700 text-white font-bold'
                           : isDark ? 'bg-slate-900 text-slate-400 hover:text-white' : 'bg-slate-100 text-slate-600 hover:text-slate-900'
-                      }`}
+                        }`}
                     >
                       Day {d}
                     </button>
@@ -224,11 +203,10 @@ export default function TheProblem() {
 
             {/* Side-by-Side Comparison Grid */}
             <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-              
+
               {/* Left: The Flawed Snapshot Approach */}
-              <div className={`p-6 rounded-2xl border flex flex-col justify-between ${
-                isDark ? 'bg-rose-950/20 border-rose-500/30' : 'bg-rose-50/70 border-rose-200'
-              }`}>
+              <div className={`p-6 rounded-2xl border flex flex-col justify-between ${isDark ? 'bg-rose-950/20 border-rose-500/30' : 'bg-rose-50/70 border-rose-200'
+                }`}>
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <span className="px-2.5 py-1 rounded text-xs font-mono-code font-bold uppercase bg-rose-500/20 text-rose-500 border border-rose-500/30">
@@ -262,9 +240,8 @@ export default function TheProblem() {
               </div>
 
               {/* Right: The BioTrajectory Personal Longitudinal View */}
-              <div className={`p-6 rounded-2xl border flex flex-col justify-between ${
-                isDark ? 'bg-emerald-950/20 border-emerald-500/30' : 'bg-emerald-50/70 border-emerald-200'
-              }`}>
+              <div className={`p-6 rounded-2xl border flex flex-col justify-between ${isDark ? 'bg-emerald-950/20 border-emerald-500/30' : 'bg-emerald-50/70 border-emerald-200'
+                }`}>
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <span className="px-2.5 py-1 rounded text-xs font-mono-code font-bold uppercase bg-emerald-500/20 text-emerald-500 border border-emerald-500/30">
@@ -347,12 +324,11 @@ export default function TheProblem() {
             VIEW 2: EPIDEMIOLOGICAL SILENT PROGRESSION VISUALIZATION
         ========================================================================== */}
         {problemTab === 'epidemiology' && (
-          <div className={`rounded-3xl border p-6 sm:p-10 shadow-2xl transition-all ${
-            isDark ? 'bg-[#090e18] border-white/10' : 'bg-white border-amber-900/10'
-          }`}>
+          <div className={`rounded-3xl border p-6 sm:p-10 shadow-2xl transition-all ${isDark ? 'bg-[#090e18] border-white/10' : 'bg-white border-amber-900/10'
+            }`}>
             <div className="max-w-3xl mb-8">
               <span className={`text-xs font-mono-code uppercase font-semibold ${isDark ? 'text-amber-300' : 'text-amber-800'}`}>
-                Epidemiological Reality • Blueprint Section 2 & 18
+                Epidemiological Context
               </span>
               <h3 className={`text-2xl font-bold font-cinzel mt-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
                 The Silent Progression Curve of Chronic Illness
@@ -373,18 +349,16 @@ export default function TheProblem() {
               ].map((s) => (
                 <div
                   key={s.stage}
-                  className={`p-4 rounded-xl border flex flex-col justify-between ${
-                    s.reversible
+                  className={`p-4 rounded-xl border flex flex-col justify-between ${s.reversible
                       ? isDark ? 'bg-emerald-950/20 border-emerald-500/30' : 'bg-emerald-50 border-emerald-300'
                       : isDark ? 'bg-rose-950/20 border-rose-500/30' : 'bg-rose-50 border-rose-300'
-                  }`}
+                    }`}
                 >
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-bold text-xs font-mono-code">{s.stage}</span>
-                      <span className={`text-[10px] font-mono-code px-2 py-0.5 rounded ${
-                        s.reversible ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'
-                      }`}>
+                      <span className={`text-[10px] font-mono-code px-2 py-0.5 rounded ${s.reversible ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'
+                        }`}>
                         {s.status}
                       </span>
                     </div>

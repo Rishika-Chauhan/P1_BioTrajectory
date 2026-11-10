@@ -11,7 +11,6 @@ import {
   Printer,
   Play,
   Pause,
-  ChevronRight,
   Info,
   Download,
   PlusCircle,
@@ -23,21 +22,31 @@ import {
   Layers,
   UserCheck,
   Compass,
-  TrendingUp
+  TrendingUp,
+  Bluetooth,
+  PieChart as PieChartIcon,
+  Radio,
+  Sliders,
+  Cpu
 } from 'lucide-react';
 import {
   BIOMARKER_DEFINITIONS,
   PATIENT_PERSONAS,
   SIMULATOR_PRESETS,
-  GEMINI_PROMPT_PRESETS
+  GEMINI_PROMPT_PRESETS,
+  BLUETOOTH_DEVICES,
+  BLUETOOTH_METRIC_CONFIGS
 } from '../data/mockData';
 import { useTheme } from '../context/ThemeContext';
 import ManualEntryModal from './ManualEntryModal';
+import BluetoothHub from './BluetoothHub';
+import AttractiveLineChart from './AttractiveLineChart';
+import AttractivePieChart from './AttractivePieChart';
 
 export default function LiveDemo({ onOpenReportModal }) {
   const { isDark } = useTheme();
 
-  // Active Main Tab: 'scanner', 'trajectory', 'gemini', 'clinician'
+  // Active Main Tab: 'trajectory', 'multistream', 'piechart', 'bluetooth', 'scanner', 'gemini', 'clinician'
   const [activeTab, setActiveTab] = useState('trajectory');
 
   // Selected Patient Persona: 'arjun', 'sunita', 'david', 'custom'
@@ -51,6 +60,9 @@ export default function LiveDemo({ onOpenReportModal }) {
 
   // Baseline Sufficiency Simulation Slider (PDF Section 11 & 17)
   const [simulatedReadingsLimit, setSimulatedReadingsLimit] = useState(15);
+
+  // Bluetooth Continuous Sensor Metric Selection State
+  const [selectedBleMetric, setSelectedBleMetric] = useState('bleCgmGlucose');
 
   // Switch persona handler
   const handleSelectPersona = (personaId) => {
@@ -316,78 +328,259 @@ export default function LiveDemo({ onOpenReportModal }) {
 
   return (
     <section
-      className={`relative py-24 border-y transition-colors ${isDark ? 'bg-[#070b14] border-white/[0.07]' : 'bg-[#f4efe8]/70 border-amber-900/10'
+      className={`relative pt-24 pb-16 border-b transition-colors overflow-hidden ${isDark ? 'bg-[#05070c] border-white/[0.08]' : 'bg-[#faf9f6] border-amber-900/10'
         }`}
       id="live-prototype"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Background Ambient Glows & Technical Grid */}
+      <div className={`absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] rounded-full blur-[140px] pointer-events-none ${isDark ? 'bg-amber-500/10' : 'bg-amber-300/20'
+        }`}></div>
+      <div className={`absolute top-1/3 left-1/4 w-[450px] h-[450px] rounded-full blur-[120px] pointer-events-none ${isDark ? 'bg-emerald-500/8' : 'bg-emerald-400/15'
+        }`}></div>
+      <div className={`absolute top-2/3 right-1/4 w-[500px] h-[400px] rounded-full blur-[130px] pointer-events-none ${isDark ? 'bg-cyan-500/8' : 'bg-amber-400/15'
+        }`}></div>
 
-        {/* Section Header */}
-        <div className="text-center max-w-4xl mx-auto mb-12">
-          <div className={`inline-flex items-center space-x-2 px-3.5 py-1 rounded-full border text-xs font-mono-code uppercase tracking-wider mb-4 ${isDark ? 'bg-amber-400/10 border-amber-400/25 text-amber-300' : 'bg-amber-100 border-amber-300 text-amber-900 shadow-sm'
-            }`}>
-            <Activity className="w-3.5 h-3.5" />
-            <span>Interactive Software MVP • Blueprint Sections 5–11 & 21</span>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
+
+        {/* =========================================================================
+            TOP COMPACT TELEMETRY STATUS BAR (PATIENT & GRAPHS RIGHT ON TOP!)
+        ========================================================================== */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div className="flex items-center space-x-2.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="text-xs font-mono-code font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+              Live Patient Telemetry & Trajectory Console
+            </span>
+            <span className="text-slate-400 text-xs hidden sm:inline">•</span>
+            <span className={`text-xs font-mono-code hidden sm:inline ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              Individualized Baseline Corridor System
+            </span>
           </div>
 
-          <h2 className={`font-cinzel text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'
-            }`}>
-            The Personal Trajectory Experience
-          </h2>
-
-          <p className={`mt-4 text-base sm:text-lg font-light leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'
-            }`}>
-            Experience the complete four-step journey outlined in the blueprint: from optical strip scanning with mandatory user confirmation, to individualized baseline modeling, grounded Gemini explanations, and clinician export.
-          </p>
-
-          {/* Persona Switcher Bar (Section 14 & 21) */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <span className={`text-xs font-mono-code uppercase tracking-wider mr-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-              Select Patient Case:
+          <div className="flex items-center space-x-2">
+            <span className={`text-[11px] font-mono-code px-3 py-1 rounded-full border ${isDark
+              ? 'bg-amber-400/10 text-amber-300 border-amber-400/20'
+              : 'bg-amber-50 text-amber-900 border-amber-200 shadow-xs'
+              }`}>
+              10-Session Rolling IQR Baseline Active
             </span>
-            {PATIENT_PERSONAS.map((persona) => {
-              const isSelected = selectedPersonaId === persona.id;
-              return (
-                <button
-                  key={persona.id}
-                  onClick={() => handleSelectPersona(persona.id)}
-                  className={`px-4 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all flex items-center space-x-2 border ${isSelected
+          </div>
+        </div>
+
+        {/* =========================================================================
+            PATIENT COMMAND & IDENTITY CONSOLE (RIGHT ON TOP!)
+        ========================================================================== */}
+        <div className={`rounded-3xl border p-5 sm:p-7 mb-8 shadow-2xl backdrop-blur-xl transition-all ${isDark
+          ? 'bg-[#090e18]/95 border-amber-400/30 shadow-[0_15px_45px_rgba(0,0,0,0.6)]'
+          : 'bg-white border-amber-900/15 shadow-[0_15px_40px_rgba(180,145,95,0.08)]'
+          }`}>
+          {/* Top Row: Patient Avatar, Details, Switcher, and Direct Action CTAs */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-inherit">
+
+            {/* Left: Active Patient Identity */}
+            <div className="flex items-center space-x-4">
+              <div className={`relative flex items-center justify-center w-14 h-14 rounded-2xl font-cinzel font-bold text-xl border shadow-inner ${isDark
+                ? 'bg-gradient-to-br from-amber-400/20 to-slate-900 border-amber-400/40 text-amber-300'
+                : 'bg-gradient-to-br from-amber-100 to-amber-50 border-amber-300 text-amber-800'
+                }`}>
+                <span>{activePersona.initials || activePersona.name.split(' ').map(n => n[0]).join('')}</span>
+                <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-inherit animate-pulse"></span>
+              </div>
+
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className={`text-2xl sm:text-3xl font-cinzel font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'
+                    }`}>
+                    {activePersona.name}
+                  </h2>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono-code font-bold uppercase tracking-wider border ${isDark
+                    ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                    : 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                    }`}>
+                    Live Trajectory Active
+                  </span>
+                  <button
+                    onClick={() => setActiveTab('bluetooth')}
+                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono-code font-bold uppercase tracking-wider border flex items-center space-x-1.5 transition-all hover:scale-105 ${isDark
+                      ? 'bg-blue-500/15 text-blue-300 border-blue-500/30 hover:border-blue-400'
+                      : 'bg-blue-50 text-blue-800 border-blue-300 hover:border-blue-500 shadow-xs'
+                      }`}
+                    title="Click to view Connected Bluetooth Hub"
+                  >
+                    <Bluetooth className="w-3 h-3 text-blue-400 animate-pulse" />
+                    <span>3 BLE Devices Connected (CGM • BP • Scale)</span>
+                  </button>
+                </div>
+
+                <div className={`mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-mono-code ${isDark ? 'text-slate-400' : 'text-slate-500'
+                  }`}>
+                  <span>Age: <strong className={isDark ? 'text-slate-200' : 'text-slate-800'}>{activePersona.age}y</strong></span>
+                  <span>•</span>
+                  <span>Gender: <strong className={isDark ? 'text-slate-200' : 'text-slate-800'}>{activePersona.gender || 'Active'}</strong></span>
+                  <span>•</span>
+                  <span>Patient ID: <strong className={isDark ? 'text-amber-300' : 'text-amber-700'}>{activePersona.patientId || 'BT-9428'}</strong></span>
+                  <span>•</span>
+                  <span>Observation: <strong className={isDark ? 'text-slate-200' : 'text-slate-800'}>30-Day Window ({history.length} Sessions)</strong></span>
+                </div>
+              </div>
+            </div>
+
+            {/* Center: Patient Persona Switcher Tabs */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`text-xs font-mono-code uppercase font-semibold mr-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                Switch Patient:
+              </span>
+              {PATIENT_PERSONAS.map((persona) => {
+                const isSelected = selectedPersonaId === persona.id;
+                return (
+                  <button
+                    key={persona.id}
+                    onClick={() => handleSelectPersona(persona.id)}
+                    className={`px-3.5 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all flex items-center space-x-2 border ${isSelected
                       ? isDark
-                        ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-[0_0_20px_rgba(245,158,11,0.3)] font-bold'
-                        : 'bg-amber-700 text-white border-amber-800 shadow-md font-bold'
+                        ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-[0_0_20px_rgba(245,158,11,0.35)] font-bold scale-105'
+                        : 'bg-amber-700 text-white border-amber-800 shadow-md font-bold scale-105'
                       : isDark
                         ? 'bg-slate-900/80 border-white/10 text-slate-300 hover:text-white hover:bg-slate-800'
                         : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100 shadow-xs'
-                    }`}
-                >
-                  <UserCheck className="w-3.5 h-3.5" />
-                  <span>{persona.name} ({persona.age}y)</span>
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded ${isSelected
-                      ? isDark ? 'bg-slate-950/30 text-slate-950' : 'bg-white/20 text-white'
-                      : isDark ? 'bg-white/5 text-slate-400' : 'bg-slate-100 text-slate-600'
-                    }`}>
-                    {persona.profileType.split(' ')[0]}
-                  </span>
-                </button>
-              );
-            })}
+                      }`}
+                  >
+                    <UserCheck className="w-3.5 h-3.5" />
+                    <span>{persona.name} ({persona.age}y)</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Right: Direct Action CTAs (Generate Report & Log Strip) */}
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={onOpenReportModal}
+                className={`px-5 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center space-x-2 shadow-lg ${isDark
+                  ? 'bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-slate-950 shadow-[0_0_25px_rgba(245,158,11,0.35)] hover:shadow-[0_0_35px_rgba(245,158,11,0.5)]'
+                  : 'bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800 text-white shadow-md hover:shadow-lg'
+                  }`}
+              >
+                <Printer className="w-4 h-4" />
+                <span>Generate Clinician PDF Report</span>
+              </button>
+
+              <button
+                onClick={() => setIsManualModalOpen(true)}
+                className={`px-4 py-3 rounded-xl border text-xs font-semibold tracking-wide uppercase transition-all flex items-center space-x-2 ${isDark
+                  ? 'bg-slate-900/80 hover:bg-slate-800 border-white/15 text-slate-200 hover:text-white'
+                  : 'bg-white hover:bg-slate-50 border-slate-300 text-slate-700'
+                  }`}
+              >
+                <PlusCircle className="w-4 h-4 text-emerald-500" />
+                <span>+ Log Test Strip</span>
+              </button>
+
+              <button
+                onClick={handleExportCSV}
+                className={`p-3 rounded-xl border text-xs transition-all ${isDark
+                  ? 'bg-slate-900/80 hover:bg-slate-800 border-white/10 text-slate-300'
+                  : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-600 shadow-xs'
+                  }`}
+                title="Export CSV"
+              >
+                <Download className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
-          {/* Active Case Mini Brief */}
-          <div className={`mt-3 inline-block max-w-2xl px-4 py-2 rounded-xl text-xs border ${isDark ? 'bg-slate-900/50 border-white/5 text-slate-300' : 'bg-white/80 border-slate-200 text-slate-700 shadow-xs'
+          {/* Active Clinical Story Narrative */}
+          <div className={`mt-4 p-3.5 rounded-2xl border text-xs flex items-start space-x-3 ${isDark
+            ? 'bg-slate-950/70 border-white/10 text-slate-300'
+            : 'bg-amber-50/70 border-amber-200 text-slate-800'
             }`}>
-            <span className="font-semibold text-amber-500">Case Context: </span>
-            <span>{activePersona.clinicalStory}</span>
+            <span className="font-mono-code font-bold uppercase text-amber-500 text-[11px] shrink-0 mt-0.5">
+              Clinical Case Focus:
+            </span>
+            <span className="leading-relaxed">
+              {activePersona.clinicalStory}
+            </span>
           </div>
 
-          {/* Main 4-Tab Navigation */}
-          <div className={`mt-8 inline-flex p-1.5 rounded-2xl border shadow-md ${isDark ? 'bg-slate-900/90 border-white/10' : 'bg-white border-amber-900/10'
+          {/* 4 Real-time Telemetry Badges Right on Top */}
+          <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs font-mono-code">
+            <div className={`p-3.5 rounded-xl border ${isDark ? 'bg-slate-950/80 border-white/5' : 'bg-slate-50 border-slate-200'
+              }`}>
+              <span className={`block text-[10px] uppercase ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                Active Parameter
+              </span>
+              <span className={`text-sm font-bold block mt-0.5 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                {currentBiomarkerMeta.name}
+              </span>
+              <p className={`text-[11px] mt-0.5 ${isDark ? 'text-amber-300' : 'text-amber-700'}`}>
+                Latest: {activeHistory[activeHistory.length - 1]?.[selectedBiomarker] ?? 0} {currentBiomarkerMeta.unit}
+              </p>
+            </div>
+
+            <div className={`p-3.5 rounded-xl border ${isDark ? 'bg-slate-950/80 border-white/5' : 'bg-slate-50 border-slate-200'
+              }`}>
+              <span className={`block text-[10px] uppercase ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                Personal Baseline Corridor
+              </span>
+              <span className={`text-sm font-bold block mt-0.5 ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
+                {activePersona.baselines?.[selectedBiomarker]?.normalCorridor || `${currentBiomarkerMeta.baselineMean} ${currentBiomarkerMeta.unit}`}
+              </span>
+              <p className={`text-[11px] mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                10-session rolling median IQR
+              </p>
+            </div>
+
+            <div className={`p-3.5 rounded-xl border ${isDark ? 'bg-slate-950/80 border-white/5' : 'bg-slate-50 border-slate-200'
+              }`}>
+              <span className={`block text-[10px] uppercase ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                Trajectory Direction
+              </span>
+              <span className={`text-sm font-bold block mt-0.5 ${selectedPersonaId === 'arjun'
+                ? 'text-emerald-400'
+                : selectedPersonaId === 'sunita'
+                  ? 'text-amber-400'
+                  : 'text-sky-400'
+                }`}>
+                {selectedPersonaId === 'arjun'
+                  ? 'Normalized (0.0σ)'
+                  : selectedPersonaId === 'sunita'
+                    ? 'Upward Creep (+1.4σ)'
+                    : 'Therapeutic Zone Active'}
+              </span>
+              <p className={`text-[11px] mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                {selectedPersonaId === 'arjun' ? 'Day 22 spike resolved' : selectedPersonaId === 'sunita' ? 'Glucose creep tracked' : 'pH 6.5 target met'}
+              </p>
+            </div>
+
+            <div className={`p-3.5 rounded-xl border ${isDark ? 'bg-slate-950/80 border-white/5' : 'bg-slate-50 border-slate-200'
+              }`}>
+              <span className={`block text-[10px] uppercase ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                Hydration Context (SG)
+              </span>
+              <span className={`text-sm font-bold block mt-0.5 ${isDark ? 'text-cyan-300' : 'text-teal-700'}`}>
+                SG {activeHistory[activeHistory.length - 1]?.specificGravity ?? 1.018}
+              </span>
+              <p className={`text-[11px] mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                Optimal fluid balance maintained
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* =========================================================================
+            FEATURE TAB NAVIGATION (TRAJECTORY GRAPHS, STRIP SCANNER, GEMINI AI, REPORT)
+        ========================================================================== */}
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+          <div className={`inline-flex p-1.5 rounded-2xl border shadow-md ${isDark ? 'bg-slate-900/90 border-white/10' : 'bg-white border-amber-900/10'
             }`}>
             {[
-              { id: 'scanner', label: '1. Guided Strip Reader', icon: Camera },
-              { id: 'trajectory', label: '2. Trajectory Engine', icon: Activity },
-              { id: 'gemini', label: '3. Grounded Gemini AI', icon: Sparkles },
-              { id: 'clinician', label: '4. Clinician Summary', icon: FileText },
+              { id: 'trajectory', label: '1. Trajectory Curves', icon: Activity },
+              { id: 'multistream', label: '2. Multi-Stream Line Chart', icon: TrendingUp },
+              { id: 'piechart', label: '3. Corridor & System Pie', icon: PieChartIcon },
+              { id: 'bluetooth', label: '4. Bluetooth BLE Hub', icon: Bluetooth },
+              { id: 'scanner', label: '5. Optical Strip Scanner', icon: Camera },
+              { id: 'gemini', label: '6. Grounded Gemini AI', icon: Sparkles },
+              { id: 'clinician', label: '7. Clinician Handover Report', icon: FileText },
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -396,12 +589,12 @@ export default function LiveDemo({ onOpenReportModal }) {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wider uppercase transition-all ${isActive
-                      ? isDark
-                        ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-[0_0_20px_rgba(217,119,6,0.3)]'
-                        : 'bg-gradient-to-r from-amber-600 to-amber-800 text-white shadow-md'
-                      : isDark
-                        ? 'text-slate-400 hover:text-white hover:bg-white/5'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
+                    ? isDark
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-[0_0_20px_rgba(217,119,6,0.3)]'
+                      : 'bg-gradient-to-r from-amber-600 to-amber-800 text-white shadow-md'
+                    : isDark
+                      ? 'text-slate-400 hover:text-white hover:bg-white/5'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
                     }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -409,6 +602,20 @@ export default function LiveDemo({ onOpenReportModal }) {
                 </button>
               );
             })}
+          </div>
+
+          {/* Quick Trigger to Print Handover Report */}
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={onOpenReportModal}
+              className={`px-4 py-2.5 rounded-xl text-xs font-mono-code uppercase font-semibold border flex items-center space-x-2 transition-all ${isDark
+                ? 'border-amber-400/40 bg-amber-400/10 hover:bg-amber-400/20 text-amber-300'
+                : 'border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 shadow-xs'
+                }`}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>Full Doctor-Ready PDF</span>
+            </button>
           </div>
         </div>
 
@@ -427,22 +634,22 @@ export default function LiveDemo({ onOpenReportModal }) {
                 <div className="flex items-center space-x-2">
                   <Camera className={`w-4 h-4 ${isDark ? 'text-amber-300' : 'text-amber-600'}`} />
                   <span className={`text-sm font-semibold tracking-wide ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                    Simulated Smartphone Optical Capture (Section 5)
+                    Smartphone Optical Capture & Lux Calibration
                   </span>
                 </div>
 
                 <div className="flex items-center space-x-2 text-xs">
                   <span className={`flex items-center space-x-1 px-2.5 py-1 rounded font-mono-code border ${ambientLux >= 300
-                      ? isDark ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' : 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                      : 'bg-rose-500/10 text-rose-500 border-rose-500/30 font-bold animate-pulse'
+                    ? isDark ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' : 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                    : 'bg-rose-500/10 text-rose-500 border-rose-500/30 font-bold animate-pulse'
                     }`}>
                     <Sun className="w-3 h-3" />
                     <span>{ambientLux} Lux ({ambientLux >= 300 ? 'Optimal' : 'Low Light!'})</span>
                   </span>
 
                   <span className={`px-2 py-1 rounded font-mono-code border ${Math.abs(tiltAngleDeg) <= 4
-                      ? isDark ? 'bg-slate-800 text-slate-300 border-white/5' : 'bg-slate-100 text-slate-700 border-slate-200'
-                      : 'bg-rose-500/10 text-rose-500 border-rose-500/30 font-bold'
+                    ? isDark ? 'bg-slate-800 text-slate-300 border-white/5' : 'bg-slate-100 text-slate-700 border-slate-200'
+                    : 'bg-rose-500/10 text-rose-500 border-rose-500/30 font-bold'
                     }`}>
                     Tilt: {tiltAngleDeg}°
                   </span>
@@ -497,8 +704,8 @@ export default function LiveDemo({ onOpenReportModal }) {
                         key={bio.id}
                         onClick={() => setActivePadIndex(idx)}
                         className={`w-12 h-4 rounded-xs border cursor-pointer transition-all flex items-center justify-center text-[8px] font-mono-code ${isSelectedPad
-                            ? 'ring-2 ring-amber-400 scale-110 shadow-md border-amber-400 z-20'
-                            : 'border-black/20 hover:scale-105'
+                          ? 'ring-2 ring-amber-400 scale-110 shadow-md border-amber-400 z-20'
+                          : 'border-black/20 hover:scale-105'
                           }`}
                         style={{ backgroundColor: matchedSwatch.color }}
                         title={`${bio.name}: ${readingVal} ${bio.unit}`}
@@ -627,8 +834,8 @@ export default function LiveDemo({ onOpenReportModal }) {
                     key={p.id}
                     onClick={() => handlePresetSelect(p)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-mono-code transition-all ${selectedPreset.id === p.id
-                        ? isDark ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-amber-600 text-white font-bold'
-                        : isDark ? 'bg-slate-900 text-slate-300 hover:text-white border border-white/5' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
+                      ? isDark ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-amber-600 text-white font-bold'
+                      : isDark ? 'bg-slate-900 text-slate-300 hover:text-white border border-white/5' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
                       }`}
                   >
                     {p.label}
@@ -645,7 +852,7 @@ export default function LiveDemo({ onOpenReportModal }) {
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
                   <span className={`text-xs font-mono-code uppercase tracking-wider font-semibold ${isDark ? 'text-amber-300' : 'text-amber-800'
                     }`}>
-                    Step 2: Mandatory User Confirmation (PDF §5 & §10)
+                    Step 2: Mandatory Patient Confirmation & Audit
                   </span>
                 </div>
                 <h3 className={`text-lg font-bold font-cinzel mt-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
@@ -678,8 +885,8 @@ export default function LiveDemo({ onOpenReportModal }) {
                           key={idx}
                           onClick={() => setEditedReadings({ ...editedReadings, [activeBio.id]: swatch.value })}
                           className={`p-1.5 rounded-lg border text-center transition-all ${activeVal === swatch.value
-                              ? 'ring-2 ring-amber-400 border-amber-400 font-bold scale-105'
-                              : 'border-black/10 opacity-75 hover:opacity-100'
+                            ? 'ring-2 ring-amber-400 border-amber-400 font-bold scale-105'
+                            : 'border-black/10 opacity-75 hover:opacity-100'
                             }`}
                         >
                           <div className="w-full h-4 rounded mb-1 border" style={{ backgroundColor: swatch.color }}></div>
@@ -763,8 +970,8 @@ export default function LiveDemo({ onOpenReportModal }) {
                         type="button"
                         onClick={() => setLifestyleTag(tag)}
                         className={`px-2.5 py-1 rounded-md text-[10px] font-mono-code border transition-all ${lifestyleTag === tag
-                            ? isDark ? 'bg-amber-400 text-slate-950 font-bold border-amber-300' : 'bg-amber-600 text-white font-bold border-amber-700'
-                            : isDark ? 'bg-slate-950 text-slate-400 border-white/5' : 'bg-slate-100 text-slate-700 border-slate-200'
+                          ? isDark ? 'bg-amber-400 text-slate-950 font-bold border-amber-300' : 'bg-amber-600 text-white font-bold border-amber-700'
+                          : isDark ? 'bg-slate-950 text-slate-400 border-white/5' : 'bg-slate-100 text-slate-700 border-slate-200'
                           }`}
                       >
                         {tag}
@@ -778,8 +985,8 @@ export default function LiveDemo({ onOpenReportModal }) {
                     onChange={(e) => setUserNotes(e.target.value)}
                     placeholder="Describe relevant factors: workout intensity, fluid intake, medication..."
                     className={`w-full text-xs p-2.5 rounded-xl border focus:outline-none ${isDark
-                        ? 'bg-slate-950 border-white/10 text-slate-200 focus:border-amber-400'
-                        : 'bg-white border-slate-300 text-slate-800 focus:border-amber-500'
+                      ? 'bg-slate-950 border-white/10 text-slate-200 focus:border-amber-400'
+                      : 'bg-white border-slate-300 text-slate-800 focus:border-amber-500'
                       }`}
                   ></textarea>
                 </div>
@@ -795,7 +1002,7 @@ export default function LiveDemo({ onOpenReportModal }) {
                   <span>Confirm & Save to Encrypted Trajectory</span>
                 </button>
                 <p className={`text-[10px] text-center ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Values are stored locally in accordance with the BioTrajectory Privacy Charter (Section 13).
+                  Values are stored locally in accordance with the BioTrajectory Zero-Monetization Privacy Charter.
                 </p>
               </div>
             </div>
@@ -820,12 +1027,12 @@ export default function LiveDemo({ onOpenReportModal }) {
                     key={bio.id}
                     onClick={() => setSelectedBiomarker(bio.id)}
                     className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all ${selectedBiomarker === bio.id
-                        ? isDark
-                          ? 'bg-amber-400 text-slate-950 shadow-sm font-bold'
-                          : 'bg-amber-600 text-white shadow-sm font-bold'
-                        : isDark
-                          ? 'bg-slate-900/60 text-slate-400 hover:text-white border border-white/5'
-                          : 'bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200'
+                      ? isDark
+                        ? 'bg-amber-400 text-slate-950 shadow-sm font-bold'
+                        : 'bg-amber-600 text-white shadow-sm font-bold'
+                      : isDark
+                        ? 'bg-slate-900/60 text-slate-400 hover:text-white border border-white/5'
+                        : 'bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200'
                       }`}
                   >
                     {bio.name}
@@ -838,7 +1045,9 @@ export default function LiveDemo({ onOpenReportModal }) {
                 <span className={`font-mono-code uppercase mr-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Chart Mode:</span>
                 {[
                   { id: 'single', label: 'Single Trend', icon: TrendingUp },
+                  { id: 'multistream', label: 'Multi-Stream (Strip + BLE)', icon: Activity },
                   { id: 'dual', label: 'Dual-Axis', icon: BarChart2 },
+                  { id: 'piechart', label: 'Corridor Pie', icon: PieChartIcon },
                   { id: 'heatmap', label: 'Strip Matrix', icon: Grid },
                   { id: 'distribution', label: 'IQR Box', icon: Layers }
                 ].map((mode) => {
@@ -849,12 +1058,12 @@ export default function LiveDemo({ onOpenReportModal }) {
                       key={mode.id}
                       onClick={() => setChartMode(mode.id)}
                       className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg font-mono-code text-xs transition-all ${isActive
-                          ? isDark
-                            ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
-                            : 'bg-amber-700 text-white font-bold shadow-sm'
-                          : isDark
-                            ? 'bg-slate-900 text-slate-400 hover:text-white border border-white/5'
-                            : 'bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200'
+                        ? isDark
+                          ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
+                          : 'bg-amber-700 text-white font-bold shadow-sm'
+                        : isDark
+                          ? 'bg-slate-900 text-slate-400 hover:text-white border border-white/5'
+                          : 'bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200'
                         }`}
                     >
                       <Icon className="w-3.5 h-3.5" />
@@ -871,8 +1080,8 @@ export default function LiveDemo({ onOpenReportModal }) {
                 <button
                   onClick={() => setIsManualModalOpen(true)}
                   className={`px-3.5 py-1.5 rounded-lg font-mono-code uppercase font-bold text-xs flex items-center space-x-1.5 transition-all shadow-sm ${isDark
-                      ? 'bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-[0_0_15px_rgba(217,119,6,0.2)]'
-                      : 'bg-amber-600 hover:bg-amber-700 text-white'
+                    ? 'bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-[0_0_15px_rgba(217,119,6,0.2)]'
+                    : 'bg-amber-600 hover:bg-amber-700 text-white'
                     }`}
                 >
                   <PlusCircle className="w-3.5 h-3.5" />
@@ -882,8 +1091,8 @@ export default function LiveDemo({ onOpenReportModal }) {
                 <button
                   onClick={handleExportCSV}
                   className={`px-3 py-1.5 rounded-lg font-mono-code text-xs border flex items-center space-x-1.5 transition-all ${isDark
-                      ? 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-white/10'
-                      : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 shadow-xs'
+                    ? 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-white/10'
+                    : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 shadow-xs'
                     }`}
                   title="Download CSV"
                 >
@@ -894,8 +1103,8 @@ export default function LiveDemo({ onOpenReportModal }) {
                 <button
                   onClick={handleExportJSON}
                   className={`px-3 py-1.5 rounded-lg font-mono-code text-xs border flex items-center space-x-1.5 transition-all ${isDark
-                      ? 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-white/10'
-                      : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 shadow-xs'
+                    ? 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-white/10'
+                    : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 shadow-xs'
                     }`}
                   title="Download JSON"
                 >
@@ -910,8 +1119,8 @@ export default function LiveDemo({ onOpenReportModal }) {
                       key={days}
                       onClick={() => setTimeRange(days)}
                       className={`px-2.5 py-1 rounded text-[11px] font-mono-code transition-all ${timeRange === days
-                          ? isDark ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold' : 'bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold'
-                          : isDark ? 'bg-slate-900 text-slate-400 hover:text-white' : 'bg-slate-100 text-slate-600 hover:text-slate-900'
+                        ? isDark ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold' : 'bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold'
+                        : isDark ? 'bg-slate-900 text-slate-400 hover:text-white' : 'bg-slate-100 text-slate-600 hover:text-slate-900'
                         }`}
                     >
                       {days}D
@@ -935,8 +1144,8 @@ export default function LiveDemo({ onOpenReportModal }) {
 
             {/* Baseline Sufficiency & Data-Integrity Status Banner (PDF Section 11 & 17) */}
             <div className={`mt-5 p-4 rounded-xl border flex flex-wrap items-center justify-between gap-4 ${isBaselineActive
-                ? isDark ? 'bg-slate-900/40 border-emerald-500/30' : 'bg-emerald-50/70 border-emerald-300'
-                : isDark ? 'bg-amber-950/20 border-amber-500/40' : 'bg-amber-50/80 border-amber-300'
+              ? isDark ? 'bg-slate-900/40 border-emerald-500/30' : 'bg-emerald-50/70 border-emerald-300'
+              : isDark ? 'bg-amber-950/20 border-amber-500/40' : 'bg-amber-50/80 border-amber-300'
               }`}>
               <div className="flex items-center space-x-3">
                 <div className={`w-3 h-3 rounded-full ${isBaselineActive ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-amber-500 animate-ping'
@@ -950,7 +1159,7 @@ export default function LiveDemo({ onOpenReportModal }) {
                   <p className={`text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                     {isBaselineActive
                       ? 'Constructed via non-parametric rolling medians & interquartile corridors. Avoids misleading composite wellness scores.'
-                      : 'PDF Rule §11: Baselines require minimum 10 readings before flagging variance to avoid premature false alarms.'}
+                      : 'Statistical Stability Rule: Baselines require minimum 10 readings before locking corridors to avoid premature false alarms.'}
                   </p>
                 </div>
               </div>
@@ -1183,8 +1392,8 @@ export default function LiveDemo({ onOpenReportModal }) {
                             y={chartHeight - padding.bottom + 18}
                             textAnchor="middle"
                             className={`text-[9px] font-mono-code ${isHovered
-                                ? isDark ? 'fill-amber-400 font-bold' : 'fill-amber-700 font-bold'
-                                : isDark ? 'fill-slate-500' : 'fill-slate-600'
+                              ? isDark ? 'fill-amber-400 font-bold' : 'fill-amber-700 font-bold'
+                              : isDark ? 'fill-slate-500' : 'fill-slate-600'
                               }`}
                           >
                             D{pt.data.day}
@@ -1198,8 +1407,8 @@ export default function LiveDemo({ onOpenReportModal }) {
                 {/* Rich Floating Tooltip on Hover */}
                 {hoveredPoint && (
                   <div className={`mt-3 p-4 rounded-xl border flex flex-wrap items-center justify-between gap-4 transition-all shadow-lg ${hoveredPoint.flagged
-                      ? isDark ? 'bg-rose-950/40 border-rose-500/40' : 'bg-rose-50 border-rose-300'
-                      : isDark ? 'bg-slate-900/90 border-white/10' : 'bg-white border-slate-200'
+                    ? isDark ? 'bg-rose-950/40 border-rose-500/40' : 'bg-rose-50 border-rose-300'
+                    : isDark ? 'bg-slate-900/90 border-white/10' : 'bg-white border-slate-200'
                     }`}>
                     <div className="flex items-center space-x-3">
                       <div className={`w-3.5 h-3.5 rounded-full ${hoveredPoint.flagged ? 'bg-rose-500 animate-ping' : 'bg-emerald-500'
@@ -1210,8 +1419,8 @@ export default function LiveDemo({ onOpenReportModal }) {
                             Day {hoveredPoint.day} ({hoveredPoint.date} at {hoveredPoint.time})
                           </span>
                           <span className={`px-2 py-0.5 rounded text-[10px] font-mono-code border ${hoveredPoint.flagged
-                              ? 'bg-rose-500/20 text-rose-400 border-rose-500/30 font-bold'
-                              : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                            ? 'bg-rose-500/20 text-rose-400 border-rose-500/30 font-bold'
+                            : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
                             }`}>
                             {hoveredPoint.flagged ? 'Review Flagged (+3.8σ)' : 'Within Baseline'}
                           </span>
@@ -1374,10 +1583,10 @@ export default function LiveDemo({ onOpenReportModal }) {
                                 <div
                                   onClick={() => setSelectedBiomarker(bio.id)}
                                   className={`w-7 h-6 mx-auto rounded flex items-center justify-center text-[9px] font-bold cursor-pointer transition-transform hover:scale-110 ${isElevated
-                                      ? 'bg-rose-500/80 text-white shadow-xs'
-                                      : isWarning
-                                        ? 'bg-amber-500/80 text-slate-950 shadow-xs'
-                                        : isDark ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-500/20' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                                    ? 'bg-rose-500/80 text-white shadow-xs'
+                                    : isWarning
+                                      ? 'bg-amber-500/80 text-slate-950 shadow-xs'
+                                      : isDark ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-500/20' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                                     }`}
                                   title={`${bio.name} on Day ${d.day}: ${val} ${bio.unit}`}
                                 >
@@ -1405,7 +1614,7 @@ export default function LiveDemo({ onOpenReportModal }) {
                     Non-Parametric Rolling Median & Interquartile Corridor (IQR)
                   </h4>
                   <p className={`text-xs leading-relaxed mb-4 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                    PDF Section 11 strictly mandates that personal baselines avoid sensitive arithmetic means that get warped by temporary post-workout dehydration spikes. Rolling medians protect against acute single-day distortion.
+                    Personal baselines avoid sensitive arithmetic means that get warped by temporary post-workout dehydration spikes. Non-parametric rolling medians protect against acute single-day distortion.
                   </p>
 
                   <div className="space-y-4 font-mono-code text-xs">
@@ -1451,13 +1660,36 @@ export default function LiveDemo({ onOpenReportModal }) {
                       No Fake Composite Scores
                     </h5>
                     <p className={`text-xs mt-2 leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                      The blueprint specifically warns against combining disparate biomarkers into a single score. Each biological subsystem is evaluated in its own natural biochemical units.
+                      BioTrajectory avoids combining disparate biomarkers into an arbitrary single score. Each biological subsystem is evaluated in its natural physiological and biochemical units.
                     </p>
                   </div>
                   <div className="mt-4 p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-[11px] text-emerald-400 font-mono-code">
-                    ✓ Verified compliant with PDF §11
+                    ✓ Verified: Isolated Subsystem Evaluation
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* =========================================================================
+                CHART MODE 5: ATTRACTIVE MULTI-STREAM OVERLAY (STRIP + BLE SENSORS)
+            ========================================================================== */}
+            {chartMode === 'multistream' && (
+              <div className="mt-6">
+                <AttractiveLineChart
+                  history={activeHistory}
+                  activePersona={activePersona}
+                  selectedBiomarker={selectedBiomarker}
+                  selectedBleMetric={selectedBleMetric}
+                />
+              </div>
+            )}
+
+            {/* =========================================================================
+                CHART MODE 6: ATTRACTIVE DONUT & PIE CHART BREAKDOWN
+            ========================================================================== */}
+            {chartMode === 'piechart' && (
+              <div className="mt-6">
+                <AttractivePieChart activePersona={activePersona} />
               </div>
             )}
 
@@ -1516,6 +1748,74 @@ export default function LiveDemo({ onOpenReportModal }) {
         )}
 
         {/* =========================================================================
+            TAB: ATTRACTIVE MULTI-STREAM LINE CHART (DIRECT FULL TAB)
+        ========================================================================== */}
+        {activeTab === 'multistream' && (
+          <div className={`rounded-2xl border p-6 sm:p-8 shadow-xl ${isDark ? 'bg-[#090e18] border-white/10' : 'bg-white border-amber-900/10'
+            }`}>
+            <AttractiveLineChart
+              history={activeHistory}
+              activePersona={activePersona}
+              selectedBiomarker={selectedBiomarker}
+              selectedBleMetric={selectedBleMetric}
+            />
+          </div>
+        )}
+
+        {/* =========================================================================
+            TAB: ATTRACTIVE DONUT & PIE CHART (DIRECT FULL TAB)
+        ========================================================================== */}
+        {activeTab === 'piechart' && (
+          <div className={`rounded-2xl border p-6 sm:p-8 shadow-xl ${isDark ? 'bg-[#090e18] border-white/10' : 'bg-white border-amber-900/10'
+            }`}>
+            <AttractivePieChart activePersona={activePersona} />
+          </div>
+        )}
+
+        {/* =========================================================================
+            TAB: CONTINUOUS BLUETOOTH LOW ENERGY DEVICE HUB
+        ========================================================================== */}
+        {activeTab === 'bluetooth' && (
+          <div className="space-y-6">
+            <BluetoothHub
+              onSelectMetricForChart={(metricKey) => {
+                setSelectedBleMetric(metricKey);
+                setActiveTab('multistream');
+              }}
+              onSyncDeviceData={() => {
+                const now = new Date();
+                const newEntry = {
+                  day: history.length + 1,
+                  date: now.toISOString().split('T')[0],
+                  time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                  protein: activePersona.baselines?.protein?.median || 6.2,
+                  specificGravity: 1.018,
+                  pH: 6.5,
+                  glucose: 0,
+                  ketones: 0,
+                  blood: 0,
+                  leukocytes: 0,
+                  nitrite: 0,
+                  urobilinogen: 0.2,
+                  bilirubin: 0,
+                  bleCgmGlucose: activeHistory[activeHistory.length - 1]?.bleCgmGlucose || 95,
+                  bleBpSystolic: 118,
+                  bleBpDiastolic: 76,
+                  bleHeartRate: 68,
+                  bleSpo2: 98.5,
+                  bleHydration: 58.2,
+                  notes: 'Live BLE synchronized packet: continuous CGM, blood pressure, and resting heart rate data integrated.',
+                  flagged: false,
+                  confirmed: true
+                };
+                setHistory(prev => [...prev, newEntry]);
+                setSimulatedReadingsLimit(prev => prev + 1);
+              }}
+            />
+          </div>
+        )}
+
+        {/* =========================================================================
             TAB 3: GROUNDED GEMINI AI & REASONING COPILOT (PDF Section 8 & 16)
         ========================================================================== */}
         {activeTab === 'gemini' && (
@@ -1526,7 +1826,7 @@ export default function LiveDemo({ onOpenReportModal }) {
               }`}>
               <div className="flex items-center space-x-2 text-xs font-mono-code uppercase text-amber-500 font-bold mb-4">
                 <Sparkles className="w-4 h-4" />
-                <span>Section 8: Gemini Prompts</span>
+                <span>Grounded AI Explanatory Prompts</span>
               </div>
               <h3 className={`text-base font-cinzel font-bold mb-4 ${isDark ? 'text-white' : 'text-slate-900'}`}>
                 Grounded Explanation Prompts
@@ -1544,12 +1844,12 @@ export default function LiveDemo({ onOpenReportModal }) {
                         setTimeout(() => setIsAiThinking(false), 500);
                       }}
                       className={`w-full text-left p-3.5 rounded-xl border transition-all text-xs ${isSelected
-                          ? isDark
-                            ? 'bg-amber-400/20 border-amber-400/60 text-white font-semibold'
-                            : 'bg-amber-50 border-amber-400 text-amber-950 font-bold shadow-xs'
-                          : isDark
-                            ? 'bg-slate-900/50 border-white/5 text-slate-400 hover:text-white'
-                            : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                        ? isDark
+                          ? 'bg-amber-400/20 border-amber-400/60 text-white font-semibold'
+                          : 'bg-amber-50 border-amber-400 text-amber-950 font-bold shadow-xs'
+                        : isDark
+                          ? 'bg-slate-900/50 border-white/5 text-slate-400 hover:text-white'
+                          : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                         }`}
                     >
                       <span className="block font-medium mb-1">{p.title}</span>
@@ -1723,7 +2023,7 @@ export default function LiveDemo({ onOpenReportModal }) {
               }`}>
               <div>
                 <span className={`text-xs font-mono-code uppercase font-semibold ${isDark ? 'text-amber-300' : 'text-amber-800'}`}>
-                  Clinician Appointment Brief (PDF Section 7 & 21)
+                  Clinician Appointment Brief & Chronology
                 </span>
                 <h3 className={`text-2xl font-bold font-cinzel mt-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
                   Doctor-Ready Longitudinal Chronology
@@ -1822,6 +2122,77 @@ export default function LiveDemo({ onOpenReportModal }) {
             </div>
           </div>
         )}
+
+        {/* 4 Key Guiding Pillars */}
+        <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 text-left">
+          <div className={`p-5 rounded-2xl border transition-all ${isDark
+            ? 'bg-slate-900/40 border-white/5 hover:border-amber-400/30'
+            : 'bg-white border-amber-900/10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-amber-400/50'
+            }`}>
+            <div className={`flex items-center space-x-2 text-xs font-mono-code uppercase tracking-wider mb-1 ${isDark ? 'text-amber-300' : 'text-amber-700'
+              }`}>
+              <Compass className="w-3.5 h-3.5" />
+              <span>Signal Input</span>
+            </div>
+            <div className={`text-lg font-semibold font-cinzel ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              10 Biomarkers
+            </div>
+            <p className={`text-xs mt-1 leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              Commercial reagent strips with guided optical camera framing & manual validation.
+            </p>
+          </div>
+
+          <div className={`p-5 rounded-2xl border transition-all ${isDark
+            ? 'bg-slate-900/40 border-white/5 hover:border-emerald-400/30'
+            : 'bg-white border-amber-900/10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-emerald-400/50'
+            }`}>
+            <div className={`flex items-center space-x-2 text-xs font-mono-code uppercase tracking-wider mb-1 ${isDark ? 'text-emerald-300' : 'text-emerald-700'
+              }`}>
+              <BarChart2 className="w-3.5 h-3.5" />
+              <span>Trajectory Engine</span>
+            </div>
+            <div className={`text-lg font-semibold font-cinzel ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              Personal Baseline
+            </div>
+            <p className={`text-xs mt-1 leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              Constructed after 10+ entries using rolling medians, eliminating arbitrary single scores.
+            </p>
+          </div>
+
+          <div className={`p-5 rounded-2xl border transition-all ${isDark
+            ? 'bg-slate-900/40 border-white/5 hover:border-cyan-400/30'
+            : 'bg-white border-amber-900/10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-cyan-400/50'
+            }`}>
+            <div className={`flex items-center space-x-2 text-xs font-mono-code uppercase tracking-wider mb-1 ${isDark ? 'text-cyan-300' : 'text-sky-700'
+              }`}>
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Grounded AI</span>
+            </div>
+            <div className={`text-lg font-semibold font-cinzel ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              Gemini Copilot
+            </div>
+            <p className={`text-xs mt-1 leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              Explains confirmed facts and uncertainty without hallucinating diagnoses.
+            </p>
+          </div>
+
+          <div className={`p-5 rounded-2xl border transition-all ${isDark
+            ? 'bg-slate-900/40 border-white/5 hover:border-amber-400/30'
+            : 'bg-white border-amber-900/10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-amber-400/50'
+            }`}>
+            <div className={`flex items-center space-x-2 text-xs font-mono-code uppercase tracking-wider mb-1 ${isDark ? 'text-amber-300' : 'text-amber-700'
+              }`}>
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Clinical Ethos</span>
+            </div>
+            <div className={`text-lg font-semibold font-cinzel ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              Doctor in the Loop
+            </div>
+            <p className={`text-xs mt-1 leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              Doctor-ready timeline export; symptoms always take absolute priority.
+            </p>
+          </div>
+        </div>
 
       </div>
 

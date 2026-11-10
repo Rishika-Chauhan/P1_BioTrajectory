@@ -11,11 +11,12 @@ import {
   BookOpen,
   Sparkles,
   ListChecks,
-  ArrowRight
+  ArrowRight,
+  FileText
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
-export default function PitchRoom() {
+export default function PitchRoom({ onOpenDemo, onOpenReport }) {
   const { isDark } = useTheme();
   const [openIndex, setOpenIndex] = useState(0);
 
@@ -104,22 +105,22 @@ export default function PitchRoom() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className={`inline-flex items-center space-x-2 px-3.5 py-1 rounded-full border text-xs font-mono-code uppercase tracking-wider mb-4 ${isDark ? 'bg-amber-400/10 border-amber-400/25 text-amber-300' : 'bg-amber-100 border-amber-300 text-amber-900 shadow-sm'
-            }`}>
-            <Award className="w-3.5 h-3.5" />
-            <span>Blueprint Section 21 & Appendix • Pitch Room & Checklist</span>
+        {/* Clinical Verification & Governance Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-6 border-b border-inherit">
+          <div className="max-w-2xl">
+            <span className={`text-[11px] font-mono-code uppercase tracking-wider font-bold block mb-2 ${isDark ? 'text-amber-400' : 'text-amber-700'}`}>
+              Clinical Verification & Inquiries
+            </span>
+            <h2 className={`font-cinzel text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              Clinical Governance, Inquiries & Definitions
+            </h2>
+            <p className={`mt-2 text-sm leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+              Addressing clinician questions, non-diagnostic boundaries, implementation checklists, and biochemical glossary terms.
+            </p>
           </div>
-
-          <h2 className={`font-cinzel text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'
-            }`}>
-            The Executive Pitch Room
-          </h2>
-          <p className={`mt-4 text-base sm:text-lg font-light leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'
-            }`}>
-            Live demonstration sequence, answers to the toughest inquiries from clinical judges, sustainability model, and compliance checklist.
-          </p>
+          <div className={`text-xs font-mono-code px-3.5 py-1.5 rounded-xl border shrink-0 ${isDark ? 'bg-slate-900 border-white/10 text-amber-300' : 'bg-white border-slate-200 text-amber-900 shadow-xs'}`}>
+            Grounded AI Verification Active
+          </div>
         </div>
 
         {/* 1-Line and 30-Second Elevator Pitch Box */}
@@ -131,7 +132,7 @@ export default function PitchRoom() {
             <Sparkles className={`w-4 h-4 ${isDark ? 'text-amber-300' : 'text-amber-700'}`} />
             <span className={`text-xs font-mono-code uppercase tracking-widest font-semibold ${isDark ? 'text-amber-300' : 'text-amber-800'
               }`}>
-              The 30-Second Elevator Pitch (Blueprint Section 21)
+              Executive Platform Summary
             </span>
           </div>
 
@@ -159,10 +160,10 @@ export default function PitchRoom() {
           <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-white/10">
             <div>
               <span className={`text-xs font-mono-code uppercase font-semibold ${isDark ? 'text-amber-300' : 'text-amber-800'}`}>
-                Section 21: Suggested Live Demo Sequence
+                Guided Experience Flow
               </span>
               <h3 className={`text-xl font-bold font-cinzel mt-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                Interactive 7-Step Pitch Walkthrough
+                Interactive System Verification Walkthrough
               </h3>
             </div>
 
@@ -221,7 +222,7 @@ export default function PitchRoom() {
             <h3 className={`text-lg font-bold font-cinzel mb-3 flex items-center space-x-2 ${isDark ? 'text-white' : 'text-slate-900'
               }`}>
               <HelpCircle className={`w-4 h-4 ${isDark ? 'text-amber-400' : 'text-amber-700'}`} />
-              <span>Questions Judges Will Ask (Section 21)</span>
+              <span>Clinical Inquiries & Frequently Asked Questions</span>
             </h3>
 
             {JUDGE_QUESTIONS.map((item, idx) => {
@@ -268,7 +269,7 @@ export default function PitchRoom() {
               <h3 className={`text-base font-bold font-cinzel flex items-center space-x-2 ${isDark ? 'text-white' : 'text-slate-900'
                 }`}>
                 <ListChecks className="w-4 h-4 text-emerald-500" />
-                <span>Appendix: First-Build Checklist</span>
+                <span>Implementation & Validation Checklist</span>
               </h3>
               <span className="text-[10px] font-mono-code text-emerald-400 font-bold">
                 {checklist.filter((c) => c.checked).length} / {checklist.length} Complete
@@ -276,7 +277,7 @@ export default function PitchRoom() {
             </div>
 
             <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-              The blueprint establishes 10 strict requirements for any buildable software prototype:
+              Strict architectural requirements implemented in this clinical-grade software build:
             </p>
 
             <div className="space-y-2">
@@ -302,8 +303,8 @@ export default function PitchRoom() {
 
             <div className={`mt-4 p-3 rounded-xl border text-[11px] leading-relaxed ${isDark ? 'bg-amber-950/20 border-amber-400/30 text-amber-200' : 'bg-amber-50 border-amber-300 text-amber-900'
               }`}>
-              <strong className="block mb-0.5 font-bold">Blueprint Appendix Disclaimer:</strong>
-              “BioTrajectory is presented as an innovation concept and prototype plan. This report is not medical advice, a diagnostic claim, or evidence of regulatory approval.”
+              <strong className="block mb-0.5 font-bold">Clinical Governance Mandate:</strong>
+              “BioTrajectory is presented as an innovation concept and prototype plan. This platform is not medical advice, a diagnostic claim, or evidence of regulatory approval.”
             </div>
           </div>
 
@@ -315,7 +316,7 @@ export default function PitchRoom() {
             <BookOpen className={`w-4 h-4 ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`} />
             <h3 className={`text-sm font-semibold font-mono-code uppercase tracking-wider ${isDark ? 'text-white' : 'text-slate-900'
               }`}>
-              Section 22 • Essential Glossary & Definitions
+              Clinical & Biochemical Glossary
             </h3>
           </div>
 
@@ -335,59 +336,68 @@ export default function PitchRoom() {
           </div>
         </div>
 
-        {/* Finale Card */}
-        <div className={`mt-16 rounded-3xl p-8 sm:p-14 border text-center shadow-2xl relative overflow-hidden ${isDark
+        {/* Professional Enterprise & Clinical Deployment Hub */}
+        <div className={`mt-16 rounded-3xl p-8 sm:p-12 border shadow-2xl relative overflow-hidden ${isDark
             ? 'bg-gradient-to-br from-[#0c1322] via-[#070b14] to-[#04060a] border-amber-400/30'
             : 'bg-gradient-to-br from-amber-50 via-white to-amber-100/50 border-amber-300 shadow-[0_20px_50px_rgba(180,145,95,0.12)]'
           }`}>
-          <div className="max-w-3xl mx-auto">
-            <span className={`text-xs font-mono-code uppercase tracking-widest px-3.5 py-1 rounded-full border mb-4 inline-block ${isDark ? 'bg-amber-400/10 text-amber-300 border-amber-400/25' : 'bg-amber-100 text-amber-900 border-amber-300'
+          <div className="max-w-4xl mx-auto text-center">
+            <span className={`text-[11px] font-mono-code uppercase tracking-widest px-4 py-1.5 rounded-full border mb-4 inline-flex items-center space-x-2 ${isDark ? 'bg-amber-400/10 text-amber-300 border-amber-400/25' : 'bg-amber-100 text-amber-900 border-amber-300'
               }`}>
-              ELITE CODERS PRESENTS • CODESPRINT 2026
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>Individualized Baseline Intelligence</span>
             </span>
 
-            <h3 className={`font-cinzel text-3xl sm:text-5xl font-extrabold tracking-tight mt-2 ${isDark ? 'text-white' : 'text-slate-900'
+            <h3 className={`font-cinzel text-2xl sm:text-4xl font-extrabold tracking-tight mt-2 ${isDark ? 'text-white' : 'text-slate-900'
               }`}>
-              THANK YOU.
+              Ready to Advance Longitudinal Patient Monitoring?
             </h3>
 
-            <p className={`text-lg sm:text-xl font-serif-lux italic mt-2 ${isDark ? 'text-amber-200' : 'text-amber-900 font-medium'
+            <p className={`text-sm sm:text-base font-light max-w-2xl mx-auto mt-3 leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'
               }`}>
-              FOR BUILDING THE FUTURE WITH US.
+              Experience continuous baseline tracking, non-diagnostic AI grounding, and automated clinician brief generation across multi-week urinalysis protocols.
             </p>
 
-            <div className="my-6 inline-flex items-center space-x-3 text-xs sm:text-sm font-mono-code font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-              <span>IDEA</span>
-              <span>→</span>
-              <span>MVP</span>
-              <span>→</span>
-              <span>OPEN SOURCE</span>
-              <span>→</span>
-              <span>PITCH</span>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+              <button
+                onClick={onOpenDemo}
+                className={`px-6 py-3.5 rounded-xl font-bold text-xs uppercase font-mono-code tracking-wider transition-all flex items-center space-x-2 shadow-lg ${isDark
+                    ? 'bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-slate-950 shadow-[0_0_25px_rgba(245,158,11,0.35)] hover:scale-105'
+                    : 'bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800 text-white shadow-md hover:scale-105'
+                  }`}
+              >
+                <span>Launch Telemetry Console</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+
+              <button
+                onClick={onOpenReport}
+                className={`px-6 py-3.5 rounded-xl font-semibold text-xs uppercase font-mono-code tracking-wider border transition-all flex items-center space-x-2 ${isDark
+                    ? 'bg-slate-900/80 hover:bg-slate-800 text-slate-200 border-white/10 hover:border-amber-400/40'
+                    : 'bg-white hover:bg-slate-50 text-slate-800 border-slate-300 shadow-xs'
+                  }`}
+              >
+                <FileText className="w-4 h-4 text-amber-500" />
+                <span>Export Sample Clinician Brief</span>
+              </button>
             </div>
 
-            <div className={`text-sm font-semibold tracking-wider font-mono-code ${isDark ? 'text-slate-200' : 'text-slate-800'
-              }`}>
-              Keep building. Keep creating. Keep contributing.
-            </div>
-
-            <div className="mt-8 pt-6 border-t border-inherit flex flex-wrap items-center justify-between gap-4 text-xs font-mono-code">
-              <div className="text-left">
-                <span className="block text-slate-400 uppercase text-[10px]">Team Name</span>
-                <strong className={isDark ? 'text-white' : 'text-slate-900'}>Chauhan.rishika2007</strong>
+            <div className="mt-10 pt-6 border-t border-inherit grid grid-cols-2 sm:grid-cols-4 gap-4 text-left">
+              <div>
+                <span className="block text-[10px] uppercase font-mono-code text-slate-500">Architecture</span>
+                <span className={`text-xs font-semibold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>Zero-Image Retention</span>
               </div>
-
-              <div className="text-left">
-                <span className="block text-slate-400 uppercase text-[10px]">Presented By</span>
-                <strong className={isDark ? 'text-amber-300' : 'text-amber-800'}>
-                  Rishika Chauhan, Riya Baisoya, Pranjal Kumar Pandey, Priyanshu
-                </strong>
+              <div>
+                <span className="block text-[10px] uppercase font-mono-code text-slate-500">Methodology</span>
+                <span className={`text-xs font-semibold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>IQR Baseline Corridor</span>
               </div>
-
-              <div className="flex items-center space-x-3">
-                <span className="text-emerald-500 font-bold">BioTrajectory</span>
-                <span className="text-slate-400">•</span>
-                <span className="italic text-slate-500">Others measure your health. We track where it is going.</span>
+              <div>
+                <span className="block text-[10px] uppercase font-mono-code text-slate-500">Intended Use</span>
+                <span className={`text-xs font-semibold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>PGHD Non-Diagnostic</span>
+              </div>
+              <div>
+                <span className="block text-[10px] uppercase font-mono-code text-slate-500">Handover Format</span>
+                <span className={`text-xs font-semibold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>Structured Clinical PDF</span>
               </div>
             </div>
 
