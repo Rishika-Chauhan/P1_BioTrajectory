@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { X, CheckCircle, AlertCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useTheme } from '../context/ThemeContext';
+import { trajectoryStorage } from '../services/trajectoryStorage.js';
 
-export default function ManualEntryModal({ isOpen, onClose, onSave, onAddReading }) {
+export default function ManualEntryModal({ isOpen, onClose, onSave, onAddReading, activePatientId }) {
   const { isDark } = useTheme();
 
   const [form, setForm] = useState({
@@ -39,6 +40,9 @@ export default function ManualEntryModal({ isOpen, onClose, onSave, onAddReading
       confirmed: true,
       flagged: Number(form.protein) > 20
     };
+
+    const targetId = activePatientId || trajectoryStorage.getActivePatientId();
+    trajectoryStorage.addReading(targetId, newEntry);
 
     const callback = onSave || onAddReading;
     if (callback) {

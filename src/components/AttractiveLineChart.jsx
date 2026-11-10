@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { BIOMARKER_DEFINITIONS, BLUETOOTH_METRIC_CONFIGS } from '../data/mockData';
 import { useTheme } from '../context/ThemeContext';
+import { calculateBaselineCorridor } from '../services/trajectoryStorage.js';
 
 export default function AttractiveLineChart({
   history = [],
@@ -114,9 +115,13 @@ export default function AttractiveLineChart({
     ? `${blePath} L ${blePoints[blePoints.length - 1].x} ${height - pad.bottom} L ${blePoints[0].x} ${height - pad.bottom} Z`
     : '';
 
+  const dynamicCorridor = useMemo(() => {
+    return calculateBaselineCorridor(activeData, selectedBiomarker);
+  }, [activeData, selectedBiomarker]);
+
   // Baseline corridor Y bounds for biomarker
-  const corridorTop = getBioY(bioMeta.baselineMax ?? 10);
-  const corridorBottom = getBioY(bioMeta.baselineMin ?? 0);
+  const corridorTop = getBioY(dynamicCorridor?.q75 ?? bioMeta.baselineMax ?? 10);
+  const corridorBottom = getBioY(dynamicCorridor?.q25 ?? bioMeta.baselineMin ?? 0);
   const corridorHeight = Math.max(2, corridorBottom - corridorTop);
 
   // Pearson correlation coefficient calculation between Biomarker and Bluetooth Metric
@@ -163,8 +168,8 @@ export default function AttractiveLineChart({
             <button
               onClick={() => setDisplayMode('overlay')}
               className={`px-3 py-1.5 rounded-md font-semibold transition-all ${displayMode === 'overlay'
-                  ? 'bg-[#00685f] text-white shadow-xs font-bold'
-                  : 'text-slate-400 hover:text-white'
+                ? 'bg-[#00685f] text-white shadow-xs font-bold'
+                : 'text-slate-400 hover:text-white'
                 }`}
             >
               Dual Multi-Stream Overlay
@@ -172,8 +177,8 @@ export default function AttractiveLineChart({
             <button
               onClick={() => setDisplayMode('biomarker')}
               className={`px-3 py-1.5 rounded-md font-semibold transition-all ${displayMode === 'biomarker'
-                  ? 'bg-[#00685f] text-white shadow-xs font-bold'
-                  : 'text-slate-400 hover:text-white'
+                ? 'bg-[#00685f] text-white shadow-xs font-bold'
+                : 'text-slate-400 hover:text-white'
                 }`}
             >
               Strip Reagent Only
@@ -181,8 +186,8 @@ export default function AttractiveLineChart({
             <button
               onClick={() => setDisplayMode('bluetooth')}
               className={`px-3 py-1.5 rounded-md font-semibold transition-all ${displayMode === 'bluetooth'
-                  ? 'bg-[#00687a] text-white shadow-xs font-bold'
-                  : 'text-slate-400 hover:text-white'
+                ? 'bg-[#00687a] text-white shadow-xs font-bold'
+                : 'text-slate-400 hover:text-white'
                 }`}
             >
               Bluetooth Telemetry Only
@@ -198,8 +203,8 @@ export default function AttractiveLineChart({
                   key={r}
                   onClick={() => setTimeRange(r)}
                   className={`px-2.5 py-1 rounded-lg font-bold transition-all ${timeRange === r
-                      ? isDark ? 'bg-white/20 text-white' : 'bg-white text-slate-900 shadow-xs'
-                      : 'text-slate-400 hover:text-slate-200'
+                    ? isDark ? 'bg-white/20 text-white' : 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-400 hover:text-slate-200'
                     }`}
                 >
                   {r}D
@@ -220,8 +225,8 @@ export default function AttractiveLineChart({
               key={bio.id}
               onClick={() => onSelectBiomarker && onSelectBiomarker(bio.id)}
               className={`px-2.5 py-1 rounded-lg border transition-all ${selectedBiomarker === bio.id
-                  ? isDark ? 'bg-amber-400/20 text-amber-300 border-amber-400/60 font-bold' : 'bg-amber-100 text-amber-900 border-amber-400 font-bold'
-                  : isDark ? 'bg-slate-900 text-slate-400 border-white/5 hover:text-white' : 'bg-slate-50 text-slate-600 border-slate-200'
+                ? isDark ? 'bg-amber-400/20 text-amber-300 border-amber-400/60 font-bold' : 'bg-amber-100 text-amber-900 border-amber-400 font-bold'
+                : isDark ? 'bg-slate-900 text-slate-400 border-white/5 hover:text-white' : 'bg-slate-50 text-slate-600 border-slate-200'
                 }`}
             >
               {bio.shortName} ({bio.name})
@@ -240,8 +245,8 @@ export default function AttractiveLineChart({
               key={key}
               onClick={() => onSelectBleMetric && onSelectBleMetric(key)}
               className={`px-2.5 py-1 rounded-lg border transition-all ${selectedBleMetric === key
-                  ? 'bg-blue-500/20 text-blue-400 border-blue-400/60 font-bold'
-                  : isDark ? 'bg-slate-900 text-slate-400 border-white/5 hover:text-white' : 'bg-slate-50 text-slate-600 border-slate-200'
+                ? 'bg-blue-500/20 text-blue-400 border-blue-400/60 font-bold'
+                : isDark ? 'bg-slate-900 text-slate-400 border-white/5 hover:text-white' : 'bg-slate-50 text-slate-600 border-slate-200'
                 }`}
             >
               {cfg.shortLabel}
