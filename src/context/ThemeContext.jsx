@@ -4,9 +4,9 @@ const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
-    const saved = localStorage.getItem('biotrajectory-theme');
+    const saved = localStorage.getItem('biotrajectory-theme-v2');
     if (saved === 'light' || saved === 'dark') return saved;
-    return 'dark'; // Default to futuristic SaaS dark theme
+    return 'light'; // Default to warm precision light theme
   });
 
   const isDark = theme === 'dark';
@@ -14,7 +14,7 @@ export function ThemeProvider({ children }) {
   // Apply theme to document element and HTML style
   useEffect(() => {
     try {
-      localStorage.setItem('biotrajectory-theme', theme);
+      localStorage.setItem('biotrajectory-theme-v2', theme);
       const root = document.documentElement;
       if (theme === 'dark') {
         root.classList.add('dark');

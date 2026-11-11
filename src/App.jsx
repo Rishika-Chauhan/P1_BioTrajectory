@@ -24,8 +24,8 @@ function MainApp() {
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDark
-      ? 'bg-[#070b14] text-slate-100 selection:bg-[#00685f]/30 selection:text-[#6bd8cb]'
-      : 'bg-[#faf8ff] text-[#131b2e] selection:bg-[#00685f]/20 selection:text-[#00685f]'
+      ? 'bg-[#1D070A] text-[#FAF9EB] selection:bg-[#A71D31]/40 selection:text-[#FAF9EB]'
+      : 'bg-[#F1F0CC] text-[#3F0D12] selection:bg-[#A71D31]/25 selection:text-[#3F0D12]'
       }`}>
       {/* Top Navbar with Theme Toggle, Health Profile & Report Triggers */}
       <Navbar

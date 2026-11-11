@@ -82,32 +82,30 @@ export default function AttractivePieChart() {
     : segmentsWithAngles[0];
 
   return (
-    <div className={`p-6 sm:p-7 rounded-xl border shadow-xs relative overflow-hidden transition-all ${
-      isDark ? 'bg-[#0d1526] border-slate-800' : 'bg-white border-[#e2e8f0]'
-    }`}>
+    <div className={`p-6 sm:p-7 rounded-xl border shadow-xs relative overflow-hidden transition-all ${isDark ? 'bg-[#2B0B0E] border-[#D5BF86]/20' : 'bg-white border-[#D5BF86]/70'
+      }`}>
       {/* Top Header & Preset Switchers */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-inherit">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-[#D5BF86]/30">
         <div>
           <div className="flex items-center space-x-2">
-            <div className="w-6 h-6 rounded-md bg-[#00685f]/10 text-[#00685f] flex items-center justify-center">
+            <div className="w-6 h-6 rounded-md bg-[#A71D31]/10 text-[#A71D31] flex items-center justify-center">
               <PieIcon className="w-3.5 h-3.5" />
             </div>
-            <span className="text-[11px] font-sans font-bold uppercase tracking-wider text-[#00685f] dark:text-[#6bd8cb]">
+            <span className="text-[11px] font-sans font-bold uppercase tracking-wider text-[#A71D31] dark:text-[#D5BF86]">
               Longitudinal Proportion Analytics
             </span>
           </div>
-          <h3 className={`font-sans text-xl font-bold mt-1 ${isDark ? 'text-white' : 'text-[#131b2e]'}`}>
+          <h3 className={`font-sans text-xl font-bold mt-1 ${isDark ? 'text-[#FAF9EB]' : 'text-[#3F0D12]'}`}>
             {preset.title}
           </h3>
-          <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+          <p className={`text-xs mt-0.5 ${isDark ? 'text-[#D5BF86]' : 'text-[#8D775F]'}`}>
             {preset.subtitle}
           </p>
         </div>
 
         {/* Preset Selector Buttons */}
-        <div className={`inline-flex p-1 rounded-lg border text-xs font-sans self-start md:self-auto shrink-0 ${
-          isDark ? 'bg-[#070b14] border-slate-800' : 'bg-slate-100 border-slate-200'
-        }`}>
+        <div className={`inline-flex p-1 rounded-lg border text-xs font-sans self-start md:self-auto shrink-0 ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
+          }`}>
           {PIE_CHART_PRESETS.map((p, idx) => (
             <button
               key={p.id}
@@ -115,11 +113,10 @@ export default function AttractivePieChart() {
                 setActivePresetIndex(idx);
                 setHoveredSegmentId(null);
               }}
-              className={`px-3 py-1.5 rounded-md font-semibold transition-all ${
-                activePresetIndex === idx
-                  ? 'bg-[#00685f] text-white shadow-xs font-bold'
-                  : 'text-slate-400 hover:text-white'
-              }`}
+              className={`px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer ${activePresetIndex === idx
+                  ? 'bg-[#A71D31] text-white shadow-xs font-bold'
+                  : 'text-[#8D775F] dark:text-[#D5BF86] hover:text-[#3F0D12]'
+                }`}
             >
               {idx === 0 ? 'Time in Corridor (TIC)' : idx === 1 ? 'Data Ingestion Sources' : 'Organ Systems'}
             </button>
@@ -129,7 +126,7 @@ export default function AttractivePieChart() {
 
       {/* Main Grid: Interactive Donut SVG on Left, Segment Analytics & Breakdown on Right */}
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-        
+
         {/* Left 6 Cols: Interactive SVG Donut Chart with Exploding Segments */}
         <div className="lg:col-span-6 flex flex-col items-center justify-center relative">
           <div className="relative w-full max-w-[340px] aspect-square flex items-center justify-center">
@@ -166,7 +163,7 @@ export default function AttractivePieChart() {
                     fill={seg.color}
                     transform={`translate(${dx}, ${dy})`}
                     className="cursor-pointer transition-all duration-300"
-                    stroke={isDark ? '#090e18' : '#ffffff'}
+                    stroke={isDark ? '#1D070A' : '#FAF9EB'}
                     strokeWidth="2.5"
                     filter={isHovered ? 'url(#activePieGlow)' : 'none'}
                     onMouseEnter={() => setHoveredSegmentId(seg.id)}
@@ -178,11 +175,10 @@ export default function AttractivePieChart() {
 
             {/* Central Circular HUD Display */}
             <div
-              className={`absolute w-44 h-44 rounded-full flex flex-col items-center justify-center text-center p-4 shadow-inner border pointer-events-none transition-all ${
-                isDark ? 'bg-[#060a12]/95 border-white/10' : 'bg-white/95 border-amber-900/10'
-              }`}
+              className={`absolute w-44 h-44 rounded-full flex flex-col items-center justify-center text-center p-4 shadow-inner border pointer-events-none transition-all ${isDark ? 'bg-[#1D070A]/95 border-[#D5BF86]/30' : 'bg-[#FAF9EB]/95 border-[#D5BF86]'
+                }`}
             >
-              <span className="text-[10px] font-mono-code uppercase font-bold tracking-wider text-slate-400">
+              <span className="text-[10px] font-mono-code uppercase font-bold tracking-wider text-[#8D775F]">
                 Proportion
               </span>
               <strong
@@ -191,25 +187,25 @@ export default function AttractivePieChart() {
               >
                 {activeSegment.value}%
               </strong>
-              <span className="text-xs font-semibold leading-tight max-w-[130px] truncate text-slate-300">
+              <span className="text-xs font-semibold leading-tight max-w-[130px] truncate text-[#3F0D12] dark:text-[#FAF9EB]">
                 {activeSegment.label}
               </span>
-              <span className="text-[10px] font-mono-code text-slate-400 mt-0.5">
+              <span className="text-[10px] font-mono-code text-[#8D775F] mt-0.5">
                 {activeSegment.count}
               </span>
             </div>
           </div>
 
-          <span className="text-[11px] font-mono-code text-slate-400 mt-4 text-center">
+          <span className="text-[11px] font-mono-code text-[#8D775F] mt-4 text-center">
             Hover or click any segment above to inspect telemetry mechanics
           </span>
         </div>
 
         {/* Right 6 Cols: Detailed Breakdown & Clinical Significance Cards */}
         <div className="lg:col-span-6 space-y-3.5">
-          <div className="flex items-center justify-between pb-2 border-b border-inherit text-xs font-mono-code">
-            <span className="text-slate-400 uppercase font-semibold">Segment Breakdown & Rationale</span>
-            <span className="text-amber-500 font-bold">Total: {totalValue}%</span>
+          <div className="flex items-center justify-between pb-2 border-b border-[#D5BF86]/30 text-xs font-mono-code">
+            <span className="text-[#8D775F] uppercase font-semibold">Segment Breakdown & Rationale</span>
+            <span className="text-[#A71D31] font-bold">Total: {totalValue}%</span>
           </div>
 
           {segmentsWithAngles.map((seg) => {
@@ -220,15 +216,14 @@ export default function AttractivePieChart() {
                 key={seg.id}
                 onMouseEnter={() => setHoveredSegmentId(seg.id)}
                 onClick={() => setHoveredSegmentId(seg.id)}
-                className={`p-4 rounded-2xl border cursor-pointer transition-all duration-300 ${
-                  isHovered
+                className={`p-4 rounded-2xl border cursor-pointer transition-all duration-300 ${isHovered
                     ? isDark
-                      ? 'bg-gradient-to-r from-[#11192e] to-[#090e18] border-amber-400 shadow-md ring-1 ring-amber-400/40 scale-[1.02]'
-                      : 'bg-amber-50/70 border-amber-400 shadow-sm ring-1 ring-amber-400/50 scale-[1.02]'
+                      ? 'bg-[#1D070A] border-[#A71D31] shadow-md ring-1 ring-[#A71D31]/40 scale-[1.02]'
+                      : 'bg-[#FAF9EB] border-[#A71D31] shadow-sm ring-1 ring-[#A71D31]/50 scale-[1.02]'
                     : isDark
-                    ? 'bg-slate-950/60 border-white/5 hover:border-white/15'
-                    : 'bg-slate-50 border-slate-200 hover:border-amber-200'
-                }`}
+                      ? 'bg-[#1D070A]/60 border-[#D5BF86]/20 hover:border-[#D5BF86]/40'
+                      : 'bg-[#FAF9EB]/40 border-[#D5BF86]/40 hover:border-[#D5BF86]'
+                  }`}
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2.5">
@@ -236,7 +231,7 @@ export default function AttractivePieChart() {
                       className="w-3.5 h-3.5 rounded-full shrink-0 shadow-xs"
                       style={{ backgroundColor: seg.color }}
                     ></span>
-                    <h4 className={`text-xs sm:text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    <h4 className={`text-xs sm:text-sm font-bold ${isDark ? 'text-[#FAF9EB]' : 'text-[#3F0D12]'}`}>
                       {seg.label}
                     </h4>
                   </div>
@@ -245,12 +240,12 @@ export default function AttractivePieChart() {
                     <strong className="text-base font-extrabold" style={{ color: seg.color }}>
                       {seg.value}%
                     </strong>
-                    <span className="text-[10px] text-slate-400">({seg.count})</span>
+                    <span className="text-[10px] text-[#8D775F]">({seg.count})</span>
                   </div>
                 </div>
 
                 {/* Progress Indicator Bar */}
-                <div className="w-full h-1.5 rounded-full bg-slate-800/40 overflow-hidden mb-2">
+                <div className="w-full h-1.5 rounded-full bg-[#D5BF86]/20 overflow-hidden mb-2">
                   <div
                     className="h-full rounded-full transition-all duration-700"
                     style={{
@@ -260,7 +255,7 @@ export default function AttractivePieChart() {
                   ></div>
                 </div>
 
-                <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                <p className={`text-xs leading-relaxed ${isDark ? 'text-[#E8E5BA]' : 'text-[#473228]'}`}>
                   {seg.description}
                 </p>
               </div>
@@ -271,10 +266,9 @@ export default function AttractivePieChart() {
       </div>
 
       {/* Bottom Clinical Regulatory Note */}
-      <div className={`mt-8 p-4 rounded-2xl border flex items-start space-x-3 text-xs ${
-        isDark ? 'bg-slate-950/80 border-white/10 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'
-      }`}>
-        <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+      <div className={`mt-8 p-4 rounded-2xl border flex items-start space-x-3 text-xs ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20 text-[#D5BF86]' : 'bg-[#FAF9EB] border-[#D5BF86]/60 text-[#473228]'
+        }`}>
+        <ShieldCheck className="w-4 h-4 text-[#A71D31] shrink-0 mt-0.5" />
         <span className="leading-relaxed">
           <strong>Multi-Modal PGHD Integrity:</strong> BioTrajectory synthesizes dry-chemistry urinalysis with continuous Bluetooth peripherals under a unified patient timeline. Reagent kinetics and Bluetooth vitals validate each other, eliminating single-device false positives.
         </span>

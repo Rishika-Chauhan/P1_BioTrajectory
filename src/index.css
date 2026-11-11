@@ -2,79 +2,98 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@theme {
+  --color-mahogany: #3F0D12;
+  --color-mahogany-deep: #2A090C;
+  --color-ruby: #A71D31;
+  --color-ruby-hover: #8D1829;
+  --color-chiffon: #F1F0CC;
+  --color-chiffon-surface: #FAF9EB;
+  --color-fawn: #D5BF86;
+  --color-fawn-dark: #BEA466;
+  --color-copper: #8D775F;
+  --color-copper-dark: #6D5B47;
+}
+
 @layer base {
   :root {
     --font-display: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
-    /* Light Theme Palette - Stitch Precision Humanism: Clinical Clarity & Longitudinal Vitality */
-    --bg-main: #FAF8FF;
+    /* User Requested Warm Light Palette:
+       #3F0D12 - Rich Mahogany
+       #A71D31 - Ruby Red
+       #F1F0CC - Lemon Chiffon
+       #D5BF86 - Soft Fawn
+       #8D775F - Faded Copper
+    */
+    --bg-main: #F1F0CC;
     --bg-card: #FFFFFF;
-    --bg-card-glass: rgba(255, 255, 255, 0.92);
-    --bg-secondary: #F2F3FF;
-    --bg-container: #EAEDFF;
-    --bg-container-high: #E2E7FF;
+    --bg-card-glass: rgba(255, 255, 255, 0.94);
+    --bg-secondary: #FAF9EB;
+    --bg-container: #EAE7BC;
+    --bg-container-high: #E2DEAB;
     
-    --primary: #00685F;
-    --primary-container: #008378;
+    --primary: #A71D31;
+    --primary-container: #8D1829;
     --on-primary: #FFFFFF;
-    --primary-fixed: #89F5E7;
+    --primary-fixed: #D5BF86;
     
-    --secondary: #00687A;
-    --secondary-container: #57DFFE;
+    --secondary: #3F0D12;
+    --secondary-container: #D5BF86;
     
-    --tertiary: #006947;
-    --tertiary-container: #00855B;
-    --tertiary-fixed: #6FFBBE;
+    --tertiary: #8D775F;
+    --tertiary-container: #3F0D12;
+    --tertiary-fixed: #D5BF86;
     
-    --amber-shift: #F59E0B;
-    --amber-dark: #B45309;
+    --amber-shift: #D5BF86;
+    --amber-dark: #8D775F;
     
-    --text-head: #131B2E;
-    --text-body: #3D4947;
-    --text-muted: #6D7A77;
-    --outline: #6D7A77;
-    --border-subtle: #E2E8F0;
-    --border-glass: rgba(0, 104, 95, 0.14);
+    --text-head: #3F0D12;
+    --text-body: #473228;
+    --text-muted: #8D775F;
+    --outline: #D5BF86;
+    --border-subtle: rgba(213, 191, 134, 0.55);
+    --border-glass: rgba(167, 29, 49, 0.16);
     
-    --card-shadow: 0 1px 4px 0 rgba(19, 27, 46, 0.04), 0 4px 16px -2px rgba(19, 27, 46, 0.05);
-    --card-shadow-hover: 0 4px 20px -2px rgba(0, 104, 95, 0.12), 0 2px 8px -1px rgba(19, 27, 46, 0.06);
+    --card-shadow: 0 1px 4px 0 rgba(63, 13, 18, 0.04), 0 4px 16px -2px rgba(63, 13, 18, 0.06);
+    --card-shadow-hover: 0 4px 20px -2px rgba(167, 29, 49, 0.18), 0 2px 8px -1px rgba(63, 13, 18, 0.08);
   }
 
   .dark {
-    /* Dark Theme Palette - Deep Clinical Obsidian */
-    --bg-main: #070B14;
-    --bg-card: #0D1526;
-    --bg-card-glass: rgba(13, 21, 38, 0.82);
-    --bg-secondary: #131D33;
-    --bg-container: #182542;
-    --bg-container-high: #1E2E52;
+    /* Rich Mahogany Dark Theme Palette */
+    --bg-main: #1D070A;
+    --bg-card: #2B0B0E;
+    --bg-card-glass: rgba(43, 11, 14, 0.86);
+    --bg-secondary: #360E12;
+    --bg-container: #3F0D12;
+    --bg-container-high: #521319;
     
-    --primary: #008378;
-    --primary-container: #0D9488;
+    --primary: #C52940;
+    --primary-container: #A71D31;
     --on-primary: #FFFFFF;
-    --primary-fixed: #6BD8CB;
+    --primary-fixed: #D5BF86;
     
-    --secondary: #00A6C7;
-    --secondary-container: #006172;
+    --secondary: #D5BF86;
+    --secondary-container: #8D775F;
     
-    --tertiary: #10B981;
-    --tertiary-container: #00855B;
-    --tertiary-fixed: #4EDEA3;
+    --tertiary: #F1F0CC;
+    --tertiary-container: #D5BF86;
+    --tertiary-fixed: #F1F0CC;
     
-    --amber-shift: #F59E0B;
-    --amber-dark: #D97706;
+    --amber-shift: #D5BF86;
+    --amber-dark: #8D775F;
     
-    --text-head: #F8FAFC;
-    --text-body: #CBD5E1;
-    --text-muted: #94A3B8;
-    --outline: #64748B;
-    --border-subtle: rgba(255, 255, 255, 0.08);
-    --border-glass: rgba(0, 131, 120, 0.22);
+    --text-head: #FAF9EB;
+    --text-body: #E8E5BA;
+    --text-muted: #D5BF86;
+    --outline: #8D775F;
+    --border-subtle: rgba(213, 191, 134, 0.22);
+    --border-glass: rgba(197, 41, 64, 0.24);
     
-    --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7), 0 0 15px rgba(0, 131, 120, 0.04);
-    --card-shadow-hover: 0 20px 40px -12px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 131, 120, 0.18);
+    --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7), 0 0 15px rgba(167, 29, 49, 0.12);
+    --card-shadow-hover: 0 20px 40px -12px rgba(0, 0, 0, 0.8), 0 0 25px rgba(167, 29, 49, 0.28);
   }
 
   body {
@@ -114,39 +133,35 @@
 .glass-card-hover:hover {
   transform: translateY(-3px);
   box-shadow: var(--card-shadow-hover);
-  border-color: rgba(0, 143, 174, 0.4);
+  border-color: rgba(167, 29, 49, 0.4);
 }
 
 .dark .glass-card-hover:hover {
-  border-color: rgba(0, 217, 255, 0.4);
+  border-color: rgba(213, 191, 134, 0.4);
 }
 
 /* Brand Glows */
-.glow-cyan {
-  box-shadow: 0 0 25px -3px rgba(0, 217, 255, 0.35);
-}
-
-.glow-blue {
-  box-shadow: 0 0 25px -3px rgba(84, 121, 255, 0.35);
+.glow-ruby {
+  box-shadow: 0 0 25px -3px rgba(167, 29, 49, 0.35);
 }
 
 .glow-subtle {
-  box-shadow: 0 0 20px -2px rgba(0, 217, 255, 0.15);
+  box-shadow: 0 0 20px -2px rgba(167, 29, 49, 0.15);
 }
 
-.light .glow-cyan {
-  box-shadow: 0 0 20px -2px rgba(0, 143, 174, 0.25);
+.light .glow-ruby {
+  box-shadow: 0 0 20px -2px rgba(167, 29, 49, 0.25);
 }
 
 /* Gradient Text */
-.text-gradient-cyan-blue {
-  background: linear-gradient(135deg, #00D9FF 0%, #5479FF 100%);
+.text-gradient-ruby {
+  background: linear-gradient(135deg, #A71D31 0%, #3F0D12 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.light .text-gradient-cyan-blue {
-  background: linear-gradient(135deg, #007A94 0%, #2563EB 100%);
+.light .text-gradient-ruby {
+  background: linear-gradient(135deg, #A71D31 0%, #3F0D12 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -154,25 +169,25 @@
 /* Medical Technical Grid Patterns */
 .bg-grid-medical {
   background-image: 
-    linear-gradient(to right, rgba(0, 143, 174, 0.06) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 143, 174, 0.06) 1px, transparent 1px);
+    linear-gradient(to right, rgba(167, 29, 49, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(167, 29, 49, 0.05) 1px, transparent 1px);
   background-size: 3rem 3rem;
 }
 
 .dark .bg-grid-medical {
   background-image: 
-    linear-gradient(to right, rgba(0, 217, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 217, 255, 0.05) 1px, transparent 1px);
+    linear-gradient(to right, rgba(213, 191, 134, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(213, 191, 134, 0.05) 1px, transparent 1px);
   background-size: 3rem 3rem;
 }
 
 .bg-dots-pattern {
-  background-image: radial-gradient(rgba(0, 143, 174, 0.12) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(167, 29, 49, 0.1) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
 .dark .bg-dots-pattern {
-  background-image: radial-gradient(rgba(0, 217, 255, 0.1) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(213, 191, 134, 0.1) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
@@ -189,7 +204,7 @@
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #5479FF;
+  background: #A71D31;
 }
 
 /* Ambient Floating Animations */

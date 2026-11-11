@@ -91,7 +91,7 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
           currentValue: 68,
           unit: 'bpm',
           trend: 'stable',
-          color: '#10b981',
+          color: '#A71D31',
           description: 'Paired directly via Web Bluetooth API GATT interface.'
         };
 
@@ -100,7 +100,7 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
         setScanMessage(`Successfully paired with ${device.name}!`);
         setIsScanning(false);
         try {
-          confetti({ particleCount: 40, spread: 50, origin: { y: 0.6 } });
+          confetti({ particleCount: 40, spread: 50, origin: { y: 0.6 }, colors: ['#3F0D12', '#A71D31', '#D5BF86', '#8D775F'] });
         } catch (e) { }
         return;
       } catch (err) {
@@ -129,7 +129,7 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
         currentValue: 99,
         unit: '%',
         trend: 'optimal',
-        color: '#06b6d4',
+        color: '#8D775F',
         description: 'Hospital-grade optical pulse oximeter streaming peripheral arterial oxygen saturation.'
       };
 
@@ -143,7 +143,7 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
           particleCount: 45,
           spread: 60,
           origin: { y: 0.6 },
-          colors: isDark ? ['#38bdf8', '#10b981', '#f59e0b'] : ['#0284c7', '#059669', '#d97706']
+          colors: ['#3F0D12', '#A71D31', '#D5BF86', '#8D775F']
         });
       } catch (e) { }
 
@@ -189,21 +189,21 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
   return (
     <div className="space-y-5 animate-fadeIn">
       {/* Top Controller Bar */}
-      <div className={`p-6 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs ${isDark ? 'bg-[#0d1526] border-slate-800' : 'bg-white border-[#e2e8f0]'
+      <div className={`p-6 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'
         }`}>
         <div>
           <div className="flex items-center space-x-2 mb-1">
-            <div className="w-6 h-6 rounded-md bg-[#00687a]/10 text-[#00687a] dark:text-[#57dffe] flex items-center justify-center">
+            <div className="w-6 h-6 rounded-md bg-[#A71D31]/10 text-[#A71D31] flex items-center justify-center">
               <Bluetooth className="w-3.5 h-3.5 animate-pulse" />
             </div>
-            <h3 className={`font-sans text-lg font-bold ${isDark ? 'text-white' : 'text-[#131b2e]'}`}>
+            <h3 className={`font-sans text-lg font-bold ${isDark ? 'text-[#FAF9EB]' : 'text-[#3F0D12]'}`}>
               Connected Bluetooth Health Sensors Hub
             </h3>
-            <span className="text-[11px] font-sans font-semibold px-2.5 py-0.5 rounded-full bg-[#006947]/10 text-[#006947] dark:text-[#6ffbbe]">
+            <span className="text-[11px] font-sans font-semibold px-2.5 py-0.5 rounded-full bg-[#A71D31]/10 text-[#A71D31] border border-[#A71D31]/20">
               {devices.filter((d) => d.status === 'connected').length} Active Sensors
             </span>
           </div>
-          <p className={`text-xs font-sans ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+          <p className={`text-xs font-sans ${isDark ? 'text-[#8D775F]' : 'text-[#8D775F]'}`}>
             Retrieve continuous biometric streams (Dexcom CGM, Omron BP, Apple Watch) directly via Web Bluetooth API GATT services.
           </p>
         </div>
@@ -214,8 +214,8 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
             onClick={handleScanBluetooth}
             disabled={isScanning}
             className={`px-3.5 py-2 rounded-lg text-xs font-sans font-bold uppercase tracking-wider flex items-center space-x-1.5 transition-all shadow-xs ${isScanning
-                ? 'bg-[#00687a]/50 text-white cursor-wait'
-                : 'bg-[#00687a] hover:bg-[#00505f] text-white'
+              ? 'bg-[#A71D31]/50 text-white cursor-wait'
+              : 'bg-[#A71D31] hover:bg-[#851625] text-white'
               }`}
           >
             <Radio className={`w-3.5 h-3.5 ${isScanning ? 'animate-spin' : ''}`} />
@@ -227,15 +227,15 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
               onClick={() => {
                 onSyncDeviceData();
                 try {
-                  confetti({ particleCount: 30, spread: 45, origin: { y: 0.7 } });
+                  confetti({ particleCount: 30, spread: 45, origin: { y: 0.7 }, colors: ['#3F0D12', '#A71D31', '#D5BF86', '#8D775F'] });
                 } catch (e) { }
               }}
               className={`px-3.5 py-2 rounded-lg text-xs font-sans font-semibold uppercase tracking-wider border flex items-center space-x-1.5 transition-all ${isDark
-                  ? 'bg-slate-900 border-slate-800 hover:bg-slate-800 text-slate-200'
-                  : 'bg-slate-100 border-slate-200 hover:bg-slate-200 text-slate-700 shadow-xs'
+                ? 'bg-[#2A0B10] border-[#D5BF86]/30 hover:bg-[#1D070A] text-[#FAF9EB]'
+                : 'bg-white border-[#D5BF86] hover:bg-[#FAF9EB] text-[#3F0D12] shadow-xs'
                 }`}
             >
-              <RefreshCw className="w-3.5 h-3.5 text-[#00685f]" />
+              <RefreshCw className="w-3.5 h-3.5 text-[#A71D31]" />
               <span>Sync All to Timeline</span>
             </button>
           )}
@@ -245,10 +245,10 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
       {/* Real-time scan banner alert */}
       {scanMessage && (
         <div className={`p-3.5 rounded-xl border text-xs flex items-center space-x-2.5 animate-fadeIn ${isScanning
-          ? isDark ? 'bg-blue-950/40 border-blue-500/40 text-blue-200' : 'bg-blue-50 border-blue-300 text-blue-900'
-          : isDark ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200' : 'bg-emerald-50 border-emerald-300 text-emerald-900'
+          ? isDark ? 'bg-[#2A0B10] border-[#A71D31]/40 text-[#FAF9EB]' : 'bg-[#FAF9EB] border-[#A71D31]/40 text-[#3F0D12]'
+          : isDark ? 'bg-[#2A0B10] border-[#D5BF86]/40 text-[#FAF9EB]' : 'bg-[#FAF9EB] border-[#D5BF86] text-[#3F0D12]'
           }`}>
-          <Radio className="w-4 h-4 shrink-0 animate-pulse text-blue-400" />
+          <Radio className="w-4 h-4 shrink-0 animate-pulse text-[#A71D31]" />
           <span className="font-mono-code">{scanMessage}</span>
         </div>
       )}
@@ -271,8 +271,8 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
                 key={f.id}
                 onClick={() => setActiveTab(f.id)}
                 className={`px-3 py-1.5 rounded-lg transition-all ${activeTab === f.id
-                  ? isDark ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-amber-700 text-white font-bold'
-                  : isDark ? 'bg-slate-900/80 text-slate-400 hover:text-white' : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
+                  ? 'bg-[#A71D31] text-white font-bold shadow-xs'
+                  : isDark ? 'bg-[#1D070A] text-[#8D775F] border border-[#D5BF86]/20 hover:text-white' : 'bg-white text-[#473228] hover:text-[#3F0D12] border border-[#D5BF86]'
                   }`}
               >
                 {f.label}
@@ -292,30 +292,30 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
                   onClick={() => setSelectedDevice(device)}
                   className={`p-5 rounded-2xl border cursor-pointer transition-all duration-300 flex flex-col justify-between ${isSelected
                     ? isDark
-                      ? 'bg-gradient-to-b from-[#11192e] to-[#090e18] border-amber-400 shadow-[0_10px_30px_rgba(245,158,11,0.15)] ring-1 ring-amber-400/40'
-                      : 'bg-white border-amber-500 shadow-md ring-1 ring-amber-400/50'
+                      ? 'bg-[#2A0B10] border-[#A71D31] shadow-md ring-1 ring-[#A71D31]/40'
+                      : 'bg-[#FAF9EB] border-[#A71D31] shadow-md ring-1 ring-[#A71D31]/40'
                     : isDark
-                      ? 'bg-[#090e18]/80 border-white/10 hover:border-white/20'
-                      : 'bg-white border-slate-200 hover:border-amber-300 shadow-xs'
+                      ? 'bg-[#1D070A] border-[#D5BF86]/20 hover:border-[#D5BF86]/40'
+                      : 'bg-white border-[#D5BF86] hover:border-[#A71D31]/50 shadow-xs'
                     }`}
                 >
                   <div>
                     {/* Top Row: Type Badge, Battery, Status */}
                     <div className="flex items-center justify-between mb-3 text-xs font-mono-code">
                       <div className="flex items-center space-x-1.5">
-                        <span className={`w-2 h-2 rounded-full ${isConn ? 'bg-emerald-500 animate-pulse' : 'bg-slate-500'}`}></span>
-                        <span className={isConn ? 'text-emerald-500 font-bold' : 'text-slate-500'}>
+                        <span className={`w-2 h-2 rounded-full ${isConn ? 'bg-[#A71D31] animate-pulse' : 'bg-[#8D775F]'}`}></span>
+                        <span className={isConn ? 'text-[#A71D31] font-bold' : 'text-[#8D775F]'}>
                           {isConn ? 'LIVE TELEMETRY' : 'OFFLINE'}
                         </span>
                       </div>
 
-                      <div className="flex items-center space-x-2 text-slate-400">
+                      <div className="flex items-center space-x-2 text-[#8D775F]">
                         <span className="flex items-center space-x-1">
                           <Battery className="w-3.5 h-3.5" />
                           <span>{device.battery}%</span>
                         </span>
                         <span className="flex items-center space-x-0.5">
-                          <Wifi className="w-3.5 h-3.5 text-blue-400" />
+                          <Wifi className="w-3.5 h-3.5 text-[#8D775F]" />
                           <span>{device.signalStrength}dBm</span>
                         </span>
                       </div>
@@ -334,52 +334,52 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
                         <Icon className="w-5 h-5" />
                       </div>
                       <div>
-                        <h4 className={`text-sm font-bold font-cinzel leading-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                        <h4 className={`text-sm font-bold font-cinzel leading-tight ${isDark ? 'text-[#FAF9EB]' : 'text-[#3F0D12]'}`}>
                           {device.name}
                         </h4>
-                        <span className="text-[10px] font-mono-code text-slate-400 block mt-0.5">
+                        <span className="text-[10px] font-mono-code text-[#8D775F] block mt-0.5">
                           {device.category}
                         </span>
                       </div>
                     </div>
 
                     {/* Live Metric Stream Display */}
-                    <div className={`p-3 rounded-xl border mb-3 flex items-center justify-between font-mono-code ${isDark ? 'bg-slate-950/70 border-white/5' : 'bg-slate-50 border-slate-200'
+                    <div className={`p-3 rounded-xl border mb-3 flex items-center justify-between font-mono-code ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'
                       }`}>
                       <div>
-                        <span className="text-[10px] uppercase text-slate-500 block">
+                        <span className="text-[10px] uppercase text-[#8D775F] block">
                           {device.metricLabel}
                         </span>
                         <div className="flex items-baseline space-x-1.5 mt-0.5">
                           <strong className="text-lg font-bold" style={{ color: device.color }}>
                             {device.currentValue}
                           </strong>
-                          <span className="text-xs text-slate-400">{device.unit}</span>
+                          <span className="text-xs text-[#8D775F]">{device.unit}</span>
                         </div>
                       </div>
 
                       {device.secondaryMetric && (
                         <div className="text-right">
-                          <span className="text-[10px] uppercase text-slate-500 block">
+                          <span className="text-[10px] uppercase text-[#8D775F] block">
                             Diastolic
                           </span>
-                          <span className="text-sm font-bold text-slate-300">
+                          <span className="text-sm font-bold text-[#3F0D12] dark:text-[#FAF9EB]">
                             {device.secondaryValue} mmHg
                           </span>
                         </div>
                       )}
 
                       <div className="text-right">
-                        <span className="text-[9px] uppercase px-2 py-0.5 rounded border border-emerald-500/30 text-emerald-400 bg-emerald-500/10">
+                        <span className="text-[9px] uppercase px-2 py-0.5 rounded border border-[#A71D31]/30 text-[#A71D31] bg-[#A71D31]/10">
                           {device.trend}
                         </span>
-                        <span className="block text-[9px] text-slate-500 mt-1">
+                        <span className="block text-[9px] text-[#8D775F] mt-1">
                           {device.lastSync}
                         </span>
                       </div>
                     </div>
 
-                    <p className={`text-[11px] leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                    <p className={`text-[11px] leading-relaxed ${isDark ? 'text-[#FAF9EB]' : 'text-[#473228]'}`}>
                       {device.description}
                     </p>
                   </div>
@@ -392,8 +392,8 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
                         handleToggleConnection(device.id);
                       }}
                       className={`text-[11px] px-2.5 py-1 rounded transition-colors ${isConn
-                        ? 'bg-rose-500/10 text-rose-400 hover:bg-rose-500/20'
-                        : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
+                        ? 'bg-[#A71D31]/10 text-[#A71D31] hover:bg-[#A71D31]/20'
+                        : 'bg-[#D5BF86]/20 text-[#3F0D12] dark:text-[#FAF9EB] hover:bg-[#D5BF86]/40'
                         }`}
                     >
                       {isConn ? 'Disconnect' : 'Connect'}
@@ -405,8 +405,7 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
                           e.stopPropagation();
                           onSelectMetricForChart(device.activeMetric);
                         }}
-                        className={`text-[11px] flex items-center space-x-1 ${isDark ? 'text-amber-300 hover:text-white' : 'text-amber-800 hover:text-amber-950 font-semibold'
-                          }`}
+                        className="text-[11px] flex items-center space-x-1 text-[#A71D31] hover:underline font-semibold"
                       >
                         <span>Plot on Line Chart</span>
                         <ChevronRight className="w-3 h-3" />
@@ -420,47 +419,47 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
         </div>
 
         {/* Right 4 Cols: Selected Device Deep-Dive & GATT Inspector */}
-        <div className={`lg:col-span-4 rounded-2xl border p-6 shadow-xl ${isDark ? 'bg-[#090e18] border-white/10' : 'bg-white border-slate-200'
+        <div className={`lg:col-span-4 rounded-2xl border p-6 shadow-xl ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
           }`}>
           <div className="flex items-center justify-between pb-3 border-b border-inherit mb-4">
-            <span className="text-xs font-mono-code font-bold uppercase text-amber-500">
+            <span className="text-xs font-mono-code font-bold uppercase text-[#A71D31]">
               BLE GATT Service Inspector
             </span>
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="w-2 h-2 rounded-full bg-[#A71D31] animate-pulse"></span>
           </div>
 
           {selectedDevice ? (
             <div className="space-y-4 text-xs font-mono-code">
               <div>
-                <span className="text-[10px] text-slate-400 block uppercase">Peripheral Name</span>
-                <strong className={`text-sm ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                <span className="text-[10px] text-[#8D775F] block uppercase">Peripheral Name</span>
+                <strong className={`text-sm ${isDark ? 'text-[#FAF9EB]' : 'text-[#3F0D12]'}`}>
                   {selectedDevice.name}
                 </strong>
               </div>
 
-              <div className={`p-3 rounded-xl border space-y-1.5 ${isDark ? 'bg-slate-950 border-white/10' : 'bg-slate-50 border-slate-200'
+              <div className={`p-3 rounded-xl border space-y-1.5 ${isDark ? 'bg-[#2A0B10] border-[#D5BF86]/20' : 'bg-white border-[#D5BF86]'
                 }`}>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">GATT Service:</span>
-                  <span className="font-bold text-amber-400">{selectedDevice.serviceName}</span>
+                  <span className="text-[#8D775F]">GATT Service:</span>
+                  <span className="font-bold text-[#A71D31]">{selectedDevice.serviceName}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">BLE UUID:</span>
-                  <span className="text-slate-300 text-[10px] truncate max-w-[150px]">{selectedDevice.bleUuid}</span>
+                  <span className="text-[#8D775F]">BLE UUID:</span>
+                  <span className="text-[#3F0D12] dark:text-[#FAF9EB] text-[10px] truncate max-w-[150px]">{selectedDevice.bleUuid}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Telemetry Frequency:</span>
-                  <span className="text-slate-200">Continuous Stream</span>
+                  <span className="text-[#8D775F]">Telemetry Frequency:</span>
+                  <span className="text-[#3F0D12] dark:text-[#FAF9EB]">Continuous Stream</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Security / Cipher:</span>
-                  <span className="text-emerald-400">AES-128 Encrypted</span>
+                  <span className="text-[#8D775F]">Security / Cipher:</span>
+                  <span className="text-[#A71D31]">AES-128 Encrypted</span>
                 </div>
               </div>
 
               <div>
-                <span className="text-[10px] text-slate-400 block uppercase mb-1">Cross-Modal Clinical Insight:</span>
-                <p className={`p-3 rounded-xl border leading-relaxed ${isDark ? 'bg-amber-950/20 border-amber-400/20 text-amber-200/90' : 'bg-amber-50 border-amber-200 text-amber-900'
+                <span className="text-[10px] text-[#8D775F] block uppercase mb-1">Cross-Modal Clinical Insight:</span>
+                <p className={`p-3 rounded-xl border leading-relaxed ${isDark ? 'bg-[#2A0B10] border-[#D5BF86]/30 text-[#FAF9EB]' : 'bg-white border-[#D5BF86] text-[#3F0D12]'
                   }`}>
                   {selectedDevice.type === 'CGM' && (
                     <span>
@@ -488,7 +487,7 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
               <div className="pt-2">
                 <button
                   onClick={() => onSelectMetricForChart && onSelectMetricForChart(selectedDevice.activeMetric)}
-                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-mono-code font-bold uppercase tracking-wider text-xs shadow-md transition-all flex items-center justify-center space-x-2"
+                  className="w-full py-2.5 rounded-xl bg-[#A71D31] hover:bg-[#851625] text-white font-mono-code font-bold uppercase tracking-wider text-xs shadow-md transition-all flex items-center justify-center space-x-2"
                 >
                   <Activity className="w-4 h-4" />
                   <span>Overlay {selectedDevice.metricLabel} on Trajectory</span>
@@ -496,7 +495,7 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
               </div>
             </div>
           ) : (
-            <p className="text-xs text-slate-500">Select any connected Bluetooth peripheral to inspect its live GATT telemetry stream.</p>
+            <p className="text-xs text-[#8D775F]">Select any connected Bluetooth peripheral to inspect its live GATT telemetry stream.</p>
           )}
         </div>
 

@@ -70,43 +70,43 @@ export default function TheProblem() {
 
   return (
     <section
-      className={`relative py-20 transition-colors ${isDark ? 'bg-[#070b14]' : 'bg-[#faf8ff]'
+      className={`relative py-20 transition-colors ${isDark ? 'bg-[#1D070A]' : 'bg-[#F1F0CC]'
         }`}
       id="problem"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Clinical Problem & Paradigm Shift */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-5 border-b border-inherit">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-5 border-b border-[#D5BF86]/40">
           <div className="max-w-2xl">
-            <span className={`text-[11px] font-sans uppercase tracking-wider font-bold block mb-1 text-[#00685f] dark:text-[#6bd8cb]`}>
+            <span className={`text-[11px] font-sans uppercase tracking-wider font-bold block mb-1 text-[#A71D31] dark:text-[#D5BF86]`}>
               Diagnostic Latency & Clinical Continuity
             </span>
-            <h2 className={`font-sans text-2xl sm:text-3xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-[#131b2e]'}`}>
+            <h2 className={`font-sans text-2xl sm:text-3xl font-bold tracking-tight ${isDark ? 'text-[#FAF9EB]' : 'text-[#3F0D12]'}`}>
               The Point-in-Time Diagnostic Blindspot
             </h2>
-            <p className={`mt-2 text-sm leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+            <p className={`mt-2 text-sm leading-relaxed ${isDark ? 'text-[#D5BF86]' : 'text-[#473228]'}`}>
               Isolated annual urinalysis detects acute crises but misses insidious chronic trajectories. BioTrajectory captures the slope before irreversible tissue remodeling occurs.
             </p>
           </div>
 
           {/* Sub-view Switcher */}
-          <div className={`inline-flex p-1 rounded-lg border self-start md:self-auto shrink-0 ${isDark ? 'bg-[#0d1526] border-slate-800' : 'bg-white border-slate-200'
+          <div className={`inline-flex p-1 rounded-lg border self-start md:self-auto shrink-0 ${isDark ? 'bg-[#2B0B0E] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'
             }`}>
             <button
               onClick={() => setProblemTab('paradigm')}
-              className={`px-3.5 py-1.5 rounded-md text-xs font-semibold uppercase tracking-wider transition-all ${problemTab === 'paradigm'
-                ? 'bg-[#00685f] text-white font-bold shadow-xs'
-                : isDark ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+              className={`px-3.5 py-1.5 rounded-md text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer ${problemTab === 'paradigm'
+                ? 'bg-[#A71D31] text-white font-bold shadow-xs'
+                : isDark ? 'text-[#D5BF86] hover:text-white' : 'text-[#8D775F] hover:text-[#3F0D12]'
                 }`}
             >
               Interactive Simulator
             </button>
             <button
               onClick={() => setProblemTab('epidemiology')}
-              className={`px-3.5 py-1.5 rounded-md text-xs font-semibold uppercase tracking-wider transition-all ${problemTab === 'epidemiology'
-                ? 'bg-[#00685f] text-white font-bold shadow-xs'
-                : isDark ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+              className={`px-3.5 py-1.5 rounded-md text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer ${problemTab === 'epidemiology'
+                ? 'bg-[#A71D31] text-white font-bold shadow-xs'
+                : isDark ? 'text-[#D5BF86] hover:text-white' : 'text-[#8D775F] hover:text-[#3F0D12]'
                 }`}
             >
               Epidemiological Model
@@ -123,37 +123,37 @@ export default function TheProblem() {
               <div
                 key={issue.id}
                 className={`relative rounded-xl p-6 border transition-all duration-300 group flex flex-col justify-between ${isDark
-                  ? 'bg-[#0d1526] border-slate-800 hover:border-[#00685f]/50'
-                  : 'bg-white border-[#e2e8f0] hover:border-[#00685f]/40 shadow-xs'
+                  ? 'bg-[#2B0B0E] border-[#D5BF86]/20 hover:border-[#A71D31]'
+                  : 'bg-white border-[#D5BF86]/70 hover:border-[#A71D31] shadow-xs'
                   }`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center border transition-all ${isDark
-                      ? 'bg-slate-900 border-slate-800 text-[#6bd8cb]'
-                      : 'bg-[#00685f]/10 border-[#00685f]/20 text-[#00685f]'
+                      ? 'bg-[#1D070A] border-[#D5BF86]/30 text-[#D5BF86]'
+                      : 'bg-[#A71D31]/10 border-[#A71D31]/20 text-[#A71D31]'
                       }`}>
                       <Icon className="w-4 h-4" />
                     </div>
-                    <span className={`text-xs font-sans font-bold text-slate-400`}>
+                    <span className={`text-xs font-sans font-bold text-[#8D775F]`}>
                       0{idx + 1}
                     </span>
                   </div>
 
-                  <h3 className={`font-sans text-base font-bold mb-1.5 ${isDark ? 'text-white' : 'text-[#131b2e]'
+                  <h3 className={`font-sans text-base font-bold mb-1.5 ${isDark ? 'text-[#FAF9EB]' : 'text-[#3F0D12]'
                     }`}>
                     {issue.title}
                   </h3>
 
-                  <p className={`text-xs leading-relaxed mb-4 ${isDark ? 'text-slate-300' : 'text-slate-600'
+                  <p className={`text-xs leading-relaxed mb-4 ${isDark ? 'text-[#E8E5BA]' : 'text-[#473228]'
                     }`}>
                     {issue.description}
                   </p>
                 </div>
 
-                <div className={`pt-3 border-t text-xs font-sans flex items-center space-x-1.5 ${isDark ? 'border-slate-800 text-slate-400' : 'border-slate-100 text-[#00687a]'
+                <div className={`pt-3 border-t text-xs font-sans flex items-center space-x-1.5 ${isDark ? 'border-[#D5BF86]/20 text-[#D5BF86]' : 'border-[#D5BF86]/30 text-[#A71D31]'
                   }`}>
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#00685f]"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#A71D31]"></span>
                   <span className="italic">“{issue.badScenario}”</span>
                 </div>
               </div>
@@ -165,32 +165,32 @@ export default function TheProblem() {
             VIEW 1: INTERACTIVE PARADIGM SIMULATOR (SLIDER & DUAL-CARD VIEW)
         ========================================================================== */}
         {problemTab === 'paradigm' && (
-          <div className={`rounded-xl border p-6 sm:p-8 shadow-xs transition-all ${isDark ? 'bg-[#0d1526] border-slate-800' : 'bg-white border-[#e2e8f0]'
+          <div className={`rounded-xl border p-6 sm:p-8 shadow-xs transition-all ${isDark ? 'bg-[#2B0B0E] border-[#D5BF86]/20' : 'bg-white border-[#D5BF86]/70'
             }`}>
-            <div className={`flex flex-wrap items-center justify-between gap-4 pb-5 border-b ${isDark ? 'border-slate-800' : 'border-slate-100'}`}>
+            <div className={`flex flex-wrap items-center justify-between gap-4 pb-5 border-b ${isDark ? 'border-[#D5BF86]/20' : 'border-[#D5BF86]/40'}`}>
               <div>
-                <span className="text-[11px] font-sans uppercase font-bold text-[#00685f] dark:text-[#6bd8cb]">
+                <span className="text-[11px] font-sans uppercase font-bold text-[#A71D31] dark:text-[#D5BF86]">
                   Live Interactive Comparison
                 </span>
-                <h3 className={`text-xl font-bold font-sans mt-1 ${isDark ? 'text-white' : 'text-[#131b2e]'}`}>
+                <h3 className={`text-xl font-bold font-sans mt-1 ${isDark ? 'text-[#FAF9EB]' : 'text-[#3F0D12]'}`}>
                   The Isolated Snapshot Trap vs. Longitudinal Reality
                 </h3>
-                <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                <p className={`text-xs mt-1 ${isDark ? 'text-[#D5BF86]' : 'text-[#8D775F]'}`}>
                   Drag the timeline slider below to test how standard episodic medicine misinterprets biological signals without historical baseline.
                 </p>
               </div>
 
               {/* Slider Controller */}
               <div className="flex items-center space-x-2 text-xs font-sans">
-                <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>Test Day:</span>
+                <span className={isDark ? 'text-[#D5BF86]' : 'text-[#8D775F]'}>Test Day:</span>
                 <div className="flex items-center space-x-1">
                   {[7, 15, 22, 26, 30].map((d) => (
                     <button
                       key={d}
                       onClick={() => setSliderDay(d)}
-                      className={`px-3 py-1.5 rounded-md text-xs font-sans transition-all ${sliderDay === d
-                        ? 'bg-[#00685f] text-white font-bold shadow-xs'
-                        : isDark ? 'bg-slate-900 text-slate-400 hover:text-white' : 'bg-slate-100 text-slate-600 hover:text-slate-900'
+                      className={`px-3 py-1.5 rounded-md text-xs font-sans transition-all cursor-pointer ${sliderDay === d
+                        ? 'bg-[#A71D31] text-white font-bold shadow-xs'
+                        : isDark ? 'bg-[#1D070A] text-[#D5BF86] hover:text-white border border-[#D5BF86]/20' : 'bg-[#FAF9EB] text-[#8D775F] hover:text-[#3F0D12] border border-[#D5BF86]'
                         }`}
                     >
                       Day {d}
@@ -204,53 +204,53 @@ export default function TheProblem() {
             <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 
               {/* Left: The Flawed Snapshot Approach */}
-              <div className={`p-5 rounded-xl border flex flex-col justify-between ${isDark ? 'bg-rose-950/20 border-rose-500/30' : 'bg-rose-50/70 border-rose-200'
+              <div className={`p-5 rounded-xl border flex flex-col justify-between ${isDark ? 'bg-[#1D070A] border-[#A71D31]/40' : 'bg-[#A71D31]/10 border-[#A71D31]/30'
                 }`}>
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="px-2.5 py-0.5 rounded text-[11px] font-sans font-bold uppercase bg-rose-500/20 text-rose-500 border border-rose-500/30">
+                    <span className="px-2.5 py-0.5 rounded text-[11px] font-sans font-bold uppercase bg-[#A71D31]/20 text-[#A71D31] border border-[#A71D31]/30">
                       Standard Practice: Isolated Snapshot
                     </span>
-                    <span className="text-xs font-sans text-rose-400">Day {sliderDay} Reading</span>
+                    <span className="text-xs font-sans text-[#A71D31] font-semibold">Day {sliderDay} Reading</span>
                   </div>
 
-                  <div className="my-3 p-4 rounded-lg bg-black/20 border border-rose-500/20 text-center">
-                    <span className="text-xs font-sans uppercase text-slate-400 block mb-1">Measured Protein Concentration</span>
-                    <div className="text-3xl font-extrabold font-sans text-rose-500">
+                  <div className="my-3 p-4 rounded-lg bg-black/20 border border-[#A71D31]/30 text-center">
+                    <span className="text-xs font-sans uppercase text-[#8D775F] dark:text-[#D5BF86] block mb-1">Measured Protein Concentration</span>
+                    <div className="text-3xl font-extrabold font-sans text-[#A71D31]">
                       {currentMilestone.protein} mg/dL
                     </div>
-                    <span className="text-[11px] font-sans text-slate-400 mt-1 block">
+                    <span className="text-[11px] font-sans text-[#8D775F] dark:text-[#D5BF86] mt-1 block">
                       Spec. Gravity: {currentMilestone.sg} • Notes: None available in siloed records
                     </span>
                   </div>
 
-                  <h4 className="text-sm font-sans font-bold text-rose-900 dark:text-rose-200 mb-1">
+                  <h4 className="text-sm font-sans font-bold text-[#A71D31] mb-1">
                     Clinical Outcome:
                   </h4>
-                  <p className={`text-xs leading-relaxed ${isDark ? 'text-rose-200/90' : 'text-rose-950'}`}>
+                  <p className={`text-xs leading-relaxed ${isDark ? 'text-[#FAF9EB]' : 'text-[#3F0D12]'}`}>
                     {currentMilestone.snapshotDiagnosis}
                   </p>
                 </div>
 
-                <div className="mt-5 pt-3 border-t border-rose-500/20 flex items-center space-x-2 text-xs font-sans text-rose-400">
+                <div className="mt-5 pt-3 border-t border-[#A71D31]/20 flex items-center space-x-2 text-xs font-sans text-[#A71D31]">
                   <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
                   <span>Cost: Patient anxiety, misdiagnosis risk, unnecessary emergency labs.</span>
                 </div>
               </div>
 
               {/* Right: The BioTrajectory Personal Longitudinal View */}
-              <div className={`p-5 rounded-xl border flex flex-col justify-between ${isDark ? 'bg-[#006947]/10 border-[#006947]/30' : 'bg-[#006947]/5 border-[#006947]/20'
+              <div className={`p-5 rounded-xl border flex flex-col justify-between ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
                 }`}>
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="px-2.5 py-0.5 rounded text-[11px] font-sans font-bold uppercase bg-[#006947]/20 text-[#006947] dark:text-[#6ffbbe] border border-[#006947]/30">
+                    <span className="px-2.5 py-0.5 rounded text-[11px] font-sans font-bold uppercase bg-[#D5BF86]/20 text-[#3F0D12] dark:text-[#D5BF86] border border-[#D5BF86]/40">
                       BioTrajectory: Longitudinal History
                     </span>
-                    <span className="text-xs font-sans text-[#006947] dark:text-[#6ffbbe]">10-Point Rolling Baseline</span>
+                    <span className="text-xs font-sans text-[#A71D31] font-semibold">10-Point Rolling Baseline</span>
                   </div>
 
                   {/* Embedded Mini Trajectory Chart */}
-                  <div className="my-2 p-3 rounded-lg bg-black/20 border border-[#006947]/20 overflow-x-auto">
+                  <div className="my-2 p-3 rounded-lg bg-[#1D070A]/30 border border-[#D5BF86]/30 overflow-x-auto">
                     <svg viewBox={`0 0 ${miniChartWidth} ${miniChartHeight}`} className="w-full h-auto min-w-[380px]">
                       {/* Baseline Corridor Band */}
                       <rect
@@ -258,18 +258,18 @@ export default function TheProblem() {
                         y={getMiniY(15)}
                         width={miniChartWidth - padding.left - padding.right}
                         height={getMiniY(0) - getMiniY(15)}
-                        fill="rgba(0, 105, 71, 0.15)"
-                        stroke="rgba(0, 105, 71, 0.4)"
+                        fill="rgba(213, 191, 134, 0.2)"
+                        stroke="#D5BF86"
                         strokeDasharray="3 3"
                       />
-                      <text x={miniChartWidth - padding.right - 5} y={getMiniY(15) + 12} textAnchor="end" className="text-[9px] font-sans fill-[#006947] dark:fill-[#6ffbbe]">
+                      <text x={miniChartWidth - padding.right - 5} y={getMiniY(15) + 12} textAnchor="end" className="text-[9px] font-sans fill-[#8D775F] dark:fill-[#D5BF86] font-semibold">
                         Baseline Band (0–15 mg/dL)
                       </text>
 
                       {/* Trajectory Line */}
                       <polyline
                         fill="none"
-                        stroke="#006947"
+                        stroke="#A71D31"
                         strokeWidth="2.5"
                         points={sampleDays.map((d, i) => `${getMiniX(i)},${getMiniY(sampleValues[i])}`).join(' ')}
                       />
@@ -283,15 +283,15 @@ export default function TheProblem() {
                               cx={getMiniX(i)}
                               cy={getMiniY(sampleValues[i])}
                               r={isCurrent ? 6 : 3.5}
-                              fill={sampleValues[i] > 20 ? '#ba1a1a' : '#006947'}
-                              stroke={isCurrent ? '#ffffff' : '#000000'}
+                              fill={sampleValues[i] > 20 ? '#A71D31' : '#3F0D12'}
+                              stroke={isCurrent ? '#FAF9EB' : '#D5BF86'}
                               strokeWidth={isCurrent ? 2 : 1}
                             />
                             <text
                               x={getMiniX(i)}
                               y={miniChartHeight - padding.bottom + 14}
                               textAnchor="middle"
-                              className={`text-[8px] font-sans ${isCurrent ? 'fill-white font-bold' : 'fill-slate-500'}`}
+                              className={`text-[8px] font-sans ${isCurrent ? 'fill-[#A71D31] font-bold' : 'fill-[#8D775F]'}`}
                             >
                               D{d}
                             </text>
@@ -301,16 +301,16 @@ export default function TheProblem() {
                     </svg>
                   </div>
 
-                  <h4 className="text-sm font-sans font-bold text-[#006947] dark:text-[#6ffbbe] mt-2 mb-1">
+                  <h4 className="text-sm font-sans font-bold text-[#3F0D12] dark:text-[#FAF9EB] mt-2 mb-1">
                     Longitudinal Clarity:
                   </h4>
-                  <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                  <p className={`text-xs leading-relaxed ${isDark ? 'text-[#E8E5BA]' : 'text-[#473228]'}`}>
                     {currentMilestone.trajectoryInterpretation}
                   </p>
                 </div>
 
-                <div className="mt-5 pt-3 border-t border-[#006947]/20 flex items-center space-x-2 text-xs font-sans text-[#006947] dark:text-[#6ffbbe]">
-                  <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                <div className="mt-5 pt-3 border-t border-[#D5BF86]/20 flex items-center space-x-2 text-xs font-sans text-[#8D775F] dark:text-[#D5BF86]">
+                  <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-[#A71D31]" />
                   <span>Context: {currentMilestone.notes}</span>
                 </div>
               </div>
@@ -323,16 +323,16 @@ export default function TheProblem() {
             VIEW 2: EPIDEMIOLOGICAL SILENT PROGRESSION VISUALIZATION
         ========================================================================== */}
         {problemTab === 'epidemiology' && (
-          <div className={`rounded-xl border p-6 sm:p-8 shadow-xs transition-all ${isDark ? 'bg-[#0d1526] border-slate-800' : 'bg-white border-[#e2e8f0]'
+          <div className={`rounded-xl border p-6 sm:p-8 shadow-xs transition-all ${isDark ? 'bg-[#2B0B0E] border-[#D5BF86]/20' : 'bg-white border-[#D5BF86]/70'
             }`}>
             <div className="max-w-3xl mb-6">
-              <span className="text-[11px] font-sans uppercase font-bold text-[#00685f] dark:text-[#6bd8cb]">
+              <span className="text-[11px] font-sans uppercase font-bold text-[#A71D31] dark:text-[#D5BF86]">
                 Epidemiological Context
               </span>
-              <h3 className={`text-xl font-bold font-sans mt-1 ${isDark ? 'text-white' : 'text-[#131b2e]'}`}>
+              <h3 className={`text-xl font-bold font-sans mt-1 ${isDark ? 'text-[#FAF9EB]' : 'text-[#3F0D12]'}`}>
                 The Silent Progression Curve of Chronic Illness
               </h3>
-              <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              <p className={`text-xs mt-1 ${isDark ? 'text-[#D5BF86]' : 'text-[#8D775F]'}`}>
                 Chronic Kidney Disease (CKD) and diabetes develop over years with zero perceptible symptoms during the reversible early stages.
               </p>
             </div>
@@ -349,29 +349,29 @@ export default function TheProblem() {
                 <div
                   key={s.stage}
                   className={`p-3.5 rounded-lg border flex flex-col justify-between ${s.reversible
-                    ? 'bg-[#006947]/5 border-[#006947]/20 dark:bg-[#006947]/15 dark:border-[#006947]/30'
-                    : 'bg-rose-50 border-rose-200 dark:bg-rose-950/20 dark:border-rose-900/30'
+                    ? 'bg-[#FAF9EB] border-[#D5BF86] dark:bg-[#1D070A] dark:border-[#D5BF86]/30'
+                    : 'bg-[#A71D31]/10 border-[#A71D31]/30 dark:bg-[#A71D31]/15'
                     }`}
                 >
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="font-bold text-xs font-sans">{s.stage}</span>
-                      <span className={`text-[10px] font-sans px-2 py-0.2 rounded font-semibold ${s.reversible ? 'bg-[#006947]/15 text-[#006947] dark:text-[#6ffbbe]' : 'bg-rose-500/15 text-rose-500'
+                      <span className="font-bold text-xs font-sans text-[#3F0D12] dark:text-[#FAF9EB]">{s.stage}</span>
+                      <span className={`text-[10px] font-sans px-2 py-0.2 rounded font-semibold ${s.reversible ? 'bg-[#D5BF86]/20 text-[#3F0D12] dark:text-[#D5BF86]' : 'bg-[#A71D31]/20 text-[#A71D31]'
                         }`}>
                         {s.status}
                       </span>
                     </div>
-                    <span className="text-[10px] font-sans block text-slate-400 mb-1">{s.gfr}</span>
-                    <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                    <span className="text-[10px] font-sans block text-[#8D775F] mb-1">{s.gfr}</span>
+                    <p className={`text-xs leading-relaxed ${isDark ? 'text-[#E8E5BA]' : 'text-[#473228]'}`}>
                       {s.desc}
                     </p>
                   </div>
 
                   <div className="mt-3 pt-2 border-t border-inherit text-[10px] font-sans font-semibold">
                     {s.reversible ? (
-                      <span className="text-[#006947] dark:text-[#6ffbbe]">✓ Reversible Window</span>
+                      <span className="text-[#3F0D12] dark:text-[#D5BF86]">✓ Reversible Window</span>
                     ) : (
-                      <span className="text-rose-500">⚠️ Irreversible Damage</span>
+                      <span className="text-[#A71D31]">⚠️ Irreversible Damage</span>
                     )}
                   </div>
                 </div>
@@ -379,26 +379,26 @@ export default function TheProblem() {
             </div>
 
             {/* Core Stats Box */}
-            <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 pt-5 border-t ${isDark ? 'border-slate-800' : 'border-slate-100'}`}>
+            <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 pt-5 border-t ${isDark ? 'border-[#D5BF86]/20' : 'border-[#D5BF86]/40'}`}>
               <div className="flex items-start space-x-3.5">
-                <div className="text-3xl font-extrabold font-sans text-[#f59e0b]">9 in 10</div>
+                <div className="text-3xl font-extrabold font-sans text-[#A71D31]">9 in 10</div>
                 <div>
-                  <h5 className={`text-xs sm:text-sm font-bold font-sans ${isDark ? 'text-white' : 'text-[#131b2e]'}`}>
+                  <h5 className={`text-xs sm:text-sm font-bold font-sans ${isDark ? 'text-[#FAF9EB]' : 'text-[#3F0D12]'}`}>
                     Adults with CKD do not know they have it
                   </h5>
-                  <p className={`text-xs mt-0.5 leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  <p className={`text-xs mt-0.5 leading-relaxed ${isDark ? 'text-[#D5BF86]' : 'text-[#473228]'}`}>
                     Because early filtration decline produces zero pain or symptoms, point-in-time snapshot care fails to intervene before Stage 4.
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start space-x-3.5">
-                <div className="text-3xl font-extrabold font-sans text-[#006947] dark:text-[#6ffbbe]">136M</div>
+                <div className="text-3xl font-extrabold font-sans text-[#3F0D12] dark:text-[#FAF9EB]">136M</div>
                 <div>
-                  <h5 className={`text-xs sm:text-sm font-bold font-sans ${isDark ? 'text-white' : 'text-[#131b2e]'}`}>
+                  <h5 className={`text-xs sm:text-sm font-bold font-sans ${isDark ? 'text-[#FAF9EB]' : 'text-[#3F0D12]'}`}>
                     Indians live with prediabetes
                   </h5>
-                  <p className={`text-xs mt-0.5 leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  <p className={`text-xs mt-0.5 leading-relaxed ${isDark ? 'text-[#D5BF86]' : 'text-[#473228]'}`}>
                     Representing a critical 3-to-5 year window where longitudinal tracking of micro-glucose and hydration can prevent progression to type-2 diabetes.
                   </p>
                 </div>

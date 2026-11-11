@@ -1138,9 +1138,9 @@ export const PIE_CHART_PRESETS = [
         label: 'In Optimal Corridor',
         value: 78,
         count: '24 Sessions',
-        color: '#10b981', // Emerald
-        textColor: 'text-emerald-400',
-        badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+        color: '#D5BF86', // Soft Fawn
+        textColor: 'text-[#D5BF86]',
+        badgeColor: 'bg-[#D5BF86]/20 text-[#3F0D12] border-[#D5BF86]/40',
         description: 'Readings tracking within the patient’s established 10-session rolling IQR baseline corridor.'
       },
       {
@@ -1148,9 +1148,9 @@ export const PIE_CHART_PRESETS = [
         label: 'Transient Physiological Variance',
         value: 16,
         count: '5 Sessions',
-        color: '#f59e0b', // Amber
-        textColor: 'text-amber-400',
-        badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+        color: '#8D775F', // Faded Copper
+        textColor: 'text-[#8D775F]',
+        badgeColor: 'bg-[#8D775F]/20 text-[#3F0D12] border-[#8D775F]/40',
         description: 'Benign acute shifts explainable by vigorous exercise, hot climate sweat loss, or dietary buffers.'
       },
       {
@@ -1158,9 +1158,9 @@ export const PIE_CHART_PRESETS = [
         label: 'Clinical Review Flagged Zone',
         value: 6,
         count: '2 Sessions',
-        color: '#ef4444', // Rose/Red
-        textColor: 'text-rose-400',
-        badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
+        color: '#A71D31', // Ruby Red
+        textColor: 'text-[#A71D31]',
+        badgeColor: 'bg-[#A71D31]/20 text-[#A71D31] border-[#A71D31]/40',
         description: 'Statistically persistent deviations exceeding +3σ across consecutive tests requiring physician consult.'
       }
     ]
@@ -1176,9 +1176,9 @@ export const PIE_CHART_PRESETS = [
         label: 'Urinalysis Reagent Strip Colorimetry',
         value: 38,
         count: '30 Strip Scans',
-        color: '#10b981', // Emerald
-        textColor: 'text-emerald-400',
-        badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+        color: '#A71D31', // Ruby Red
+        textColor: 'text-[#A71D31]',
+        badgeColor: 'bg-[#A71D31]/20 text-[#A71D31] border-[#A71D31]/40',
         description: 'Chemical reagent pads capturing kidney filtration, specific gravity, pH, and metabolic ketones.'
       },
       {
@@ -1186,9 +1186,9 @@ export const PIE_CHART_PRESETS = [
         label: 'Bluetooth CGM Interstitial Glucose',
         value: 30,
         count: '8,640 Pings',
-        color: '#f59e0b', // Amber
-        textColor: 'text-amber-400',
-        badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+        color: '#D5BF86', // Soft Fawn
+        textColor: 'text-[#D5BF86]',
+        badgeColor: 'bg-[#D5BF86]/20 text-[#3F0D12] border-[#D5BF86]/40',
         description: 'Continuous 5-minute BLE telemetry capturing glycemic variability and meal response excursions.'
       },
       {
@@ -1196,9 +1196,9 @@ export const PIE_CHART_PRESETS = [
         label: 'Bluetooth Blood Pressure Cuff',
         value: 18,
         count: '60 Cuff Syncs',
-        color: '#ef4444', // Red
-        textColor: 'text-rose-400',
-        badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
+        color: '#3F0D12', // Rich Mahogany
+        textColor: 'text-[#3F0D12]',
+        badgeColor: 'bg-[#3F0D12]/20 text-[#3F0D12] border-[#3F0D12]/40',
         description: 'Twice-daily oscillometric blood pressure readings tracking systemic hemodynamic pressure.'
       },
       {
@@ -1206,9 +1206,9 @@ export const PIE_CHART_PRESETS = [
         label: 'Wearable Heart Rate & Autonomic PPG',
         value: 14,
         count: 'Continuous',
-        color: '#06b6d4', // Cyan
-        textColor: 'text-cyan-400',
-        badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
+        color: '#8D775F', // Faded Copper
+        textColor: 'text-[#8D775F]',
+        badgeColor: 'bg-[#8D775F]/20 text-[#8D775F] border-[#8D775F]/40',
         description: 'Nocturnal resting heart rate and HRV quantifying physiological exertion and recovery reserve.'
       }
     ]
@@ -1224,9 +1224,9 @@ export const PIE_CHART_PRESETS = [
         label: 'Renal Glomerular Filtration & Integrity',
         value: 44,
         count: 'PRO • SG • pH',
-        color: '#3b82f6', // Blue
-        textColor: 'text-blue-400',
-        badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+        color: '#A71D31', // Ruby Red
+        textColor: 'text-[#A71D31]',
+        badgeColor: 'bg-[#A71D31]/20 text-[#A71D31] border-[#A71D31]/40',
         description: 'Tubular reabsorption, protein clearance, and urinary concentration capacity.'
       },
       {
@@ -1234,9 +1234,9 @@ export const PIE_CHART_PRESETS = [
         label: 'Endocrine & Glycemic Homeostasis',
         value: 32,
         count: 'GLU • KET • CGM',
-        color: '#f59e0b', // Amber
-        textColor: 'text-amber-400',
-        badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+        color: '#D5BF86', // Soft Fawn
+        textColor: 'text-[#D5BF86]',
+        badgeColor: 'bg-[#D5BF86]/20 text-[#3F0D12] border-[#D5BF86]/40',
         description: 'Insulin sensitivity, carbohydrate turnover, and fasting ketone generation.'
       },
       {
@@ -1244,9 +1244,9 @@ export const PIE_CHART_PRESETS = [
         label: 'Hemodynamics & Fluid Balance',
         value: 24,
         count: 'BP • HR • Body H2O',
-        color: '#ec4899', // Pink
-        textColor: 'text-pink-400',
-        badgeColor: 'bg-pink-500/20 text-pink-300 border-pink-500/30',
+        color: '#3F0D12', // Rich Mahogany
+        textColor: 'text-[#3F0D12]',
+        badgeColor: 'bg-[#3F0D12]/20 text-[#3F0D12] border-[#3F0D12]/40',
         description: 'Vascular resistance, arterial elasticity, and total extracellular water preservation.'
       }
     ]
