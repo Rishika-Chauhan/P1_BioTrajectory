@@ -56,14 +56,20 @@ export default function RegisterPage() {
     setIsLoading(true);
     try {
       // Safety Rule: Users ALWAYS register as role: 'user'
-      await register({
-        fullName,
-        email,
-        password
-      });
-      navigate('/dashboard');
+      const registeredUser = await register({
+  fullName: fullName.trim(),
+  email: email.trim(),
+  password,
+  privacyConsent
+});
+
+if (!registeredUser) {
+  throw new Error('Registration failed. Check the error message.');
+}
+
+navigate('/dashboard', { replace: true });
     } catch (err) {
-      setError('Failed to create account. Please try again.');
+  setError(err.message || 'Failed to create account.');
     } finally {
       setIsLoading(false);
     }

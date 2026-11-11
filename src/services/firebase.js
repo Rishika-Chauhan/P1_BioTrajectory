@@ -1,26 +1,42 @@
-/**
- * BioTrajectory Firebase Integration Adapter
- * 
- * Provides configuration structure, token management, and verified custom claims
- * handling for Firebase Authentication and Firestore real-time synchronization.
- */
 
-const getEnv = (key, fallback) => {
-  try {
-    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[key]) {
-      return import.meta.env[key];
-    }
-  } catch (e) {}
-  return fallback;
-};
+import { initializeApp, getApps } from 'firebase/app';
+
+import {
+  getAuth,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  sendPasswordResetEmail,
+  sendEmailVerification,
+  updateProfile,
+  onAuthStateChanged,
+  getIdToken,
+  getIdTokenResult
+} from 'firebase/auth';
+
+const requiredEnv = [
+  'VITE_FIREBASE_API_KEY',
+  'VITE_FIREBASE_AUTH_DOMAIN',
+  'VITE_FIREBASE_PROJECT_ID',
+  'VITE_FIREBASE_APP_ID'
+];
+
+for (const key of requiredEnv) {
+  if (!import.meta.env[key]) {
+    throw new Error(`Missing Firebase environment variable: ${key}`);
+  }
+}
 
 export const firebaseConfig = {
-  apiKey: getEnv("VITE_FIREBASE_API_KEY", "AIzaSyMockKeyBioTrajectoryDev_2026"),
-  authDomain: getEnv("VITE_FIREBASE_AUTH_DOMAIN", "biotrajectory-prod.firebaseapp.com"),
-  projectId: getEnv("VITE_FIREBASE_PROJECT_ID", "biotrajectory-prod"),
-  storageBucket: getEnv("VITE_FIREBASE_STORAGE_BUCKET", "biotrajectory-prod.appspot.com"),
-  messagingSenderId: getEnv("VITE_FIREBASE_MESSAGING_SENDER_ID", "987654321098"),
-  appId: getEnv("VITE_FIREBASE_APP_ID", "1:987654321098:web:7739c81bb6c12345")
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 export const ROLES = {
@@ -32,129 +48,76 @@ export const ROLES = {
   UNKNOWN: 'UNKNOWN'
 };
 
-class FirebaseServiceAdapter {
-  constructor() {
-    this.isInitialized = false;
-    this.useMock = true; // Development mode fallback
-  }
+const app = getApps().length
+  ? getApps()[0]
+  : initializeApp(firebaseConfig);
 
+export const auth = getAuth(app);
+
+class FirebaseServiceAdapter {
   async initialize() {
-    this.isInitialized = true;
     return true;
   }
 
-  /**
-   * Decodes and validates trusted Firebase custom claims from ID Token
-   * In production, this validates the JWT cryptographically via Firebase Admin SDK
-   */
-  async getIdTokenResult(user, forceRefresh = false) {
-    if (!user) return null;
-
-    // Simulate cryptographic token claims retrieval
-    const claims = {
-      role: user.role || ROLES.USER,
-      auth_time: Math.floor(Date.now() / 1000),
-      iss: `https://securetoken.google.com/${firebaseConfig.projectId}`,
-      aud: firebaseConfig.projectId,
-      sub: user.uid || user.id,
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 3600
-    };
-
-    if (user.role === ROLES.DOCTOR || user.role === ROLES.DOCTOR_PENDING) {
-      claims.medicalRegNumber = user.registrationNumber || 'MCI-84729-A';
-      claims.doctorVerified = user.role === ROLES.DOCTOR;
-    }
-
-    if (user.role === ROLES.ADMIN) {
-      claims.admin = true;
-      claims.superAdmin = true;
-    }
-
-    return {
-      token: `eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.${btoa(JSON.stringify(claims))}.sig_mock_${Date.now()}`,
-      claims,
-      expirationTime: new Date(Date.now() + 3600000).toISOString(),
-      authTime: new Date().toISOString(),
-      issuedAtTime: new Date().toISOString(),
-      signInProvider: 'password'
-    };
-  }
-
-  /**
-   * Determine authoritative role from email and credentials
-   * Used for deterministic credential-based custom claims resolution
-   */
-  resolveRoleFromCredentials(email) {
-    const cleanEmail = (email || '').toLowerCase().trim();
-
-    if (cleanEmail.includes('admin')) {
-      return ROLES.ADMIN;
-    }
-    if (cleanEmail.includes('suspended')) {
-      return ROLES.DOCTOR_SUSPENDED;
-    }
-    if (cleanEmail.includes('pending')) {
-      return ROLES.DOCTOR_PENDING;
-    }
-    if (cleanEmail.startsWith('dr.') || cleanEmail.includes('doctor') || cleanEmail.includes('thorne') || cleanEmail.includes('vikram')) {
-      return ROLES.DOCTOR;
-    }
-    if (cleanEmail.includes('unknown') || cleanEmail.includes('unassigned')) {
-      return ROLES.UNKNOWN;
-    }
-    // All regular registrations and public users default to USER
-    return ROLES.USER;
-  }
-
-  async signInWithEmail(email, password) {
-    const role = this.resolveRoleFromCredentials(email);
-    const uid = `firebase_${role.toLowerCase()}_${Date.now()}`;
-    const name = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
-    const user = {
-      uid,
-      id: uid,
-      email,
-      displayName: role.startsWith('DOCTOR') ? (name.startsWith('Dr') ? name : `Dr. ${name}`) : name,
-      name: role.startsWith('DOCTOR') ? (name.startsWith('Dr') ? name : `Dr. ${name}`) : name,
-      role,
-      isAnonymous: false
-    };
-
-    const tokenResult = await this.getIdTokenResult(user);
-    user.tokenResult = tokenResult;
-
-    return user;
-  }
-
   async signUp(email, password, displayName) {
-    // Public registration STRICTLY creates USER accounts only
-    const uid = `firebase_user_${Date.now()}`;
-    const user = {
-      uid,
-      id: uid,
-      email,
-      displayName: displayName || email.split('@')[0],
-      name: displayName || email.split('@')[0],
-      role: ROLES.USER, // STRICTLY USER
-      isAnonymous: false
-    };
+    const credential = await createUserWithEmailAndPassword(
+      auth,
+      email.trim(),
+      password
+    );
 
-    const tokenResult = await this.getIdTokenResult(user);
-    user.tokenResult = tokenResult;
-    return user;
+    if (displayName?.trim()) {
+      await updateProfile(credential.user, {
+        displayName: displayName.trim()
+      });
+    }
+
+    await sendEmailVerification(credential.user);
+
+    return credential.user;
+  }
+
+  async signInWithEmail(email, password, rememberMe = true) {
+    await setPersistence(
+      auth,
+      rememberMe
+        ? browserLocalPersistence
+        : browserSessionPersistence
+    );
+
+    const credential = await signInWithEmailAndPassword(
+      auth,
+      email.trim(),
+      password
+    );
+
+    return credential.user;
+  }
+
+  async getIdToken(user, forceRefresh = false) {
+    if (!user) throw new Error('No authenticated user.');
+    return getIdToken(user, forceRefresh);
+  }
+
+  async getIdTokenResult(user, forceRefresh = false) {
+    if (!user) throw new Error('No authenticated user.');
+    return getIdTokenResult(user, forceRefresh);
   }
 
   async sendPasswordReset(email) {
-    return { success: true, message: `Password reset link dispatched to ${email}` };
+    return sendPasswordResetEmail(auth, email.trim());
   }
 
   async signOut() {
-    return { success: true };
+    return signOut(auth);
+  }
+
+  onAuthStateChanged(callback) {
+    return onAuthStateChanged(auth, callback);
   }
 }
 
 export const FirebaseService = new FirebaseServiceAdapter();
 export const firebaseService = FirebaseService;
+
 export default FirebaseService;

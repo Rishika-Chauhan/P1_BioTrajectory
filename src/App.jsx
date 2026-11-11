@@ -1,81 +1,66 @@
-import React, { useState } from 'react';
-import Navbar from './components/Navbar';
-import LiveDemo from './components/LiveDemo';
-import TheProblem from './components/TheProblem';
-import BiomarkerSuite from './components/BiomarkerSuite';
-import Footer from './components/Footer';
-import ReportModal from './components/ReportModal';
-import HealthProfileModal from './components/HealthProfileModal';
-import { ThemeProvider, useTheme } from './context/ThemeContext';
+
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+
+import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
+
+import Navbar from './components/common/Navbar';
+import ProtectedRoute from './components/common/ProtectedRoute';
+
+import HomePage from './pages/Home/HomePage';
+import LoginPage from './pages/Auth/LoginPage';
+import RegisterPage from './pages/Auth/RegisterPage';
+import ForgotPasswordPage from './pages/Auth/ForgotPasswordPage';
+import OverviewPage from './pages/UserDashboard/OverviewPage';
+
+import UserDashboardLayout from './components/layout/UserDashboardLayout';
+
 import './App.css';
 
-function MainApp() {
-  const { isDark } = useTheme();
-  const [reportModalOpen, setReportModalOpen] = useState(false);
-  const [healthProfileModalOpen, setHealthProfileModalOpen] = useState(false);
-
-  const scrollToDemo = () => {
-    const el = document.getElementById('live-prototype');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
+function AppRoutes() {
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${isDark
-      ? 'bg-[#1D070A] text-[#FAF9EB] selection:bg-[#A71D31]/40 selection:text-[#FAF9EB]'
-      : 'bg-[#F1F0CC] text-[#3F0D12] selection:bg-[#A71D31]/25 selection:text-[#3F0D12]'
-      }`}>
-      {/* Top Navbar with Theme Toggle, Health Profile & Report Triggers */}
-      <Navbar
-        onOpenDemo={scrollToDemo}
-        onOpenReport={() => setReportModalOpen(true)}
-        onOpenProfile={() => setHealthProfileModalOpen(true)}
-      />
-
-      {/* Main Experience Flow */}
-      <main>
-        {/* Patient Trajectory Dashboard (Live Graphs, Bluetooth BLE Hub, Attractive Line & Pie Charts, Reports) */}
-        <LiveDemo
-          onOpenReportModal={() => setReportModalOpen(true)}
-          onOpenProfile={() => setHealthProfileModalOpen(true)}
+    <>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <>
+              <Navbar />
+              <HomePage />
+            </>
+          }
         />
 
-        {/* Diagnostic Continuity & Point-in-Time Blindspot */}
-        <TheProblem />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-        {/* Reagent Biomarker Suite & Physiological Confounders */}
-        <BiomarkerSuite />
-      </main>
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={['USER']}>
+              <UserDashboardLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<OverviewPage />} />
+        </Route>
 
-      {/* Luxury Footer */}
-      <Footer
-        onOpenDemo={scrollToDemo}
-        onOpenReport={() => setReportModalOpen(true)}
-      />
-
-      {/* Clinician Handover Report Modal */}
-      <ReportModal
-        isOpen={reportModalOpen}
-        onClose={() => setReportModalOpen(false)}
-      />
-
-      {/* First-Time Onboarding & Health Profile Management Modal */}
-      <HealthProfileModal
-        isOpen={healthProfileModalOpen}
-        onClose={() => setHealthProfileModalOpen(false)}
-      />
-    </div>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
   );
 }
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <MainApp />
-      </AuthProvider>
-    </ThemeProvider>
+    <BrowserRouter>
+      <ThemeProvider>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </ThemeProvider>
+    </BrowserRouter>
   );
 }
