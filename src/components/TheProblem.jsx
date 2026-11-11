@@ -96,8 +96,8 @@ export default function TheProblem() {
             <button
               onClick={() => setProblemTab('paradigm')}
               className={`px-3.5 py-1.5 rounded-md text-xs font-semibold uppercase tracking-wider transition-all ${problemTab === 'paradigm'
-                  ? 'bg-[#00685f] text-white font-bold shadow-xs'
-                  : isDark ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-[#00685f] text-white font-bold shadow-xs'
+                : isDark ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
                 }`}
             >
               Interactive Simulator
@@ -105,8 +105,8 @@ export default function TheProblem() {
             <button
               onClick={() => setProblemTab('epidemiology')}
               className={`px-3.5 py-1.5 rounded-md text-xs font-semibold uppercase tracking-wider transition-all ${problemTab === 'epidemiology'
-                  ? 'bg-[#00685f] text-white font-bold shadow-xs'
-                  : isDark ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-[#00685f] text-white font-bold shadow-xs'
+                : isDark ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
                 }`}
             >
               Epidemiological Model
@@ -123,15 +123,15 @@ export default function TheProblem() {
               <div
                 key={issue.id}
                 className={`relative rounded-xl p-6 border transition-all duration-300 group flex flex-col justify-between ${isDark
-                    ? 'bg-[#0d1526] border-slate-800 hover:border-[#00685f]/50'
-                    : 'bg-white border-[#e2e8f0] hover:border-[#00685f]/40 shadow-xs'
+                  ? 'bg-[#0d1526] border-slate-800 hover:border-[#00685f]/50'
+                  : 'bg-white border-[#e2e8f0] hover:border-[#00685f]/40 shadow-xs'
                   }`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center border transition-all ${isDark
-                        ? 'bg-slate-900 border-slate-800 text-[#6bd8cb]'
-                        : 'bg-[#00685f]/10 border-[#00685f]/20 text-[#00685f]'
+                      ? 'bg-slate-900 border-slate-800 text-[#6bd8cb]'
+                      : 'bg-[#00685f]/10 border-[#00685f]/20 text-[#00685f]'
                       }`}>
                       <Icon className="w-4 h-4" />
                     </div>
@@ -189,8 +189,8 @@ export default function TheProblem() {
                       key={d}
                       onClick={() => setSliderDay(d)}
                       className={`px-3 py-1.5 rounded-md text-xs font-sans transition-all ${sliderDay === d
-                          ? 'bg-[#00685f] text-white font-bold shadow-xs'
-                          : isDark ? 'bg-slate-900 text-slate-400 hover:text-white' : 'bg-slate-100 text-slate-600 hover:text-slate-900'
+                        ? 'bg-[#00685f] text-white font-bold shadow-xs'
+                        : isDark ? 'bg-slate-900 text-slate-400 hover:text-white' : 'bg-slate-100 text-slate-600 hover:text-slate-900'
                         }`}
                     >
                       Day {d}
@@ -349,8 +349,8 @@ export default function TheProblem() {
                 <div
                   key={s.stage}
                   className={`p-3.5 rounded-lg border flex flex-col justify-between ${s.reversible
-                      ? 'bg-[#006947]/5 border-[#006947]/20 dark:bg-[#006947]/15 dark:border-[#006947]/30'
-                      : 'bg-rose-50 border-rose-200 dark:bg-rose-950/20 dark:border-rose-900/30'
+                    ? 'bg-[#006947]/5 border-[#006947]/20 dark:bg-[#006947]/15 dark:border-[#006947]/30'
+                    : 'bg-rose-50 border-rose-200 dark:bg-rose-950/20 dark:border-rose-900/30'
                     }`}
                 >
                   <div>

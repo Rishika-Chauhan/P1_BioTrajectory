@@ -62,16 +62,16 @@ export default function Navbar({ onOpenDemo, onOpenReport, onOpenProfile }) {
           : 'bg-[#faf8ff]/85 backdrop-blur-md border-b border-slate-200/60'
         }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-18">
 
           {/* Brand Logo & Clinical Platform Badge */}
           <div
-            className="flex items-center space-x-3 cursor-pointer group"
+            className="flex items-center space-x-3 cursor-pointer group shrink-0"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
             <div
-              className={`relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300 shadow-sm ${isDark
+              className={`relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300 shadow-sm shrink-0 ${isDark
                 ? 'bg-gradient-to-br from-[#008378]/30 via-slate-900 to-[#080d18] border border-[#008378]/40 group-hover:border-[#008378]/70 shadow-[0_0_15px_rgba(0,131,120,0.2)]'
                 : 'bg-gradient-to-br from-[#00685f] to-[#008378] text-white border border-[#00685f]/20 shadow-[0_2px_10px_rgba(0,104,95,0.2)]'
                 }`}
@@ -80,13 +80,13 @@ export default function Navbar({ onOpenDemo, onOpenReport, onOpenProfile }) {
               <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-inherit"></div>
             </div>
 
-            <div>
+            <div className="shrink-0">
               <div className="flex items-center space-x-2">
                 <span className={`font-sans text-lg sm:text-xl font-bold tracking-tight whitespace-nowrap ${isDark ? 'text-white' : 'text-[#131b2e]'}`}>
                   Bio<span className={isDark ? 'text-teal-400' : 'text-[#00685f]'}>Trajectory</span>
                 </span>
                 <span
-                  className={`text-[10px] font-sans font-semibold tracking-wide px-2 py-0.5 rounded-full border whitespace-nowrap hidden 2xl:inline-flex ${isDark
+                  className={`text-[10px] font-sans font-semibold tracking-wide px-2 py-0.5 rounded-full border whitespace-nowrap hidden xl:inline-flex ${isDark
                     ? 'bg-teal-500/10 text-teal-300 border-teal-500/30'
                     : 'bg-[#f2f3ff] text-[#00685f] border-[#dae2fd]'
                     }`}
@@ -99,22 +99,6 @@ export default function Navbar({ onOpenDemo, onOpenReport, onOpenProfile }) {
               </p>
             </div>
           </div>
-
-          {/* Center Personal Baseline Status Pill (Shown on very wide screens to avoid navbar crowding) */}
-          <button
-            type="button"
-            onClick={onOpenProfile}
-            className={`hidden 2xl:flex items-center gap-2 border px-3.5 py-1.5 rounded-full shadow-xs transition-all cursor-pointer group ${isDark
-              ? 'bg-slate-900/60 hover:bg-slate-800/80 border-white/10 hover:border-teal-400/40 text-slate-300'
-              : 'bg-slate-100/80 hover:bg-slate-200/80 border-slate-200/70 hover:border-[#00685f]/40 text-slate-700'
-              }`}
-            title="Click to view or edit your personal health profile and baseline goals"
-          >
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-xs font-medium whitespace-nowrap">
-              Personal Baseline: <strong className="text-emerald-600 dark:text-emerald-400">42 Days Active</strong> · <span className="group-hover:underline">Edit Profile</span>
-            </span>
-          </button>
 
           {/* Center Navigation Links (Clean Precision Humanism) */}
           <nav className="hidden lg:flex items-center space-x-1 shrink-0">
@@ -146,7 +130,7 @@ export default function Navbar({ onOpenDemo, onOpenReport, onOpenProfile }) {
             })}
           </nav>
 
-          {/* Right Action Cluster */}
+          {/* Right Action Cluster - Streamlined to Prevent Any Clipping */}
           <div className="hidden sm:flex items-center space-x-2 shrink-0">
 
             {/* Theme Switcher Toggle */}

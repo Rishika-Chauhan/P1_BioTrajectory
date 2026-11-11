@@ -71,25 +71,25 @@ export default function WhoNeedsThis({ onOpenDemo }) {
                 key={aud.id}
                 onClick={() => setSelectedAudience(idx)}
                 className={`p-6 rounded-2xl border cursor-pointer transition-all duration-200 flex flex-col justify-between ${isSelected
-                    ? isDark
-                      ? 'bg-[#0d1526] border-[#00685f] shadow-[0_8px_25px_rgba(0,104,95,0.2)] ring-1 ring-[#00685f]/50'
-                      : 'bg-white border-[#00685f] shadow-[0_8px_25px_rgba(0,104,95,0.1)] ring-1 ring-[#00685f]/30'
-                    : isDark
-                      ? 'bg-[#0a0f1d] border-slate-800 hover:border-slate-700'
-                      : 'bg-white border-slate-200 hover:border-[#00685f]/40 shadow-xs'
+                  ? isDark
+                    ? 'bg-[#0d1526] border-[#00685f] shadow-[0_8px_25px_rgba(0,104,95,0.2)] ring-1 ring-[#00685f]/50'
+                    : 'bg-white border-[#00685f] shadow-[0_8px_25px_rgba(0,104,95,0.1)] ring-1 ring-[#00685f]/30'
+                  : isDark
+                    ? 'bg-[#0a0f1d] border-slate-800 hover:border-slate-700'
+                    : 'bg-white border-slate-200 hover:border-[#00685f]/40 shadow-xs'
                   }`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${isSelected
-                        ? 'bg-[#00685f] text-white border-[#00685f]'
-                        : isDark ? 'bg-slate-900 text-slate-400 border-slate-800' : 'bg-slate-50 text-slate-600 border-slate-200'
+                      ? 'bg-[#00685f] text-white border-[#00685f]'
+                      : isDark ? 'bg-slate-900 text-slate-400 border-slate-800' : 'bg-slate-50 text-slate-600 border-slate-200'
                       }`}>
                       <Icon className="w-5 h-5" />
                     </div>
                     <span className={`text-[10px] font-mono uppercase px-2 py-0.5 rounded border ${isSelected
-                        ? 'bg-[#00685f]/15 text-[#00685f] dark:text-[#6bd8cb] border-[#00685f]/30 font-bold'
-                        : isDark ? 'bg-slate-800 text-slate-400 border-transparent' : 'bg-slate-100 text-slate-600 border-slate-200'
+                      ? 'bg-[#00685f]/15 text-[#00685f] dark:text-[#6bd8cb] border-[#00685f]/30 font-bold'
+                      : isDark ? 'bg-slate-800 text-slate-400 border-transparent' : 'bg-slate-100 text-slate-600 border-slate-200'
                       }`}>
                       {aud.metric}
                     </span>
@@ -157,8 +157,8 @@ export default function WhoNeedsThis({ onOpenDemo }) {
         {/* 2 Massive Scale Indicators */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className={`p-8 rounded-2xl border shadow-sm ${isDark
-              ? 'bg-[#0d1526] border-slate-800'
-              : 'bg-white border-[#e2e8f0]'
+            ? 'bg-[#0d1526] border-slate-800'
+            : 'bg-white border-[#e2e8f0]'
             }`}>
             <span className="text-5xl sm:text-6xl font-extrabold text-[#00685f] dark:text-[#6bd8cb] block mb-2 font-mono">
               136M
@@ -172,8 +172,8 @@ export default function WhoNeedsThis({ onOpenDemo }) {
           </div>
 
           <div className={`p-8 rounded-2xl border shadow-sm ${isDark
-              ? 'bg-[#0d1526] border-slate-800'
-              : 'bg-white border-[#e2e8f0]'
+            ? 'bg-[#0d1526] border-slate-800'
+            : 'bg-white border-[#e2e8f0]'
             }`}>
             <span className="text-5xl sm:text-6xl font-extrabold text-[#00687a] dark:text-[#57dffe] block mb-2 font-mono">
               315M

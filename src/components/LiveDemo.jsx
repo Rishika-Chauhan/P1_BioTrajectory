@@ -610,24 +610,24 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
 
           <div className="flex flex-col gap-5 pl-2">
             {/* Full-Width Telemetry & Personalized Welcome Heading */}
-            <div className="flex flex-col gap-2 w-full">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="font-sans text-[11px] uppercase tracking-wider bg-[#00685f]/10 text-[#00685f] dark:text-[#6bd8cb] px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1.5">
+            <div className="flex flex-col gap-2.5 w-full">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
+                <span className="font-sans text-[11px] uppercase tracking-wider bg-[#00685f]/10 text-[#00685f] dark:text-[#6bd8cb] px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1.5 shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#00685f] dark:bg-[#6bd8cb] animate-pulse"></span>
                   Longitudinal Telemetry Active
                 </span>
-                <span className="text-slate-400 text-xs hidden sm:inline">•</span>
-                <span className={`text-xs font-sans ${isDark ? 'text-slate-400' : 'text-[#3d4947]'}`}>
-                  Calibrated against iPhone 15 Pro TrueDepth Sensor
+                <span className={`text-xs font-sans flex items-center gap-1.5 ${isDark ? 'text-slate-400' : 'text-[#3d4947]'}`}>
+                  <span className="text-slate-300 dark:text-slate-700 hidden sm:inline select-none">•</span>
+                  <span>Calibrated against iPhone 15 Pro TrueDepth Sensor</span>
                 </span>
-                <span className="text-slate-400 text-xs hidden sm:inline">•</span>
-                <span className={`text-xs font-sans ${isDark ? 'text-slate-400' : 'text-[#3d4947]'}`}>
-                  Person: <strong className={isDark ? 'text-white' : 'text-slate-900'}>{activePersona.name} ({activePersona.age}y)</strong>
+                <span className={`text-xs font-sans flex items-center gap-1.5 ${isDark ? 'text-slate-400' : 'text-[#3d4947]'}`}>
+                  <span className="text-slate-300 dark:text-slate-700 hidden sm:inline select-none">•</span>
+                  <span>Person: <strong className={isDark ? 'text-white' : 'text-slate-900'}>{activePersona.id === 'my_user_profile' ? (trajectoryStorage.getHealthProfile()?.name || activePersona.name) : activePersona.name} ({activePersona.age}y)</strong></span>
                 </span>
               </div>
 
-              <h1 className="font-sans text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight leading-snug">
-                Welcome back, {activePersona.name.split(' ')[0]}. Your personal baseline is established across {activeHistory.length} days{' '}
+              <h1 className="font-sans text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight leading-snug w-full">
+                Welcome back, {activePersona.id === 'my_user_profile' ? (trajectoryStorage.getHealthProfile()?.name?.split(' ')?.[0] || 'User') : activePersona.name.split(' ')[0]}. Your personal baseline is established across {activeHistory.length} days{' '}
                 <span className={`font-normal text-base sm:text-lg ${isDark ? 'text-slate-400' : 'text-[#3d4947]'}`}>
                   ({history.length} strip scans logged).
                 </span>
