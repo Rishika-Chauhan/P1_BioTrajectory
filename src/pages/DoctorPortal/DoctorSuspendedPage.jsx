@@ -12,17 +12,8 @@ import {
 import { useAuth, USER_ROLES } from '../../context/AuthContext';
 
 export default function DoctorSuspendedPage() {
-  const { currentUser, logout, setUserRole } = useAuth();
+  const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
-  const [restoredNotice, setRestoredNotice] = useState(false);
-
-  const handleSimulateRestore = () => {
-    setUserRole(USER_ROLES.DOCTOR);
-    setRestoredNotice(true);
-    setTimeout(() => {
-      navigate('/doctor/dashboard');
-    }, 1200);
-  };
 
   const handleLogout = () => {
     logout();
@@ -81,13 +72,6 @@ export default function DoctorSuspendedPage() {
           </div>
         </div>
 
-        {restoredNotice && (
-          <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center justify-center gap-2">
-            <CheckCircle2 className="w-4 h-4" />
-            License Restored! Redirecting to Doctor Workspace...
-          </div>
-        )}
-
         {/* Action Controls */}
         <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
           <button
@@ -97,15 +81,6 @@ export default function DoctorSuspendedPage() {
           >
             <LogOut className="w-4 h-4" />
             Sign Out
-          </button>
-
-          <button
-            type="button"
-            onClick={handleSimulateRestore}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1.5"
-          >
-            <ShieldCheck className="w-4 h-4" />
-            Restore Clinical License (Test)
           </button>
         </div>
       </div>

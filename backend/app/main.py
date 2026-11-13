@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 
 from app.core.config import settings
-from app.core.security import rate_limit_middleware
+from app.core.security import initialize_firebase_admin, rate_limit_middleware
 from app.api.health import router as health_router
 from app.api.chat import router as chat_router
 from app.api.history import router as history_router
@@ -30,6 +30,8 @@ async def lifespan(app: FastAPI):
     logger.info(f"Starting {settings.PROJECT_NAME} v{settings.VERSION}")
     logger.info(f"Configured Groq Model: {settings.GROQ_MODEL}")
     logger.info(f"Groq API Configured: {settings.is_groq_configured}")
+    logger.info(f"Firebase project configured: {settings.FIREBASE_PROJECT_ID}")
+    logger.info(f"Firebase Admin enabled: {initialize_firebase_admin()}")
     logger.info(f"CORS Allowed Origins: {settings.ALLOWED_ORIGINS}")
     yield
     logger.info("BioTrajectory backend shutting down.")

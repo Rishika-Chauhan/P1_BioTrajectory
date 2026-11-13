@@ -17,6 +17,10 @@ dist-ssr
 .env
 .env.*
 !.env.example
+backend/.env
+backend/.env.*
+backend/secrets/
+**/*service-account*.json
 
 # Python
 venv/

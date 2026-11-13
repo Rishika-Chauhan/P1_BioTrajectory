@@ -12,8 +12,18 @@ import { useAuth, USER_ROLES, getDashboardPath } from '../../context/AuthContext
  * 4. Cross-role boundary defense (Users cannot access Admin or Doctor portals).
  */
 export default function ProtectedRoute({ allowedRoles, children }) {
-  const { isAuthenticated, currentUser } = useAuth();
+  const { isAuthenticated, currentUser, isAuthLoading } = useAuth();
   const location = useLocation();
+
+  // Do not redirect while auth state is still resolving. This avoids false
+  // landing-page redirects during initial app hydration or refresh.
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F5F8FC] dark:bg-[#070B14] text-slate-500 dark:text-slate-400 text-sm font-medium">
+        Loading your workspace…
+      </div>
+    );
+  }
 
   // 1. Not Authenticated -> Redirect to unified /login
   if (!isAuthenticated || !currentUser) {

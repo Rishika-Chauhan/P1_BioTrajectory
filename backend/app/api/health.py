@@ -1,14 +1,17 @@
+
 """
 BioTrajectory Health API Endpoints
 Health check status and authorized health summary endpoints.
 """
 
 import time
-from typing import Optional
-from fastapi import APIRouter, Header, Depends
+from typing import Any, Dict
+
+from fastapi import APIRouter, Depends
+
 from app.models.schemas import HealthStatusResponse, HealthSummaryResponse
 from app.core.config import settings
-from app.core.security import verify_auth_token
+from app.core.security import get_current_user
 from app.services.health_service import HealthDataService
 from app.utils.helpers import get_current_iso_timestamp
 
@@ -19,8 +22,12 @@ START_TIME = time.time()
 
 @router.get("/health", response_model=HealthStatusResponse)
 async def get_health_status():
-    """Returns backend system status, provider configuration, and authentication mode."""
+    """
+    Public backend health check.
+    Does not expose patient information.
+    """
     uptime = round(time.time() - START_TIME, 2)
+
     return HealthStatusResponse(
         status="ok",
         gemini_configured=settings.is_groq_configured,
@@ -33,18 +40,17 @@ async def get_health_status():
 
 
 @router.get("/api/health/summary", response_model=HealthSummaryResponse)
-async def get_health_summary(authorization: Optional[str] = Header(None)):
+async def get_health_summary(
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
     """
-    Returns clinical health summary based on authorized available records.
-    Strictly enforces that unverified tokens or missing production configurations
-    do not fabricate patient data.
+    Return health records belonging only to the authenticated user.
+    Firebase authentication is mandatory.
     """
-    is_prod_verified, auth_mode, claims = verify_auth_token(authorization)
-    user_id = claims.get("uid") if claims else None
 
     result = HealthDataService.retrieve_authorized_health_records(
-        user_id=user_id,
-        is_production_authenticated=is_prod_verified
+        user_id=current_user["uid"],
+        is_production_authenticated=True
     )
 
     return HealthSummaryResponse(
@@ -57,4 +63,3 @@ async def get_health_summary(authorization: Optional[str] = Header(None)):
             "They do not replace formal clinical assessment or laboratory diagnostics."
         )
     )
-

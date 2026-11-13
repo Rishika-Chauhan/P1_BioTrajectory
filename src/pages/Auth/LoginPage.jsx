@@ -214,67 +214,6 @@ export default function LoginPage() {
             </div>
           </form>
 
-          {/* Quick Credential Test Helper for Evaluation */}
-          <div className="pt-4 border-t border-slate-200 dark:border-slate-800/80 space-y-2">
-            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-              <span className="flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400" />
-                Quick-Fill Test Accounts:
-              </span>
-              <span className="text-[10px] text-slate-400">Auto-fills input fields</span>
-            </div>
-
-            <div className="flex flex-wrap gap-1.5">
-              <button
-                type="button"
-                onClick={() => handleAutoFill('patient@biotrajectory.health')}
-                className="px-2 py-1 rounded-lg text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-cyan-50 dark:hover:bg-cyan-950/30 hover:text-cyan-600 transition-colors cursor-pointer"
-                title="Tests role: USER -> /dashboard"
-              >
-                Patient
-              </button>
-              <button
-                type="button"
-                onClick={() => handleAutoFill('dr.thorne@biotrajectory.health')}
-                className="px-2 py-1 rounded-lg text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-600 transition-colors cursor-pointer"
-                title="Tests role: DOCTOR -> /doctor/dashboard"
-              >
-                Doctor (Verified)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleAutoFill('dr.pending@biotrajectory.health')}
-                className="px-2 py-1 rounded-lg text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-amber-50 dark:hover:bg-amber-950/30 hover:text-amber-600 transition-colors cursor-pointer"
-                title="Tests role: DOCTOR_PENDING -> /doctor/pending"
-              >
-                Doctor (Pending)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleAutoFill('dr.suspended@biotrajectory.health')}
-                className="px-2 py-1 rounded-lg text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-rose-950/30 hover:text-rose-600 transition-colors cursor-pointer"
-                title="Tests role: DOCTOR_SUSPENDED -> /doctor/suspended"
-              >
-                Doctor (Suspended)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleAutoFill('admin@biotrajectory.health')}
-                className="px-2 py-1 rounded-lg text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-purple-950/30 hover:text-purple-600 transition-colors cursor-pointer"
-                title="Tests role: ADMIN -> /admin/dashboard"
-              >
-                Admin
-              </button>
-              <button
-                type="button"
-                onClick={() => handleAutoFill('unknown@biotrajectory.health')}
-                className="px-2 py-1 rounded-lg text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
-                title="Tests role: UNKNOWN -> /account-setup"
-              >
-                Unknown Role
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Security disclaimer */}

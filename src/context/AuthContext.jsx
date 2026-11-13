@@ -6,7 +6,7 @@ import React, {
   useEffect
 } from 'react';
 
-import { FirebaseService, ROLES } from '../services/firebase';
+import { FirebaseService, ROLES, auth } from '../services/firebase';
 import { trajectoryStorage } from '../services/trajectoryStorage';
 
 const AuthContext = createContext(null);
@@ -262,37 +262,38 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // Refresh token and custom claims
+  // Refresh token and custom claims.
   const refreshToken = async () => {
-  const authUser = auth.currentUser;
-  if (!authUser) return null;
+    const currentAuthUser = auth.currentUser;
 
-  try {
-    const tokenResult = await FirebaseService.getIdTokenResult(
-      authUser,
-      true
-    );
+    if (!currentAuthUser) return null;
 
-    const claims = tokenResult?.claims || {};
+    try {
+      const tokenResult = await FirebaseService.getIdTokenResult(
+        currentAuthUser,
+        true
+      );
 
-    const updatedUser = {
-      ...currentUser,
-      uid: authUser.uid,
-      id: authUser.uid,
-      claims,
-      role: claims.role || USER_ROLES.USER,
-      token: tokenResult?.token || null
-    };
+      const claims = tokenResult?.claims || {};
 
-    setCurrentUser(updatedUser);
-    setTokenClaims(claims);
+      const updatedUser = {
+        ...currentUser,
+        uid: currentAuthUser.uid,
+        id: currentAuthUser.uid,
+        claims,
+        role: claims.role || USER_ROLES.USER,
+        token: tokenResult?.token || null
+      };
 
-    return updatedUser;
-  } catch (error) {
-    console.error('Token refresh error:', error);
-    return null;
-  }
-};
+      setCurrentUser(updatedUser);
+      setTokenClaims(claims);
+
+      return updatedUser;
+    } catch (error) {
+      console.error('Token refresh error:', error);
+      return null;
+    }
+  };
 
   // Update local application profile.
   const updateProfile = (updates) => {

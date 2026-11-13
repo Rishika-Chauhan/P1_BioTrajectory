@@ -35,6 +35,8 @@ export default function AdminDashboardLayout() {
     { label: 'Overview', path: '/admin/dashboard', icon: Shield },
     { label: 'User Accounts', path: '/admin/users', icon: Users },
     { label: 'Permissions', path: '/admin/roles', icon: Key },
+    { label: 'Doctor Verification', path: '/admin/verification', icon: Shield },
+    { label: 'Patient Management', path: '/admin/patients', icon: Users },
     { label: 'Disease Guide', path: '/admin/diseases', icon: BookOpen },
     { label: 'Articles & Guides', path: '/admin/content', icon: FileCheck },
     { label: 'User Reports', path: '/admin/reports', icon: AlertCircle },

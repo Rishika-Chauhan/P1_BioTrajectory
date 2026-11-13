@@ -16,18 +16,9 @@ import { useAuth, USER_ROLES } from '../../context/AuthContext';
 import HealthProfileModal from '../../components/HealthProfileModal';
 
 export default function AccountSetupPage() {
-  const { currentUser, logout, setUserRole } = useAuth();
+  const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
-  const [assignedRoleNotice, setAssignedRoleNotice] = useState(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-
-  const handleAssignRole = (role, path) => {
-    setUserRole(role);
-    setAssignedRoleNotice(`Role assigned: ${role}. Proceeding...`);
-    setTimeout(() => {
-      navigate(path);
-    }, 1000);
-  };
 
   const handleLogout = () => {
     logout();
@@ -74,13 +65,6 @@ export default function AccountSetupPage() {
             In production, contact your organization administrator or clinical onboarding manager to provision custom claims for your account.
           </p>
 
-          {assignedRoleNotice && (
-            <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center justify-center gap-2">
-              <CheckCircle2 className="w-4 h-4" />
-              <span>{assignedRoleNotice}</span>
-            </div>
-          )}
-
           {/* First-Time Health Profile & Consent Onboarding Action */}
           <div className="p-4 rounded-2xl bg-teal-50/60 dark:bg-teal-950/20 border border-teal-200/60 dark:border-teal-800/40 space-y-2">
             <div className="flex items-center justify-between">
@@ -106,48 +90,13 @@ export default function AccountSetupPage() {
             </button>
           </div>
 
-          {/* Test Sandbox Role Provisioner */}
-          <div className="p-4 rounded-2xl bg-cyan-50/50 dark:bg-cyan-950/20 border border-cyan-200/50 dark:border-cyan-800/40 space-y-2.5">
+          <div className="p-4 rounded-2xl bg-cyan-50/50 dark:bg-cyan-950/20 border border-cyan-200/50 dark:border-cyan-800/40 space-y-2">
             <span className="text-xs font-bold text-cyan-900 dark:text-cyan-200 block">
-              Development Test Sandbox: Provision a Role Now
+              Access is currently pending trusted provisioning
             </span>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => handleAssignRole(USER_ROLES.USER, '/dashboard')}
-                className="p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-cyan-500 text-left transition-all"
-              >
-                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
-                  <UserCheck className="w-3.5 h-3.5 text-cyan-500" />
-                  <span>Assign USER</span>
-                </div>
-                <span className="text-[10px] text-slate-500 mt-1 block">Patient Dashboard</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleAssignRole(USER_ROLES.DOCTOR, '/doctor/dashboard')}
-                className="p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-blue-500 text-left transition-all"
-              >
-                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
-                  <Stethoscope className="w-3.5 h-3.5 text-blue-500" />
-                  <span>Assign DOCTOR</span>
-                </div>
-                <span className="text-[10px] text-slate-500 mt-1 block">Doctor Workspace</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleAssignRole(USER_ROLES.ADMIN, '/admin/dashboard')}
-                className="p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-purple-500 text-left transition-all"
-              >
-                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
-                  <Shield className="w-3.5 h-3.5 text-purple-500" />
-                  <span>Assign ADMIN</span>
-                </div>
-                <span className="text-[10px] text-slate-500 mt-1 block">Admin Console</span>
-              </button>
-            </div>
+            <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+              Contact your platform administrator or medical onboarding team to grant the appropriate role and token claims for this account.
+            </p>
           </div>
         </div>
 

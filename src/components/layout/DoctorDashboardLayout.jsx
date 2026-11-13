@@ -19,9 +19,10 @@ import {
   AlertTriangle,
   ExternalLink,
   ShieldAlert,
-  Clock
+  Clock,
+  Settings
 } from 'lucide-react';
-import { useDoctorAuth, DOCTOR_ROLES } from '../../context/DoctorAuthContext';
+import { useDoctorAuth } from '../../context/DoctorAuthContext';
 import ThemeToggle from '../common/ThemeToggle';
 import BrandLogo from '../common/BrandLogo';
 
@@ -35,8 +36,7 @@ export default function DoctorDashboardLayout() {
     logoutDoctor,
     isVerifiedDoctor,
     isPendingDoctor,
-    isSuspendedDoctor,
-    setVerificationStatus
+    isSuspendedDoctor
   } = useDoctorAuth();
 
   const doctorNavItems = [
@@ -46,9 +46,11 @@ export default function DoctorDashboardLayout() {
     { label: 'Appointments', path: '/doctor/appointments', icon: Calendar },
     { label: 'Video Consultation', path: '/doctor/video-consultation', icon: Video },
     { label: 'Write Reports', path: '/doctor/reports', icon: FileText },
+    { label: 'Medical Records', path: '/doctor/medical-records', icon: FileText },
     { label: 'Prescriptions', path: '/doctor/prescriptions', icon: Pill },
     { label: 'Explore Diseases', path: '/doctor/explore', icon: BookOpen },
-    { label: 'My Profile', path: '/doctor/profile', icon: User }
+    { label: 'My Profile', path: '/doctor/profile', icon: User },
+    { label: 'Settings', path: '/doctor/settings', icon: Settings }
   ];
 
   const handleLogout = () => {
@@ -229,23 +231,6 @@ export default function DoctorDashboardLayout() {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Verification Sandbox Switcher for Developer Testing */}
-            <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs">
-              <span className="text-slate-500">Test Role:</span>
-              <button
-                onClick={() => setVerificationStatus(DOCTOR_ROLES.VERIFIED)}
-                className={`px-2 py-0.5 rounded cursor-pointer ${isVerifiedDoctor ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-400'}`}
-              >
-                Verified
-              </button>
-              <button
-                onClick={() => setVerificationStatus(DOCTOR_ROLES.PENDING)}
-                className={`px-2 py-0.5 rounded cursor-pointer ${isPendingDoctor ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-400'}`}
-              >
-                Pending
-              </button>
-            </div>
-
             <ThemeToggle />
 
             <div className="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-slate-800">
@@ -268,19 +253,11 @@ export default function DoctorDashboardLayout() {
 
         {/* Global Warning Banner if Doctor is PENDING */}
         {isPendingDoctor && (
-          <div className="px-6 py-3 bg-amber-500/15 border-b border-amber-500/30 flex items-center justify-between text-[15px] text-amber-800 dark:text-amber-200 shrink-0">
-            <div className="flex items-center gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
-              <span>
-                <strong>Verification in Progress:</strong> Your medical registration number is currently being verified by the medical board. Telemedicine, report finalization, and e-prescriptions will unlock upon verification.
-              </span>
-            </div>
-            <button
-              onClick={() => setVerificationStatus(DOCTOR_ROLES.VERIFIED)}
-              className="text-xs font-bold px-3 py-1 bg-amber-500 text-slate-950 rounded-lg hover:bg-amber-400 transition-colors ml-4 shrink-0 cursor-pointer"
-            >
-              Verify Now (Test Mode)
-            </button>
+          <div className="px-6 py-3 bg-amber-500/15 border-b border-amber-500/30 flex items-center gap-3 text-[15px] text-amber-800 dark:text-amber-200 shrink-0">
+            <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
+            <span>
+              <strong>Verification in Progress:</strong> Your medical registration number is currently being verified by the medical board. Telemedicine, report finalization, and e-prescriptions will unlock upon verification.
+            </span>
           </div>
         )}
 

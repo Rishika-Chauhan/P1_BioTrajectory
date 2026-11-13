@@ -28,87 +28,68 @@ const DEMO_VERIFIED_DOCTOR = {
 export function DoctorAuthProvider({ children }) {
   const auth = useAuth();
 
-  const [currentDoctor, setCurrentDoctor] = useState(() => {
-    // If unified auth has a doctor user, use it
-    if (auth.currentUser && (auth.currentUser.role === 'DOCTOR' || auth.currentUser.role === 'DOCTOR_PENDING' || auth.currentUser.role === 'DOCTOR_SUSPENDED')) {
-      return {
-        ...DEMO_VERIFIED_DOCTOR,
-        ...auth.currentUser,
-        name: auth.currentUser.name || auth.currentUser.displayName || 'Dr. Practitioner',
-        role: auth.currentUser.role
-      };
+  const buildDoctorFromUser = (user) => {
+    if (!user || !['DOCTOR', 'DOCTOR_PENDING', 'DOCTOR_SUSPENDED'].includes(user.role)) {
+      return null;
     }
-    const saved = localStorage.getItem('biotrajectory-doctor-user');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        return null;
-      }
-    }
-    return DEMO_VERIFIED_DOCTOR;
-  });
 
-  const [authError, setAuthError] = useState(null);
-
-  // Sync with AuthContext whenever auth.currentUser changes
-  useEffect(() => {
-    if (auth.currentUser && (auth.currentUser.role === 'DOCTOR' || auth.currentUser.role === 'DOCTOR_PENDING' || auth.currentUser.role === 'DOCTOR_SUSPENDED')) {
-      setCurrentDoctor(prev => ({
-        ...DEMO_VERIFIED_DOCTOR,
-        ...prev,
-        ...auth.currentUser,
-        name: auth.currentUser.name || auth.currentUser.displayName || 'Dr. Practitioner',
-        role: auth.currentUser.role
-      }));
-    }
-  }, [auth.currentUser]);
-
-  useEffect(() => {
-    if (currentDoctor) {
-      localStorage.setItem('biotrajectory-doctor-user', JSON.stringify(currentDoctor));
-    } else {
-      localStorage.removeItem('biotrajectory-doctor-user');
-    }
-  }, [currentDoctor]);
-
-  const loginDoctor = async (email, password) => {
-    // Delegate to unified login
-    const user = await auth.login(email, password);
-    if (user) {
-      const doc = {
-        ...DEMO_VERIFIED_DOCTOR,
-        ...user,
-        role: user.role
-      };
-      setCurrentDoctor(doc);
-      return doc;
-    }
-    return null;
+    return {
+      id: user.uid || user.id,
+      uid: user.uid || user.id,
+      name: user.name || user.displayName || 'Dr. Practitioner',
+      fullName: user.name || user.displayName || 'Dr. Practitioner',
+      email: user.email,
+      phone: user.phone || '+1 (555) 234-8901',
+      registrationNumber: user.registrationNumber || user.claims?.medicalRegNumber || 'MED-REG-UNKNOWN',
+      specialization: user.specialization || 'Clinical Practice',
+      qualification: user.qualification || 'Medical License',
+      clinic: user.clinic || user.claims?.clinicName || 'Clinical Practice',
+      clinicName: user.clinic || user.claims?.clinicName || 'Clinical Practice',
+      role: user.role,
+      avatar: user.avatar || user.photoURL || 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=300&q=80',
+      joinedDate: user.joinedDate || new Date().toISOString().split('T')[0],
+      bio: user.bio || 'Licensed clinical practitioner.',
+      consultationFee: user.consultationFee || '$120'
+    };
   };
 
-  const logoutDoctor = () => {
-    auth.logout();
+  const [currentDoctor, setCurrentDoctor] = useState(() => buildDoctorFromUser(auth.currentUser));
+  const [authError, setAuthError] = useState(null);
+
+  useEffect(() => {
+    setCurrentDoctor(buildDoctorFromUser(auth.currentUser));
+  }, [auth.currentUser]);
+
+  const loginDoctor = async (email, password) => {
+    const user = await auth.login(email, password);
+    const doctor = buildDoctorFromUser(user);
+    setCurrentDoctor(doctor);
+    return doctor;
+  };
+
+  const logoutDoctor = async () => {
+    await auth.logout();
     setCurrentDoctor(null);
-    localStorage.removeItem('biotrajectory-doctor-user');
   };
 
   const updateDoctorProfile = (updates) => {
-    setCurrentDoctor(prev => {
+    setCurrentDoctor((prev) => {
+      if (!prev) return prev;
       const updated = { ...prev, ...updates };
       auth.updateProfile(updates);
       return updated;
     });
   };
 
-  // Demo toggle for testing verification state in sandbox
-  const setVerificationStatus = (status) => {
-    const canonicalStatus = status === 'DOCTOR_VERIFIED' ? 'DOCTOR' : status;
-    setCurrentDoctor(prev => prev ? ({ ...prev, role: canonicalStatus }) : null);
-    auth.setUserRole(canonicalStatus);
+  const setVerificationStatus = () => {
+    throw new Error('Doctor verification status must be managed by the trusted backend and custom claims.');
   };
 
-  const isVerifiedDoctor = currentDoctor?.role === 'DOCTOR' || currentDoctor?.role === 'DOCTOR_VERIFIED';
+  const updateDoctorRole = () => {
+    throw new Error('Doctor role assignments are not allowed from the client.');
+  };
+
+  const isVerifiedDoctor = currentDoctor?.role === 'DOCTOR';
   const isPendingDoctor = currentDoctor?.role === 'DOCTOR_PENDING';
   const isSuspendedDoctor = currentDoctor?.role === 'DOCTOR_SUSPENDED';
 
@@ -116,7 +97,7 @@ export function DoctorAuthProvider({ children }) {
     <DoctorAuthContext.Provider
       value={{
         currentDoctor,
-        isAuthenticatedDoctor: !!currentDoctor && (isVerifiedDoctor || isPendingDoctor),
+        isAuthenticatedDoctor: !!currentDoctor && (isVerifiedDoctor || isPendingDoctor || isSuspendedDoctor),
         isVerifiedDoctor,
         isPendingDoctor,
         isSuspendedDoctor,
@@ -126,7 +107,6 @@ export function DoctorAuthProvider({ children }) {
         updateDoctorProfile,
         setVerificationStatus,
         authError,
-        // Aliases for convenience across all doctor portal pages
         doctor: currentDoctor ? {
           ...currentDoctor,
           fullName: currentDoctor.name,
@@ -135,7 +115,7 @@ export function DoctorAuthProvider({ children }) {
           uid: currentDoctor.id
         } : null,
         isVerified: isVerifiedDoctor,
-        updateDoctorRole: setVerificationStatus
+        updateDoctorRole
       }}
     >
       {children}

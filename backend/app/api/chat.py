@@ -1,18 +1,20 @@
+
 """
 BioTrajectory Chat API Endpoint
 Core conversational gateway connecting client requests to safety evaluation,
-conversation persistence, and the Gemini AI service.
+conversation persistence, and the Groq AI service.
 """
 
 import logging
-from typing import Optional
-from fastapi import APIRouter, Header, Depends, HTTPException, status
+from typing import Any, Dict
+
+from fastapi import APIRouter, Depends, HTTPException, status
+
 from app.models.schemas import ChatRequest, ChatResponse
 from app.services.safety_service import ClinicalSafetyService
 from app.services.conversation_service import conversation_service
 from app.services.gemini_service import gemini_service
-from app.services.health_service import HealthDataService
-from app.core.security import verify_auth_token
+from app.core.security import get_current_user
 from app.utils.helpers import get_current_time_str, sanitize_text
 
 logger = logging.getLogger("biotrajectory.chat")
@@ -23,31 +25,42 @@ router = APIRouter(prefix="/api", tags=["Chat"])
 @router.post("/chat", response_model=ChatResponse)
 async def handle_chat(
     payload: ChatRequest,
-    authorization: Optional[str] = Header(None)
+    current_user: Dict[str, Any] = Depends(get_current_user)
 ):
     """
-    Process incoming user message through clinical safety, context assembly,
-    and Gemini health intelligence.
+    Process incoming user messages.
+    Requires a valid Firebase ID token.
     """
+
+    # 1. Get authenticated Firebase user
+    user_id = current_user["uid"]
+
+    # 2. Validate message
     clean_message = sanitize_text(payload.message)
+
     if not clean_message:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Message content cannot be blank."
         )
 
-    # 1. Authoritative Token Check
-    is_prod_verified, auth_mode, claims = verify_auth_token(authorization)
-    user_id = claims.get("uid") if claims else None
+    # 3. Immediate clinical emergency triage
+    is_emergency, emergency_text, emergency_card = (
+        ClinicalSafetyService.evaluate_emergency(clean_message)
+    )
 
-    # 2. Immediate Clinical Emergency Triage
-    is_emergency, emergency_text, emergency_card = ClinicalSafetyService.evaluate_emergency(clean_message)
     if is_emergency and emergency_text:
-        logger.warning("Clinical emergency response triggered. Bypassing LLM generation.")
-        session = conversation_service.get_or_create(payload.conversation_id, user_id=user_id)
+        logger.warning(
+            "Clinical emergency response triggered. Bypassing LLM generation."
+        )
+
+        session = conversation_service.get_or_create(
+            payload.conversation_id,
+            user_id=user_id
+        )
+
         current_time = get_current_time_str()
-        
-        # Save emergency turn into history
+
         conversation_service.append_turn(
             conversation_id=session.conversation_id,
             user_text=clean_message,
@@ -69,35 +82,35 @@ async def handle_chat(
             model_used="clinical_safety_emergency_protocol"
         )
 
-    # 3. Retrieve or Create Conversation Session
-    session = conversation_service.get_or_create(payload.conversation_id, user_id=user_id)
-    
-    # Priority for history: server session history, supplemented with client history if session is brand new
+    # 4. Retrieve or create conversation session
+    session = conversation_service.get_or_create(
+        payload.conversation_id,
+        user_id=user_id
+    )
+
+    # 5. Prepare conversation history
     history_to_use = session.messages
+
     if not history_to_use and payload.conversation_history:
         history_to_use = payload.conversation_history
 
-    # 4. Context Grounding & Data Boundaries
+    # 6. Generate AI response
+    # No patient records are assumed or fabricated here.
     context_notes = None
-    if not is_prod_verified:
-        context_notes = (
-            "Verified patient health records are unavailable because production authentication is not active. "
-            "You MUST NOT invent, guess, or fabricate patient lab results or vital readings. "
-            "Explain clinical principles, healthy ranges, and lifestyle habits educationally."
-        )
 
-    # 5. Gemini Generation
-    response_text, warning_card, model_used = await gemini_service.generate_response(
-        message=clean_message,
-        history=history_to_use,
-        user_consent=payload.user_consent_given,
-        attachments=payload.attachments,
-        context_notes=context_notes
+    response_text, warning_card, model_used = (
+        await gemini_service.generate_response(
+            message=clean_message,
+            history=history_to_use,
+            user_consent=payload.user_consent_given,
+            attachments=payload.attachments,
+            context_notes=context_notes
+        )
     )
 
     current_time = get_current_time_str()
 
-    # 6. Persist Conversation Turn
+    # 7. Save conversation turn
     conversation_service.append_turn(
         conversation_id=session.conversation_id,
         user_text=clean_message,
@@ -109,6 +122,7 @@ async def handle_chat(
         user_id=user_id
     )
 
+    # 8. Return response
     return ChatResponse(
         response=response_text,
         text=response_text,

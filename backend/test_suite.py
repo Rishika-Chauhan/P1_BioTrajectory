@@ -19,7 +19,8 @@ from app.services.safety_service import ClinicalSafetyService
 from app.services.health_service import HealthDataService
 from app.services.conversation_service import conversation_service
 from app.services.gemini_service import gemini_service
-from app.core.security import verify_auth_token, rate_limiter
+from app.core import security
+from app.core.security import verify_auth_token, rate_limiter, extract_role_from_claims, get_current_user, require_authenticated_user, require_role
 from app.utils.helpers import sanitize_error_message
 from groq import RateLimitError
 
@@ -32,6 +33,18 @@ class TestBioTrajectoryIntegration(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.client = TestClient(app)
+
+        # Simulate a verified Firebase user for endpoint integration tests.
+        # This avoids requiring a real Firebase ID token in unit tests.
+        app.dependency_overrides[get_current_user] = lambda: {
+            "uid": "test-user-1",
+            "role": "USER"
+        }
+
+    @classmethod
+    def tearDownClass(cls):
+        # Prevent authentication overrides leaking into other test modules.
+        app.dependency_overrides.clear()
 
     def test_01_fastapi_startup_and_routes(self):
         """1. Verify FastAPI startup and registered endpoints."""
@@ -208,29 +221,80 @@ class TestBioTrajectoryIntegration(unittest.TestCase):
         self.assertIn("988", r_crisis.json()["response"])
         print("✓ Test 9: Clinical emergency guidance triage verified.")
 
-    def test_10_no_fabricated_health_records(self):
-        """10. Verify personal health records are not fabricated when auth is unverified."""
-        resp = self.client.get("/api/health/summary")
-        self.assertEqual(resp.status_code, 200)
-        data = resp.json()
-        self.assertFalse(data["available"])
-        self.assertIn("disabled", data["status"])
-        self.assertIsNone(data["data"])
-        self.assertIn("Production Firebase authentication is not configured", data["reason"])
-        print("✓ Test 10: Prohibition on fabricated health records verified.")
+    def test_10_unauthenticated_health_access_is_rejected(self):
+        """10. Verify unauthenticated users cannot access personal health records."""
+        # Temporarily remove the authenticated-user override.
+        original_override = app.dependency_overrides.pop(
+            get_current_user, None
+        )
+
+        try:
+            resp = self.client.get("/api/health/summary")
+            self.assertEqual(resp.status_code, 401)
+        finally:
+            # Restore the override for the remaining integration tests.
+            if original_override is not None:
+                app.dependency_overrides[get_current_user] = original_override
+
+        print("✓ Test 10: Unauthenticated health access rejected.")
 
     def test_11_authentication_and_authorization(self):
         """11. Verify token verification and mock token boundary."""
-        # Unauthenticated
         is_prod, mode, claims = verify_auth_token(None)
         self.assertFalse(is_prod)
         self.assertEqual(mode, "unauthenticated")
 
-        # Development mock token
-        is_prod, mode, claims = verify_auth_token("Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.sig_mock_123")
+        is_prod, mode, claims = verify_auth_token("Token not-a-bearer")
         self.assertFalse(is_prod)
-        self.assertEqual(mode, "development_mock")
+        self.assertEqual(mode, "invalid_header")
+
+        is_prod, mode, claims = verify_auth_token("Bearer mock_token_123")
+        self.assertFalse(is_prod)
+        self.assertEqual(mode, "invalid_token")
+
+        role = extract_role_from_claims({"role": "USER"})
+        self.assertEqual(role, "USER")
+        self.assertIsNone(extract_role_from_claims({"role": "HACKER"}))
         print("✓ Test 11: Authentication boundary verification verified.")
+
+    def test_11b_firebase_token_validation_edge_cases(self):
+        """Verify real Firebase token verification, role validation, and failure handling."""
+        with patch.object(security, "initialize_firebase_admin", return_value=True), \
+             patch("firebase_admin.auth.verify_id_token", side_effect=ValueError("invalid token")):
+            is_prod, mode, claims = verify_auth_token("Bearer invalid-token")
+            self.assertFalse(is_prod)
+            self.assertEqual(mode, "invalid_token")
+
+        with patch.object(security, "initialize_firebase_admin", return_value=True), \
+             patch("firebase_admin.auth.verify_id_token", side_effect=security.auth.ExpiredIdTokenError("expired", ValueError("expired"))):
+            is_prod, mode, claims = verify_auth_token("Bearer expired-token")
+            self.assertFalse(is_prod)
+            self.assertEqual(mode, "expired_token")
+
+        verified_claims = {"uid": "abc123", "role": "DOCTOR", "firebase": {"sign_in_provider": "google.com"}}
+        with patch.object(security, "initialize_firebase_admin", return_value=True), \
+             patch("firebase_admin.auth.verify_id_token", return_value=verified_claims):
+            is_prod, mode, claims = verify_auth_token("Bearer valid-token")
+            self.assertTrue(is_prod)
+            self.assertEqual(mode, "production_verified")
+            self.assertEqual(claims["uid"], "abc123")
+            self.assertEqual(claims["role"], "DOCTOR")
+
+        with patch.object(security, "initialize_firebase_admin", return_value=True), \
+             patch("firebase_admin.auth.verify_id_token", return_value={"role": "USER"}):
+            is_prod, mode, claims = verify_auth_token("Bearer no-uid-token")
+            self.assertFalse(is_prod)
+            self.assertEqual(mode, "missing_uid")
+
+        self.assertTrue(require_role({"role": "ADMIN"}, {"ADMIN"}))
+        self.assertFalse(require_role({"role": "HACKER"}, {"ADMIN"}))
+        self.assertTrue(require_role({"role": "DOCTOR_PENDING"}, {"DOCTOR_PENDING", "DOCTOR"}))
+        self.assertFalse(require_role({"role": "USER"}, {"ADMIN"}))
+
+        with patch.object(security, "initialize_firebase_admin", return_value=False):
+            is_prod, mode, claims = verify_auth_token("Bearer valid-looking-token")
+            self.assertFalse(is_prod)
+            self.assertEqual(mode, "production_not_configured")
 
     def test_12_health_data_calculations(self):
         """12. Verify mathematical averages, date filters, and trend detection."""

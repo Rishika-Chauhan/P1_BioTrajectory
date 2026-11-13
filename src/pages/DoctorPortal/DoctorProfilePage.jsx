@@ -17,7 +17,7 @@ import {
 import { useDoctorAuth } from '../../context/DoctorAuthContext';
 
 export default function DoctorProfilePage() {
-  const { doctor, doctorRole, updateDoctorRole, updateDoctorProfile, isVerified } = useDoctorAuth();
+  const { doctor, updateDoctorProfile, isVerified } = useDoctorAuth();
 
   const [formData, setFormData] = useState({
     fullName: doctor?.fullName || 'Vikram Malhotra',
@@ -71,51 +71,14 @@ export default function DoctorProfilePage() {
         </p>
       </div>
 
-      {/* Role Switcher for Testing / Verification Demo */}
       <div className="rounded-2xl p-5 bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-transparent border border-blue-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-            Credential Verification Test Switcher
+            Clinical Access Status
           </h3>
           <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
-            Current status: <strong className="font-mono text-blue-600 dark:text-blue-400">{doctorRole}</strong>
+            Current role is managed by the trusted backend and token claims: <strong className="font-mono text-blue-600 dark:text-blue-400">{doctor?.role || 'DOCTOR_PENDING'}</strong>
           </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => updateDoctorRole('DOCTOR_VERIFIED')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-              doctorRole === 'DOCTOR_VERIFIED'
-                ? 'bg-emerald-600 text-white shadow-sm'
-                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-emerald-50'
-            }`}
-          >
-            Set Verified
-          </button>
-          <button
-            type="button"
-            onClick={() => updateDoctorRole('DOCTOR_PENDING')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-              doctorRole === 'DOCTOR_PENDING'
-                ? 'bg-amber-500 text-white shadow-sm'
-                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-amber-50'
-            }`}
-          >
-            Set Pending
-          </button>
-          <button
-            type="button"
-            onClick={() => updateDoctorRole('DOCTOR_SUSPENDED')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-              doctorRole === 'DOCTOR_SUSPENDED'
-                ? 'bg-rose-600 text-white shadow-sm'
-                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-rose-50'
-            }`}
-          >
-            Set Suspended
-          </button>
         </div>
       </div>
 

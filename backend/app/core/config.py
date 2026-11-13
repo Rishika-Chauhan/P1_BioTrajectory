@@ -5,7 +5,7 @@ Core settings and environment variable management.
 
 import os
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 from dotenv import load_dotenv
 
 # Base backend directory
@@ -59,8 +59,19 @@ class Settings:
     MAX_CONVERSATION_HISTORY_TURNS: int = int(os.getenv("MAX_CONVERSATION_HISTORY_TURNS", "20"))
 
     # Firebase Authentication
-    FIREBASE_PROJECT_ID: str = os.getenv("FIREBASE_PROJECT_ID", "biotrajectory-prod")
-    FIREBASE_CREDENTIALS_PATH: str = os.getenv("FIREBASE_CREDENTIALS_PATH", "").strip()
+    FIREBASE_PROJECT_ID: str = os.getenv("FIREBASE_PROJECT_ID", "biotrack-e4344").strip()
+    FIREBASE_CREDENTIALS_PATH: str = os.getenv("FIREBASE_CREDENTIALS_PATH", "secrets/firebase-service-account.json").strip()
+
+    @property
+    def firebase_credentials_file(self) -> Optional[Path]:
+        """Resolve Firebase credentials path relative to the backend directory."""
+        if not self.FIREBASE_CREDENTIALS_PATH:
+            return None
+
+        credentials_path = Path(self.FIREBASE_CREDENTIALS_PATH)
+        if not credentials_path.is_absolute():
+            credentials_path = (BASE_DIR / credentials_path).resolve()
+        return credentials_path
 
     @property
     def is_groq_configured(self) -> bool:
@@ -75,7 +86,8 @@ class Settings:
     @property
     def is_production_firebase_configured(self) -> bool:
         """Check if production Firebase Admin credentials are provided."""
-        return bool(self.FIREBASE_CREDENTIALS_PATH and os.path.exists(self.FIREBASE_CREDENTIALS_PATH))
+        credentials_file = self.firebase_credentials_file
+        return bool(self.FIREBASE_PROJECT_ID and credentials_file and credentials_file.exists())
 
 
 settings = Settings()

@@ -14,10 +14,9 @@ import {
 import { useAuth, USER_ROLES } from '../../context/AuthContext';
 
 export default function DoctorPendingPage() {
-  const { currentUser, logout, setUserRole, refreshToken } = useAuth();
+  const { currentUser, logout, refreshToken } = useAuth();
   const navigate = useNavigate();
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [approvedNotice, setApprovedNotice] = useState(false);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -28,14 +27,6 @@ export default function DoctorPendingPage() {
         navigate('/doctor/dashboard');
       }
     }, 1000);
-  };
-
-  const handleSimulateApproval = () => {
-    setUserRole(USER_ROLES.DOCTOR);
-    setApprovedNotice(true);
-    setTimeout(() => {
-      navigate('/doctor/dashboard');
-    }, 1200);
   };
 
   const handleLogout = () => {
@@ -99,13 +90,6 @@ export default function DoctorPendingPage() {
           </div>
         </div>
 
-        {approvedNotice && (
-          <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center justify-center gap-2">
-            <CheckCircle2 className="w-4 h-4" />
-            Credentials Approved! Redirecting to Doctor Workspace...
-          </div>
-        )}
-
         {/* Action Controls */}
         <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
           <button
@@ -117,26 +101,15 @@ export default function DoctorPendingPage() {
             Sign Out
           </button>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <button
-              type="button"
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-1.5"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-              Check Status
-            </button>
-
-            <button
-              type="button"
-              onClick={handleSimulateApproval}
-              className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 text-xs font-bold hover:from-cyan-300 hover:to-blue-400 transition-all shadow-md flex items-center justify-center gap-1.5"
-            >
-              <ShieldCheck className="w-4 h-4" />
-              Approve Credentials (Test)
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-1.5"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Check Status
+          </button>
         </div>
       </div>
     </div>
