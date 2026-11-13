@@ -24,19 +24,23 @@ const requiredEnv = [
   'VITE_FIREBASE_APP_ID'
 ];
 
-for (const key of requiredEnv) {
-  if (!import.meta.env[key]) {
-    throw new Error(`Missing Firebase environment variable: ${key}`);
-  }
+export const isFirebaseConfigured = requiredEnv.every(
+  (key) => Boolean(import.meta.env[key])
+);
+
+if (!isFirebaseConfigured) {
+  console.warn(
+    '[BioTrajectory] Firebase environment variables not set. Running in demo mode. Provide VITE_FIREBASE_* in .env to connect a live Firebase project.'
+  );
 }
 
 export const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'demo-api-key',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'biotrajectory-demo.firebaseapp.com',
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'biotrajectory-demo',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'biotrajectory-demo.appspot.com',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '123456789012',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:123456789012:web:demo'
 };
 
 export const ROLES = {
