@@ -67,6 +67,23 @@ export function DoctorAuthProvider({ children }) {
     return doctor;
   };
 
+  const registerDoctor = async (doctorData) => {
+    const user = await auth.register({
+      fullName: doctorData.fullName,
+      email: doctorData.email,
+      password: doctorData.password,
+      privacyConsent: true,
+      role: 'DOCTOR_PENDING'
+    });
+    const doctor = buildDoctorFromUser({
+      ...user,
+      ...doctorData,
+      role: 'DOCTOR_PENDING'
+    });
+    setCurrentDoctor(doctor);
+    return doctor;
+  };
+
   const logoutDoctor = async () => {
     await auth.logout();
     setCurrentDoctor(null);
@@ -103,6 +120,7 @@ export function DoctorAuthProvider({ children }) {
         isSuspendedDoctor,
         doctorRole: currentDoctor?.role || 'DOCTOR_PENDING',
         loginDoctor,
+        registerDoctor,
         logoutDoctor,
         updateDoctorProfile,
         setVerificationStatus,

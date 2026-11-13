@@ -143,7 +143,7 @@ export function AuthProvider({ children }) {
 
     try {
       if (!email || !password) {
-        throw new Error('Please enter your email and password.');
+        throw new Error('Please enter both your email address and password.');
       }
 
       const authUser = await FirebaseService.signInWithEmail(
@@ -152,10 +152,14 @@ export function AuthProvider({ children }) {
         rememberMe
       );
 
+      if (!authUser) {
+        throw new Error('Invalid login credentials. Please check your email and password.');
+      }
+
       const tokenResult =
         await FirebaseService.getIdTokenResult(authUser, true);
 
-      const claims = tokenResult?.claims || {};
+      const claims = tokenResult?.claims || authUser.claims || {};
 
       const authenticatedUser = {
         uid: authUser.uid,
@@ -163,13 +167,14 @@ export function AuthProvider({ children }) {
         email: authUser.email,
         name:
           authUser.displayName ||
+          authUser.name ||
           authUser.email?.split('@')[0] ||
           'User',
-        displayName: authUser.displayName,
+        displayName: authUser.displayName || authUser.name,
         photoURL: authUser.photoURL,
         avatar: authUser.photoURL || null,
-        emailVerified: authUser.emailVerified,
-        role: claims.role || USER_ROLES.USER,
+        emailVerified: authUser.emailVerified ?? true,
+        role: claims.role || authUser.role || USER_ROLES.USER,
         claims,
         token: tokenResult?.token
       };
@@ -180,8 +185,16 @@ export function AuthProvider({ children }) {
       return authenticatedUser;
     } catch (error) {
       console.error('Login error:', error);
-      setAuthError(error.message || 'Login failed.');
-      return null;
+      let message = error.message || 'Login failed.';
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+        message = 'Invalid login credentials. Please check your email and password.';
+      } else if (error.code === 'auth/user-not-found') {
+        message = 'No account found with this email. Please register as a patient first.';
+      } else if (error.code === 'auth/too-many-requests') {
+        message = 'Too many failed login attempts. Please wait a few moments and try again.';
+      }
+      setAuthError(message);
+      throw new Error(message);
     }
   };
 
@@ -190,7 +203,8 @@ export function AuthProvider({ children }) {
     fullName,
     email,
     password,
-    privacyConsent
+    privacyConsent,
+    role = USER_ROLES.USER
   }) => {
     setAuthError(null);
 
@@ -212,13 +226,14 @@ export function AuthProvider({ children }) {
       const authUser = await FirebaseService.signUp(
         email,
         password,
-        fullName
+        fullName,
+        role
       );
 
       const tokenResult =
         await FirebaseService.getIdTokenResult(authUser, true);
 
-      const claims = tokenResult?.claims || {};
+      const claims = tokenResult?.claims || authUser.claims || {};
 
       const registeredUser = {
         uid: authUser.uid,
@@ -228,8 +243,8 @@ export function AuthProvider({ children }) {
         displayName: authUser.displayName || fullName,
         photoURL: authUser.photoURL,
         avatar: authUser.photoURL || null,
-        emailVerified: authUser.emailVerified,
-        role: USER_ROLES.USER,
+        emailVerified: authUser.emailVerified ?? true,
+        role: claims.role || role,
         claims,
         token: tokenResult?.token,
         joinedDate: new Date().toISOString().split('T')[0]
@@ -241,8 +256,14 @@ export function AuthProvider({ children }) {
       return registeredUser;
     } catch (error) {
       console.error('Registration error:', error);
-      setAuthError(error.message || 'Registration failed.');
-      return null;
+      let message = error.message || 'Registration failed.';
+      if (error.code === 'auth/email-already-in-use') {
+        message = 'This email is already registered. Please log in instead.';
+      } else if (error.code === 'auth/weak-password') {
+        message = 'Password is too weak. Please use at least 8 characters.';
+      }
+      setAuthError(message);
+      throw new Error(message);
     }
   };
 

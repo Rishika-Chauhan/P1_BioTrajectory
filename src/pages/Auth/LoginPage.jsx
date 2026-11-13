@@ -49,7 +49,7 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
-      // 1. Authenticate with Firebase and retrieve custom claims
+      // 1. Authenticate with Firebase / Local Auth Engine and retrieve claims
       const user = await login(email, password, rememberMe);
 
       if (user) {
@@ -58,26 +58,24 @@ export default function LoginPage() {
           user.role === USER_ROLES.ADMIN
             ? 'Administrator'
             : user.role === USER_ROLES.DOCTOR
-            ? 'Verified Physician'
-            : user.role === USER_ROLES.DOCTOR_PENDING
-            ? 'Doctor (Verification Pending)'
-            : user.role === USER_ROLES.DOCTOR_SUSPENDED
-            ? 'Doctor (Clinical Access Suspended)'
-            : user.role === USER_ROLES.USER
-            ? 'Patient'
-            : 'Unassigned Account';
+              ? 'Verified Physician'
+              : user.role === USER_ROLES.DOCTOR_PENDING
+                ? 'Doctor (Verification Pending)'
+                : user.role === USER_ROLES.DOCTOR_SUSPENDED
+                  ? 'Doctor (Clinical Access Suspended)'
+                  : user.role === USER_ROLES.USER
+                    ? 'Patient'
+                    : 'Unassigned Account';
 
         setDetectedRoleNotice(`Role Detected: ${roleLabel}. Redirecting to your authorized workspace...`);
 
         const destination = getDashboardPath(user.role);
         setTimeout(() => {
           navigate(destination, { replace: true });
-        }, 600);
-      } else {
-        setError('Invalid login credentials. Please check your email and password.');
+        }, 500);
       }
     } catch (err) {
-      setError('Authentication failed. Please verify your credentials.');
+      setError(err.message || 'Authentication failed. Please verify your credentials.');
     } finally {
       setIsLoading(false);
     }
@@ -97,7 +95,7 @@ export default function LoginPage() {
       <div className="absolute top-1/3 right-1/4 w-72 h-72 bg-blue-500/10 blur-[100px] pointer-events-none rounded-full" />
 
       <div className="w-full max-w-md space-y-6 relative z-10">
-        
+
         {/* Brand Header */}
         <div className="text-center space-y-2">
           <div className="flex justify-center pb-1">
@@ -213,6 +211,44 @@ export default function LoginPage() {
               </Link>
             </div>
           </form>
+
+          {/* Quick-Fill Test Accounts for Easy Evaluation */}
+          <div className="pt-4 border-t border-slate-200 dark:border-slate-800/80 space-y-2">
+            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+              <span className="flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400" />
+                Quick-Fill Test Accounts:
+              </span>
+              <span className="text-[10px] text-slate-400">Click to fill</span>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                onClick={() => handleAutoFill('priyanshu@gmail.com', '12345678')}
+                className="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-cyan-50 dark:hover:bg-cyan-950/30 hover:text-cyan-600 transition-colors cursor-pointer"
+                title="Tests role: USER -> /dashboard"
+              >
+                Priyanshu (Patient)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAutoFill('dr.thorne@biotrajectory.health', 'password123')}
+                className="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-600 transition-colors cursor-pointer"
+                title="Tests role: DOCTOR -> /doctor/dashboard"
+              >
+                Doctor (Verified)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAutoFill('admin@biotrajectory.health', 'password123')}
+                className="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-purple-950/30 hover:text-purple-600 transition-colors cursor-pointer"
+                title="Tests role: ADMIN -> /admin/dashboard"
+              >
+                Admin
+              </button>
+            </div>
+          </div>
 
         </div>
 
