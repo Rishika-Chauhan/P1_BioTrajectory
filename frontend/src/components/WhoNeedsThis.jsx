@@ -20,7 +20,7 @@ export default function WhoNeedsThis({ onOpenDemo }) {
       role: 'For Rural & Underserved Communities',
       userStory: '“In Tier-2 and rural clinics, expensive automated biochemistry analyzers are rare. Commercial strips with smartphone camera guidance bring affordable screening to local chemists.”',
       keyBenefit: 'Accessible low-cost preventive infrastructure without proprietary hardware.',
-      features: ['Offline-capable logging', 'Works on entry-level Android cameras', 'Low recurring test cost ($0.15/strip)', 'Community health worker mode']
+      features: ['Offline-capable logging', 'Works on entry-level Android cameras', 'Low recurring test cost (₹12/strip)', 'Community health worker mode']
     },
     {
       role: 'For Doctors & Clinicians',

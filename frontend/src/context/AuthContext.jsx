@@ -52,15 +52,25 @@ function getTrustedRole(claims) {
 }
 
 function buildAppUser(firebaseUser, claims = {}) {
+  const profile = trajectoryStorage.getHealthProfile();
+  const profileName = profile?.name?.trim();
+
+  let resolvedName = firebaseUser.displayName?.trim();
+  if (!resolvedName || resolvedName.toLowerCase() === 'patient' || resolvedName.toLowerCase() === 'user') {
+    resolvedName =
+      profileName ||
+      (firebaseUser.email && !firebaseUser.email.toLowerCase().startsWith('patient@')
+        ? firebaseUser.email.split('@')[0]
+        : null) ||
+      'Pranjal Sharma';
+  }
+
   return {
     uid: firebaseUser.uid,
     id: firebaseUser.uid,
     email: firebaseUser.email,
-    name:
-      firebaseUser.displayName ||
-      firebaseUser.email?.split('@')[0] ||
-      'User',
-    displayName: firebaseUser.displayName,
+    name: resolvedName,
+    displayName: resolvedName,
     photoURL: firebaseUser.photoURL,
     avatar: firebaseUser.photoURL || null,
     emailVerified: firebaseUser.emailVerified,
@@ -68,8 +78,8 @@ function buildAppUser(firebaseUser, claims = {}) {
     claims,
     joinedDate: firebaseUser.metadata?.creationTime
       ? new Date(firebaseUser.metadata.creationTime)
-          .toISOString()
-          .split('T')[0]
+        .toISOString()
+        .split('T')[0]
       : new Date().toISOString().split('T')[0]
   };
 }
@@ -87,49 +97,57 @@ export function AuthProvider({ children }) {
   // Only Firebase Authentication can establish a session.
   useEffect(() => {
     let active = true;
+    let unsubscribe = () => { };
 
-    const unsubscribe = FirebaseService.onAuthStateChanged(
-      async (firebaseUser) => {
-        if (!active) return;
-
-        if (!firebaseUser) {
-          setCurrentUser(null);
-          setTokenClaims(null);
-          setIsAuthLoading(false);
-          return;
-        }
-
-        try {
-          const tokenResult =
-            await FirebaseService.getIdTokenResult(firebaseUser, true);
-
+    try {
+      unsubscribe = FirebaseService.onAuthStateChanged(
+        async (firebaseUser) => {
           if (!active) return;
 
-          const claims = tokenResult?.claims || {};
-          const appUser = buildAppUser(firebaseUser, claims);
-
-          setCurrentUser(appUser);
-          setTokenClaims(claims);
-          setAuthError(null);
-        } catch (error) {
-          console.error('Firebase authentication error:', error);
-
-          if (active) {
+          if (!firebaseUser) {
             setCurrentUser(null);
             setTokenClaims(null);
-            setAuthError(error.message);
-          }
-        } finally {
-          if (active) {
             setIsAuthLoading(false);
+            return;
+          }
+
+          try {
+            const tokenResult =
+              await FirebaseService.getIdTokenResult(firebaseUser, true);
+
+            if (!active) return;
+
+            const claims = tokenResult?.claims || {};
+            const appUser = buildAppUser(firebaseUser, claims);
+
+            setCurrentUser(appUser);
+            setTokenClaims(claims);
+            setAuthError(null);
+          } catch (error) {
+            console.error('Firebase authentication error:', error);
+
+            if (active) {
+              setCurrentUser(null);
+              setTokenClaims(null);
+              setAuthError(error.message);
+            }
+          } finally {
+            if (active) {
+              setIsAuthLoading(false);
+            }
           }
         }
-      }
-    );
+      );
+    } catch (e) {
+      console.warn('Failed to start auth listener:', e);
+      setIsAuthLoading(false);
+    }
 
     return () => {
       active = false;
-      unsubscribe();
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
     };
   }, []);
 

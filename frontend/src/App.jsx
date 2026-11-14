@@ -13,6 +13,7 @@ import { DoctorAuthProvider } from './context/DoctorAuthContext';
 
 import Navbar from './components/common/Navbar';
 import ProtectedRoute from './components/common/ProtectedRoute';
+import ErrorBoundary from './components/common/ErrorBoundary';
 
 import UserDashboardLayout from './components/layout/UserDashboardLayout';
 import DoctorDashboardLayout from './components/layout/DoctorDashboardLayout';
@@ -46,6 +47,7 @@ const DoctorConsultationPage = lazy(() => import('./pages/UserDashboard/DoctorCo
 const QrProfilePage = lazy(() => import('./pages/UserDashboard/QrProfilePage'));
 const SettingsPage = lazy(() => import('./pages/UserDashboard/SettingsPage'));
 const ConnectedDevicesPage = lazy(() => import('./pages/UserDashboard/ConnectedDevicesPage'));
+const UrineAnalysisPage = lazy(() => import('./pages/UserDashboard/UrineAnalysisPage'));
 
 // --------------------------------------------------
 // Doctor portal
@@ -194,6 +196,8 @@ function AppRoutes() {
           <Route index element={<OverviewPage />} />
           <Route path="reports" element={<DailyReportsPage />} />
           <Route path="analytics" element={<HealthAnalyticsPage />} />
+          <Route path="urine" element={<UrineAnalysisPage />} />
+          <Route path="urine-analysis" element={<UrineAnalysisPage />} />
           <Route path="history" element={<MedicalHistoryPage />} />
           <Route path="assistant" element={<AiAssistantPage />} />
           <Route path="consultation" element={<DoctorConsultationPage />} />
@@ -316,14 +320,16 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <ThemeProvider>
-        <AuthProvider>
-          <DoctorAuthProvider>
-            <AppRoutes />
-          </DoctorAuthProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <ThemeProvider>
+          <AuthProvider>
+            <DoctorAuthProvider>
+              <AppRoutes />
+            </DoctorAuthProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }

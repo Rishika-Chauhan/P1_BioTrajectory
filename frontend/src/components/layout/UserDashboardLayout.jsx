@@ -16,7 +16,9 @@ import {
   X,
   Bell,
   Compass,
-  Bluetooth
+  Bluetooth,
+  Droplet,
+  Camera
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../common/ThemeToggle';
@@ -28,19 +30,26 @@ export default function UserDashboardLayout() {
   const [showNotifications, setShowNotifications] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser, logout } = useAuth();
+  const { currentUser, healthProfile, logout } = useAuth();
 
-  // Simplified friendly navigation labels matching exact specification
+  const profileFullName =
+    healthProfile?.name ||
+    (currentUser?.displayName && currentUser.displayName.toLowerCase() !== 'patient' ? currentUser.displayName : null) ||
+    (currentUser?.name && currentUser.name.toLowerCase() !== 'patient' ? currentUser.name : null) ||
+    'Pranjal Sharma';
+  const profileInitial = profileFullName.trim()[0] || 'P';
+
+  // Simplified friendly navigation labels matching exact dashboard specification
   const navItems = [
     { label: 'Home', path: '/dashboard', icon: LayoutDashboard },
-    { label: 'My Day', path: '/dashboard/reports', icon: FileSpreadsheet },
-    { label: 'Connected Devices', path: '/dashboard/devices', icon: Bluetooth },
     { label: 'My Health', path: '/dashboard/analytics', icon: LineChart },
     { label: 'My Records', path: '/dashboard/history', icon: FolderHeart },
-    { label: 'Explore', path: '/explore', icon: Compass },
-    { label: 'Ask AI', path: '/dashboard/assistant', icon: Bot },
-    { label: 'Talk to Doctor', path: '/dashboard/consultation', icon: Video },
-    { label: 'My QR', path: '/dashboard/qr', icon: QrCode },
+    { label: 'Scan Test Strip', path: '/dashboard/urine?scan=true', icon: Camera },
+    { label: 'Urine Analysis', path: '/dashboard/urine', icon: Droplet },
+    { label: 'AI Assistant', path: '/dashboard/assistant', icon: Bot },
+    { label: 'Reports', path: '/dashboard/reports', icon: FileSpreadsheet },
+    { label: 'Doctor Connect', path: '/dashboard/consultation', icon: Video },
+    { label: 'Connected Devices', path: '/dashboard/devices', icon: Bluetooth },
     { label: 'Settings', path: '/dashboard/settings', icon: Settings }
   ];
 
@@ -58,12 +67,11 @@ export default function UserDashboardLayout() {
 
   return (
     <div className="flex h-screen w-full bg-[#F5F8FC] dark:bg-[#070B14] text-slate-900 dark:text-slate-100 overflow-hidden font-sans">
-      
+
       {/* 1. DESKTOP SIDEBAR */}
       <aside
-        className={`hidden md:flex flex-col border-r border-slate-200 dark:border-slate-800/80 bg-white/95 dark:bg-[#070B14]/95 backdrop-blur-xl transition-all duration-300 z-30 shrink-0 ${
-          collapsed ? 'w-20' : 'w-72'
-        }`}
+        className={`hidden md:flex flex-col border-r border-slate-200 dark:border-slate-800/80 bg-white/95 dark:bg-[#070B14]/95 backdrop-blur-xl transition-all duration-300 z-30 shrink-0 ${collapsed ? 'w-20' : 'w-72'
+          }`}
       >
         {/* Brand Header */}
         <div className="flex items-center justify-between h-20 px-5 border-b border-slate-200 dark:border-slate-800">
@@ -94,11 +102,10 @@ export default function UserDashboardLayout() {
                 key={item.path}
                 to={item.path}
                 title={collapsed ? item.label : undefined}
-                className={`flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[15px] font-semibold transition-all duration-200 hover:translate-x-1 ${
-                  active
+                className={`flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[15px] font-semibold transition-all duration-200 hover:translate-x-1 ${active
                     ? 'bg-cyan-500/15 border border-cyan-500/35 text-cyan-700 dark:text-cyan-300 shadow-xs'
                     : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white'
-                }`}
+                  }`}
               >
                 <Icon className={`w-5 h-5 shrink-0 ${active ? 'text-cyan-600 dark:text-cyan-400' : 'text-slate-400'}`} />
                 {!collapsed && <span>{item.label}</span>}
@@ -113,11 +120,11 @@ export default function UserDashboardLayout() {
             <div className="p-3 rounded-2xl bg-slate-100/80 dark:bg-[#101827] border border-slate-200 dark:border-slate-800 flex items-center justify-between">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-10 h-10 rounded-full bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 font-bold flex items-center justify-center text-[15px] shrink-0">
-                  {currentUser?.name?.[0] || 'P'}
+                  {profileInitial}
                 </div>
                 <div className="min-w-0">
                   <p className="text-[15px] font-bold text-slate-900 dark:text-white truncate">
-                    {currentUser?.name || 'Pranjal Sharma'}
+                    {profileFullName}
                   </p>
                   <p className="text-[13px] text-slate-500 dark:text-slate-400 truncate">
                     Your Health Profile
@@ -146,10 +153,10 @@ export default function UserDashboardLayout() {
 
       {/* 2. MAIN CONTENT AREA */}
       <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
-        
+
         {/* Top Header Bar */}
         <header className="h-20 px-6 border-b border-slate-200 dark:border-slate-800/80 bg-white/85 dark:bg-[#070B14]/90 backdrop-blur-xl flex items-center justify-between shrink-0 z-20">
-          
+
           {/* Mobile Menu Toggle & Title */}
           <div className="flex items-center gap-4">
             <button
@@ -220,7 +227,7 @@ export default function UserDashboardLayout() {
               className="flex items-center gap-2.5 pl-3 border-l border-slate-200 dark:border-slate-800 hover:opacity-80 transition-opacity"
             >
               <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-400 to-blue-500 text-slate-950 font-bold flex items-center justify-center text-[15px] shadow-xs">
-                {currentUser?.name?.[0] || 'P'}
+                {profileInitial}
               </div>
             </Link>
           </div>
@@ -237,11 +244,10 @@ export default function UserDashboardLayout() {
                   key={item.path}
                   to={item.path}
                   onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[16px] font-semibold ${
-                    active
+                  className={`flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[16px] font-semibold ${active
                       ? 'bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30'
                       : 'text-slate-700 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-white'
-                  }`}
+                    }`}
                 >
                   <Icon className="w-5 h-5" />
                   <span>{item.label}</span>

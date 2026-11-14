@@ -24,10 +24,18 @@ import { SAMPLE_DAILY_VITALS_7D } from '../../data/vitalsData';
 import { BluetoothService } from '../../services/bluetoothService';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import DisclaimerBanner from '../../components/common/DisclaimerBanner';
+import DeviceThumbnail from '../../components/common/DeviceThumbnail';
 
 export default function OverviewPage() {
-  const { currentUser } = useAuth();
+  const { currentUser, healthProfile } = useAuth();
   const fallback = SAMPLE_DAILY_VITALS_7D[SAMPLE_DAILY_VITALS_7D.length - 1];
+
+  const rawDisplayName =
+    healthProfile?.name ||
+    (currentUser?.displayName && currentUser.displayName.toLowerCase() !== 'patient' ? currentUser.displayName : null) ||
+    (currentUser?.name && currentUser.name.toLowerCase() !== 'patient' ? currentUser.name : null) ||
+    'Pranjal Sharma';
+  const userFirstName = rawDisplayName.trim().split(' ')[0] || 'Pranjal';
 
   const [latestVitals, setLatestVitals] = useState(() => {
     const saved = BluetoothService.getLatestVitals();
@@ -81,82 +89,124 @@ export default function OverviewPage() {
 
   return (
     <div className="space-y-10 max-w-7xl mx-auto">
-      
-      {/* 1. Header Greeting & Quick Actions */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-              Welcome back, {currentUser?.name?.split(' ')[0] || 'Pranjal'}
+
+      {/* 1. Header Greeting & Quick Actions - Perfectly Aligned */}
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 pb-1">
+        <div className="space-y-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+              Welcome back, {userFirstName}
             </h1>
-            <span className="text-[13px] font-bold px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-500/25">
+            <span className="text-[12px] font-bold px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-500/25 shrink-0 self-center">
               Active Tracking
             </span>
           </div>
-          <p className="text-[16px] text-slate-600 dark:text-slate-400">
+          <p className="text-[14px] text-slate-500 dark:text-slate-400">
             Today is {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}.
           </p>
         </div>
 
-        {/* Quick Action Buttons */}
-        <div className="flex flex-wrap items-center gap-3.5">
+        {/* Quick Action Buttons - Single Leveled Horizontal Row */}
+        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap shrink-0">
           <Link
             to="/dashboard/devices"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl text-[15px] font-bold bg-cyan-500/15 text-cyan-500 dark:text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/25 transition-all cursor-pointer active:scale-95"
+            className="inline-flex items-center gap-2 h-10 px-3.5 rounded-xl text-[13px] font-bold bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/25 transition-all cursor-pointer active:scale-95 shrink-0 shadow-xs"
             title="Bluetooth Devices"
           >
-            <Bluetooth className="w-5 h-5 animate-pulse" />
+            <Bluetooth className="w-4 h-4 text-cyan-600 dark:text-cyan-400 animate-pulse" />
             <span>Connected Devices</span>
           </Link>
           <Link
             to="/dashboard/reports"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-[15px] font-bold bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 hover:from-cyan-300 hover:to-blue-400 transition-all shadow-md shadow-cyan-500/20 active:scale-95 cursor-pointer"
+            className="inline-flex items-center gap-1.5 h-10 px-4 rounded-xl text-[13px] font-bold bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 hover:from-cyan-300 hover:to-blue-400 transition-all shadow-sm shadow-cyan-500/20 active:scale-95 cursor-pointer shrink-0"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4" />
             <span>Add Today's Reading</span>
           </Link>
           <Link
             to="/dashboard/assistant"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-[15px] font-semibold glass-card text-slate-800 dark:text-slate-200 hover:border-cyan-500/50 transition-all cursor-pointer active:scale-95"
+            className="inline-flex items-center gap-2 h-10 px-3.5 rounded-xl text-[13px] font-semibold bg-white dark:bg-[#101827] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 hover:border-cyan-500/40 transition-all cursor-pointer active:scale-95 shrink-0 shadow-xs"
           >
-            <Bot className="w-5 h-5 text-cyan-500 dark:text-cyan-400" />
+            <Bot className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
             <span>Ask Health AI</span>
           </Link>
           <Link
             to="/dashboard/qr"
-            className="p-3 rounded-2xl glass-card text-slate-600 dark:text-slate-400 hover:text-cyan-500 dark:hover:text-cyan-400 hover:border-cyan-500/50 transition-all cursor-pointer active:scale-95"
+            className="h-10 w-10 rounded-xl bg-white dark:bg-[#101827] text-slate-600 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 border border-slate-200 dark:border-slate-800 hover:border-cyan-500/40 transition-all cursor-pointer active:scale-95 flex items-center justify-center shrink-0 shadow-xs"
             title="My Health QR"
           >
-            <QrCode className="w-5 h-5" />
+            <QrCode className="w-4.5 h-4.5" />
           </Link>
         </div>
       </div>
 
-      {/* Bluetooth Live Telemetry Banner */}
+      {/* Bluetooth Live Telemetry Banner with High-Contrast Accessible Palette */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-blue-950/40 via-cyan-950/30 to-indigo-950/40 border border-cyan-500/30 backdrop-blur-md flex flex-col md:flex-row md:items-center justify-between gap-5 shadow-lg shadow-cyan-950/20"
+        className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-cyan-50/95 via-sky-50/90 to-blue-50/95 dark:from-[#09152C] dark:via-[#0B1A35] dark:to-[#081329] border border-cyan-200/90 dark:border-cyan-500/30 backdrop-blur-md flex flex-col md:flex-row md:items-center justify-between gap-5 shadow-sm dark:shadow-lg dark:shadow-cyan-950/25"
       >
         <div className="flex items-center gap-4">
-          <div className="w-13 h-13 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 relative shrink-0">
-            <Bluetooth className="w-7 h-7 text-cyan-400 animate-pulse" />
-            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-slate-900 shadow-sm" />
+          <div className="w-13 h-13 rounded-2xl bg-cyan-500/15 dark:bg-cyan-500/25 border border-cyan-300/80 dark:border-cyan-400/40 flex items-center justify-center text-cyan-600 dark:text-cyan-400 relative shrink-0 shadow-xs">
+            <Bluetooth className="w-7 h-7 text-cyan-600 dark:text-cyan-400 animate-pulse" />
+            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-900 shadow-sm" />
           </div>
-          <div className="space-y-1">
+          <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2.5">
-              <h3 className="font-extrabold text-[17px] text-slate-900 dark:text-white">
+              <h3 className="font-extrabold text-[17px] text-slate-900 dark:text-white tracking-tight">
                 Live Bluetooth Health Peripherals
               </h3>
-              <span className="text-[12px] px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-bold border border-emerald-500/30 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block" />
+              <span className="text-[12px] px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-500/35 flex items-center gap-1.5 shadow-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-ping inline-block" />
                 BLE Active Stream
               </span>
             </div>
-            <p className="text-[14px] text-slate-600 dark:text-slate-400">
-              Synced with <strong className="text-cyan-400">Omron Evolv Cuff</strong> (BP), <strong className="text-emerald-400">Apple Watch / Garmin</strong> (Steps & Heart Rate), and <strong className="text-blue-400">10SG Optical Urine Analyzer</strong> (Proteins & SG).
-            </p>
+
+            {/* Small Pictures of Connected Devices */}
+            <div className="flex flex-wrap items-center gap-2.5 pt-1">
+              {/* Device 1: Omron Evolv BP Cuff */}
+              <div className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800 shadow-xs">
+                <DeviceThumbnail deviceId="omron-bp-evolv" type="bp" size="xs" />
+                <div className="flex flex-col">
+                  <span className="text-[12px] font-bold text-slate-900 dark:text-white leading-tight">
+                    Omron Evolv
+                  </span>
+                  <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-mono leading-tight">
+                    BP 118/76 mmHg
+                  </span>
+                </div>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-0.5" title="Connected" />
+              </div>
+
+              {/* Device 2: Apple Watch Ultra */}
+              <div className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800 shadow-xs">
+                <DeviceThumbnail deviceId="apple-watch-ultra" type="watch" size="xs" />
+                <div className="flex flex-col">
+                  <span className="text-[12px] font-bold text-slate-900 dark:text-white leading-tight">
+                    Apple Watch Ultra
+                  </span>
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono leading-tight">
+                    8,420 steps • 64 BPM
+                  </span>
+                </div>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-0.5" title="Connected" />
+              </div>
+
+              {/* Device 3: BioTrajectory 10SG Optical Urine Analyzer */}
+              <div className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800 shadow-xs">
+                <DeviceThumbnail deviceId="biotrajectory-optical-10sg" type="urine" size="xs" />
+                <div className="flex flex-col">
+                  <span className="text-[12px] font-bold text-slate-900 dark:text-white leading-tight">
+                    10SG Urine Analyzer
+                  </span>
+                  <span className="text-[10px] text-blue-600 dark:text-blue-400 font-mono leading-tight">
+                    SG 1.018 • pH 6.5
+                  </span>
+                </div>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-0.5" title="Connected" />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -164,24 +214,24 @@ export default function OverviewPage() {
           <button
             onClick={handleQuickSync}
             disabled={isSyncing}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[14px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/35 hover:bg-cyan-500/30 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[14px] font-bold bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 shadow-sm shadow-cyan-500/20 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
             <span>{syncStatus || (isSyncing ? 'Retrieving BLE...' : 'Sync BLE Now')}</span>
           </button>
           <Link
             to="/dashboard/devices"
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-[14px] font-bold bg-slate-800/80 hover:bg-slate-700/80 text-white transition-all border border-slate-700 cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-[14px] font-bold bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white dark:border-slate-700 transition-all shadow-xs cursor-pointer active:scale-95"
           >
             <span>Device Hub</span>
-            <ChevronRight className="w-4 h-4 text-cyan-400" />
+            <ChevronRight className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
           </Link>
         </div>
       </motion.div>
 
       {/* 2. Key Daily Cards Grid with Large Readable Text & Smooth Micro-Interactions */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        
+
         {/* Blood Pressure Card */}
         <motion.div
           initial={{ opacity: 0, y: 18 }}
@@ -372,6 +422,16 @@ export default function OverviewPage() {
               </div>
 
               <Link
+                to="/dashboard/urine"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-cyan-700 dark:text-cyan-300 hover:text-cyan-600 bg-cyan-500/10 hover:bg-cyan-500/20 px-3.5 py-2 rounded-xl transition-colors shrink-0 border border-cyan-500/20"
+                title="Full Urine Analysis Lab"
+              >
+                <Droplet className="w-3.5 h-3.5 text-cyan-500" />
+                <span>Urine Analysis Lab</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+
+              <Link
                 to="/dashboard/settings"
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 bg-slate-100 dark:bg-slate-800/80 px-3 py-2 rounded-xl transition-colors shrink-0"
                 title="Open Settings"
@@ -532,6 +592,14 @@ export default function OverviewPage() {
             </button>
 
             <Link
+              to="/dashboard/urine"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-500/25 hover:bg-cyan-500/20 transition-colors"
+            >
+              <Droplet className="w-3.5 h-3.5 text-cyan-500" />
+              <span>Open Urine Lab</span>
+            </Link>
+
+            <Link
               to="/dashboard/settings"
               className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
               title="Open Settings"
@@ -545,7 +613,7 @@ export default function OverviewPage() {
 
       {/* 4. Helpful Health Summary & Quick Actions Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
+
         {/* Helpful Health Summary (7 cols) */}
         <div className="lg:col-span-7 p-8 rounded-3xl glass-card space-y-5 flex flex-col justify-between shadow-sm">
           <div className="space-y-4">

@@ -25,6 +25,7 @@ import confetti from 'canvas-confetti';
 import { BluetoothService } from '../../services/bluetoothService';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import DisclaimerBanner from '../../components/common/DisclaimerBanner';
+import DeviceThumbnail from '../../components/common/DeviceThumbnail';
 
 export default function ConnectedDevicesPage() {
   const [devices, setDevices] = useState(BluetoothService.getDevices());
@@ -169,8 +170,8 @@ export default function ConnectedDevicesPage() {
       readings: dev.type === 'bp'
         ? { systolic: 119, diastolic: 77, pulse: 70, map: 91, statusTag: 'Normal BP', clinicalNote: 'Initial calibration synced.' }
         : dev.type === 'watch'
-        ? { steps: 8120, distanceKm: 6.0, activeCaloriesKcal: 390, heartRateBpm: 66, statusTag: 'Active Pedometer', clinicalNote: 'Step counter actively streaming.' }
-        : { proteinMgDl: 5.2, specificGravity: 1.018, ph: 6.5, glucose: 'Negative', leukocytes: 'Negative', statusTag: 'Optical Scan Normal', clinicalNote: 'Optical reflectance calibrated.' }
+          ? { steps: 8120, distanceKm: 6.0, activeCaloriesKcal: 390, heartRateBpm: 66, statusTag: 'Active Pedometer', clinicalNote: 'Step counter actively streaming.' }
+          : { proteinMgDl: 5.2, specificGravity: 1.018, ph: 6.5, glucose: 'Negative', leukocytes: 'Negative', statusTag: 'Optical Scan Normal', clinicalNote: 'Optical reflectance calibrated.' }
     };
 
     const currentDevices = BluetoothService.getDevices();
@@ -228,7 +229,7 @@ export default function ConnectedDevicesPage() {
 
   return (
     <div className="space-y-10 max-w-7xl mx-auto">
-      
+
       {/* Toast Notification */}
       <AnimatePresence>
         {toastMessage && (
@@ -356,11 +357,10 @@ export default function ConnectedDevicesPage() {
           <button
             key={tab.id}
             onClick={() => setActiveFilter(tab.id)}
-            className={`px-5 py-2.5 rounded-2xl text-[14px] font-semibold shrink-0 transition-all cursor-pointer ${
-              activeFilter === tab.id
+            className={`px-5 py-2.5 rounded-2xl text-[14px] font-semibold shrink-0 transition-all cursor-pointer ${activeFilter === tab.id
                 ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold shadow-md shadow-cyan-500/20 active:scale-95'
                 : 'glass-card text-slate-700 dark:text-slate-300 hover:border-cyan-500/40'
-            }`}
+              }`}
           >
             {tab.label}
           </button>
@@ -379,18 +379,15 @@ export default function ConnectedDevicesPage() {
               layout
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`p-6 sm:p-7 rounded-3xl glass-card space-y-5 transition-all border ${
-                isConnected
+              className={`p-6 sm:p-7 rounded-3xl glass-card space-y-5 transition-all border ${isConnected
                   ? 'border-slate-200/80 dark:border-slate-800 hover:border-cyan-500/40'
                   : 'border-slate-200/50 dark:border-slate-800/50 opacity-75'
-              }`}
+                }`}
             >
               {/* Device Header */}
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3.5">
-                  <div className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 shadow-xs">
-                    {renderDeviceIcon(device.iconName)}
-                  </div>
+                  <DeviceThumbnail deviceId={device.id} type={device.type} size="md" />
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="text-xl font-bold text-slate-900 dark:text-white">
@@ -407,11 +404,10 @@ export default function ConnectedDevicesPage() {
                 <button
                   type="button"
                   onClick={() => handleToggleConnection(device.id)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                    isConnected
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${isConnected
                       ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30'
                       : 'bg-slate-200/60 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-700'
-                  }`}
+                    }`}
                   title={isConnected ? 'Click to disconnect' : 'Click to connect'}
                 >
                   <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
@@ -558,13 +554,12 @@ export default function ConnectedDevicesPage() {
                   type="button"
                   disabled={!isConnected || isSyncing}
                   onClick={() => handleRetrieveReading(device.id, device.name)}
-                  className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[14px] font-bold transition-all cursor-pointer shadow-xs active:scale-95 ${
-                    !isConnected
+                  className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[14px] font-bold transition-all cursor-pointer shadow-xs active:scale-95 ${!isConnected
                       ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
                       : isSyncing
-                      ? 'bg-cyan-500/20 text-cyan-600 dark:text-cyan-300'
-                      : 'bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-700 dark:text-cyan-300'
-                  }`}
+                        ? 'bg-cyan-500/20 text-cyan-600 dark:text-cyan-300'
+                        : 'bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-700 dark:text-cyan-300'
+                    }`}
                 >
                   <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin text-cyan-500' : ''}`} />
                   <span>{isSyncing ? 'Reading Telemetry...' : 'Retrieve Reading'}</span>
@@ -626,9 +621,7 @@ export default function ConnectedDevicesPage() {
                     className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 flex items-center justify-between gap-3 hover:border-cyan-500/40 transition-all"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800">
-                        {renderDeviceIcon(dev.iconName)}
-                      </div>
+                      <DeviceThumbnail deviceId={dev.id} type={dev.type} size="sm" />
                       <div>
                         <p className="text-sm font-bold text-slate-900 dark:text-white">{dev.name}</p>
                         <p className="text-xs text-slate-500 dark:text-slate-400">

@@ -26,10 +26,11 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 w-full backdrop-blur-2xl border-b transition-colors duration-300 border-slate-200/70 dark:border-slate-800/70 bg-[#F5F8FC]/80 dark:bg-[#070B14]/85">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-16">
           
           {/* Theme-Adaptive High Clarity Brand Logo */}
           <BrandLogo
+            size="sm"
             onClick={() => {
               if (location.pathname === '/' || location.pathname === '/home') {
                 window.dispatchEvent(new CustomEvent('biotrajectory_replay_splash'));
@@ -38,7 +39,7 @@ export default function Navbar() {
           />
 
           {/* Desktop Navigation Links — Strictly Home, Explore, About */}
-          <div className="hidden md:flex items-center gap-10">
+          <div className="hidden md:flex items-center gap-7">
             {[
               { label: 'Home', path: '/' },
               { label: 'Explore', path: '/explore' },
@@ -54,15 +55,15 @@ export default function Navbar() {
                       window.dispatchEvent(new CustomEvent('biotrajectory_replay_splash'));
                     }
                   }}
-                  className={`text-[18px] tracking-wide font-bold transition-all duration-200 relative py-1 ${
+                  className={`text-[15px] tracking-wide font-semibold transition-all duration-200 relative py-1 ${
                     active
-                      ? 'text-cyan-600 dark:text-cyan-400 font-extrabold'
+                      ? 'text-cyan-600 dark:text-cyan-400 font-bold'
                       : 'text-slate-700 dark:text-slate-200 hover:text-cyan-600 dark:hover:text-cyan-400'
                   }`}
                 >
                   {item.label}
                   {active && (
-                    <span className="absolute bottom-0 left-0 w-full h-[2.5px] bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full" />
+                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full" />
                   )}
                 </Link>
               );
@@ -70,14 +71,14 @@ export default function Navbar() {
           </div>
 
           {/* Right Action Controls */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-3">
             <ThemeToggle />
 
             {isAuthenticated ? (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5">
                 <Link
                   to={targetDashboard}
-                  className="flex items-center gap-2 px-5 py-2.5 text-[15px] font-bold rounded-xl bg-cyan-500/15 border border-cyan-500/35 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/25 transition-all shadow-xs hover:shadow-[0_0_15px_rgba(0,217,255,0.2)] active:scale-95 cursor-pointer"
+                  className="flex items-center gap-2 px-4 py-2 text-[14px] font-bold rounded-xl bg-cyan-500/15 border border-cyan-500/35 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/25 transition-all shadow-xs cursor-pointer"
                 >
                   <User className="w-4 h-4 text-cyan-500" />
                   Dashboard
@@ -86,25 +87,25 @@ export default function Navbar() {
                 <button
                   onClick={handleLogout}
                   title="Sign out"
-                  className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all cursor-pointer active:scale-95"
+                  className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all cursor-pointer active:scale-95"
                 >
-                  <LogOut className="w-5 h-5" />
+                  <LogOut className="w-4 h-4" />
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <Link
                   to="/login"
-                  className="px-5 py-2.5 text-[17px] font-bold text-slate-700 dark:text-slate-200 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+                  className="px-4 py-2 text-[14px] font-semibold text-slate-700 dark:text-slate-200 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
                 >
                   Login
                 </Link>
                 <Link
                   to="/register"
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-[17px] font-bold text-slate-950 bg-gradient-to-r from-cyan-400 via-cyan-300 to-blue-500 hover:from-cyan-300 hover:to-blue-400 transition-all shadow-md shadow-cyan-500/25 active:scale-95"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[14px] font-bold text-slate-950 bg-gradient-to-r from-cyan-400 via-cyan-300 to-blue-500 hover:from-cyan-300 hover:to-blue-400 transition-all shadow-sm active:scale-95"
                 >
                   <span>Get Started</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
             )}

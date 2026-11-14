@@ -195,10 +195,11 @@ export default function DoctorProfilePage() {
 
             <div>
               <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Telemedicine Consultation Fee
+                Telemedicine Consultation Fee (₹)
               </label>
               <input
                 type="text"
+                placeholder="e.g. ₹800 / session"
                 value={formData.consultationFee}
                 onChange={(e) => handleInputChange('consultationFee', e.target.value)}
                 className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"

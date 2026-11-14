@@ -244,7 +244,7 @@ export default function MedicalSphere3D() {
   }, [isDark, webGlSupported]);
 
   return (
-    <div className="relative w-full h-[500px] md:h-[600px] flex items-center justify-center select-none overflow-visible">
+    <div className="relative w-full h-[400px] md:h-[480px] flex items-center justify-center select-none overflow-visible">
       {/* 3D WebGL Canvas */}
       {webGlSupported ? (
         <div
@@ -254,9 +254,9 @@ export default function MedicalSphere3D() {
       ) : (
         /* 2.5D Fallback for environments without WebGL */
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-64 h-64 rounded-full border-2 border-dashed border-violet-500/40 dark:border-cyan-400/40 animate-spin duration-1000 flex items-center justify-center">
-            <div className="w-48 h-48 rounded-full border border-purple-500/50 dark:border-blue-400/50 animate-pulse flex items-center justify-center">
-              <Activity className="w-16 h-16 text-violet-600 dark:text-cyan-400" />
+          <div className="w-52 h-52 rounded-full border-2 border-dashed border-violet-500/40 dark:border-cyan-400/40 animate-spin duration-1000 flex items-center justify-center">
+            <div className="w-36 h-36 rounded-full border border-purple-500/50 dark:border-blue-400/50 animate-pulse flex items-center justify-center">
+              <Activity className="w-12 h-12 text-violet-600 dark:text-cyan-400" />
             </div>
           </div>
         </div>
@@ -266,34 +266,31 @@ export default function MedicalSphere3D() {
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
         <div className="relative flex items-center justify-center">
 
-          {/* Circle 4: Outermost Fixed White Circle (Wide delicate orbital boundary) */}
-          <div className="absolute w-[440px] h-[440px] sm:w-[480px] sm:h-[480px] md:w-[530px] md:h-[530px] rounded-full border border-dotted border-white dark:border-white/20 shadow-[0_0_0_1px_rgba(203,213,225,0.4)] dark:shadow-[0_0_35px_rgba(255,255,255,0.12)] pointer-events-none" />
+          {/* Circle 4: Outermost Fixed White Circle */}
+          <div className="absolute w-[340px] h-[340px] sm:w-[380px] sm:h-[380px] md:w-[420px] md:h-[420px] rounded-full border border-dotted border-white dark:border-white/20 shadow-[0_0_0_1px_rgba(203,213,225,0.4)] dark:shadow-[0_0_25px_rgba(255,255,255,0.12)] pointer-events-none" />
 
-          {/* Circle 3: Outer Fixed White Circle (Smooth circular halo) */}
-          <div className="absolute w-[350px] h-[350px] sm:w-[380px] sm:h-[380px] md:w-[420px] md:h-[420px] rounded-full border border-white dark:border-white/35 shadow-[0_0_0_1px_rgba(203,213,225,0.5),0_4px_16px_rgba(0,0,0,0.03)] dark:shadow-[0_0_25px_rgba(255,255,255,0.2)] pointer-events-none" />
+          {/* Circle 3: Outer Fixed White Circle */}
+          <div className="absolute w-[270px] h-[270px] sm:w-[300px] sm:h-[300px] md:w-[330px] md:h-[330px] rounded-full border border-white dark:border-white/35 shadow-[0_0_0_1px_rgba(203,213,225,0.5)] dark:shadow-[0_0_20px_rgba(255,255,255,0.2)] pointer-events-none" />
 
-          {/* Circle 2: Mid Fixed White Circle (Fine dashed white ring with 4 fixed cardinal markers) */}
-          <div className="absolute w-[260px] h-[260px] sm:w-[285px] sm:h-[285px] md:w-[315px] md:h-[315px] rounded-full border border-dashed border-white dark:border-white/60 shadow-[0_0_0_1px_rgba(203,213,225,0.6),0_4px_20px_rgba(0,0,0,0.04)] dark:shadow-[0_0_25px_rgba(255,255,255,0.35)] pointer-events-none flex items-center justify-center">
-            {/* 4 Fixed Cardinal Markers for High-Precision Diagnostic Feel */}
-            <div className="absolute -top-1 w-2 h-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,1),0_0_0_1px_rgba(203,213,225,0.6)]" />
-            <div className="absolute -bottom-1 w-2 h-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,1),0_0_0_1px_rgba(203,213,225,0.6)]" />
-            <div className="absolute -left-1 w-2 h-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,1),0_0_0_1px_rgba(203,213,225,0.6)]" />
-            <div className="absolute -right-1 w-2 h-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,1),0_0_0_1px_rgba(203,213,225,0.6)]" />
+          {/* Circle 2: Mid Fixed White Circle with 4 Cardinal Markers */}
+          <div className="absolute w-[200px] h-[200px] sm:w-[220px] sm:h-[220px] md:w-[245px] md:h-[245px] rounded-full border border-dashed border-white dark:border-white/60 shadow-[0_0_0_1px_rgba(203,213,225,0.6)] dark:shadow-[0_0_20px_rgba(255,255,255,0.35)] pointer-events-none flex items-center justify-center">
+            <div className="absolute -top-1 w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,1)]" />
+            <div className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,1)]" />
+            <div className="absolute -left-1 w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,1)]" />
+            <div className="absolute -right-1 w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,1)]" />
           </div>
 
-          {/* Circle 1: Inner Fixed White Circle (Solid bright white ring with subtle halo glow) */}
-          <div className="absolute w-[180px] h-[180px] sm:w-[200px] sm:h-[200px] md:w-[220px] md:h-[220px] rounded-full border-2 border-white dark:border-white shadow-[0_0_0_1px_rgba(203,213,225,0.7),0_4px_24px_rgba(6,182,212,0.18)] dark:shadow-[0_0_30px_rgba(255,255,255,0.5),inset_0_0_15px_rgba(255,255,255,0.25)] bg-white/20 dark:bg-white/5 backdrop-blur-xs pointer-events-none" />
+          {/* Circle 1: Inner Fixed White Circle */}
+          <div className="absolute w-[140px] h-[140px] sm:w-[155px] sm:h-[155px] md:w-[170px] md:h-[170px] rounded-full border-2 border-white dark:border-white shadow-[0_0_0_1px_rgba(203,213,225,0.7)] dark:shadow-[0_0_25px_rgba(255,255,255,0.5)] bg-white/20 dark:bg-white/5 backdrop-blur-xs pointer-events-none" />
 
           {/* Central Fixed White Circular Badge directly embracing the Emblem */}
-          <div className="relative w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-full bg-white dark:bg-slate-900/90 shadow-[0_6px_35px_rgba(6,182,212,0.22),0_0_0_2px_rgba(255,255,255,1)] dark:shadow-[0_0_35px_rgba(255,255,255,0.28),0_0_0_2px_rgba(255,255,255,0.85)] border-2 border-white flex items-center justify-center p-3 z-10">
-            {/* Ambient Radial Color Bloom Behind Logo */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-400/20 via-teal-300/15 to-blue-500/20 blur-md pointer-events-none" />
+          <div className="relative w-22 h-22 sm:w-26 sm:h-26 md:w-28 md:h-28 rounded-full bg-white dark:bg-slate-900/90 shadow-[0_4px_25px_rgba(6,182,212,0.22),0_0_0_2px_rgba(255,255,255,1)] dark:shadow-[0_0_25px_rgba(255,255,255,0.28),0_0_0_2px_rgba(255,255,255,0.85)] border-2 border-white flex items-center justify-center p-2.5 z-10">
+            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-400/20 via-teal-300/15 to-blue-500/20 blur-sm pointer-events-none" />
 
-            {/* Rigid Emblem Image: perfectly stationary & upright */}
             <img
               src="/biotrajectory-emblem.png"
               alt="BioTrajectory"
-              className="w-20 h-20 sm:w-24 sm:h-24 md:w-26 md:h-26 object-contain select-none relative z-10"
+              className="w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 object-contain select-none relative z-10"
               draggable={false}
             />
           </div>
@@ -303,33 +300,33 @@ export default function MedicalSphere3D() {
 
       {/* Floating Ambient Glow Behind Sphere */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-        <div className="w-80 h-80 rounded-full bg-violet-400/20 dark:bg-cyan-400/20 blur-[110px] pointer-events-none animate-pulse-glow" />
-        <div className="w-72 h-72 rounded-full bg-purple-500/15 dark:bg-blue-500/20 blur-[100px] pointer-events-none -ml-24 -mt-20" />
+        <div className="w-64 h-64 rounded-full bg-violet-400/15 dark:bg-cyan-400/15 blur-[90px] pointer-events-none" />
+        <div className="w-56 h-56 rounded-full bg-purple-500/15 dark:bg-blue-500/15 blur-[80px] pointer-events-none -ml-16 -mt-16" />
       </div>
 
-      {/* 5 FLOATING GLASSMORPHIC HEALTH DATA CARDS */}
+      {/* 5 FLOATING HEALTH DATA CARDS */}
 
       {/* 1. Health Trajectory (Top Left) */}
       <div
         style={{
           transform: `translate3d(${mouseOffset.x * -0.7}px, ${mouseOffset.y * -0.7}px, 0)`
         }}
-        className="absolute -top-3 left-0 md:left-2 z-10 glass-card p-4 rounded-2xl shadow-xl border border-violet-500/25 dark:border-cyan-500/30 max-w-[215px] animate-float-gentle transition-transform duration-200 ease-out hover:scale-105"
+        className="absolute -top-2 left-0 md:left-2 z-10 glass-card p-3 rounded-xl shadow-lg border border-violet-500/25 dark:border-cyan-500/30 max-w-[185px] animate-float-gentle transition-transform duration-200 ease-out hover:scale-105"
       >
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-violet-500/10 dark:bg-cyan-500/15 border border-violet-500/25 dark:border-cyan-400/35 flex items-center justify-center text-violet-600 dark:text-cyan-400 shrink-0">
-            <Heart className="w-5 h-5 text-violet-600 dark:text-cyan-400 animate-pulse" />
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-violet-500/10 dark:bg-cyan-500/15 border border-violet-500/25 dark:border-cyan-400/35 flex items-center justify-center text-violet-600 dark:text-cyan-400 shrink-0">
+            <Heart className="w-4 h-4 text-violet-600 dark:text-cyan-400 animate-pulse" />
           </div>
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Blood Pressure</p>
-            <p className="text-base font-extrabold text-slate-900 dark:text-cyan-300">
-              121 / 78 <span className="text-xs font-normal text-slate-500">mmHg</span>
+            <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Blood Pressure</p>
+            <p className="text-sm font-extrabold text-slate-900 dark:text-cyan-300">
+              121 / 78 <span className="text-[10px] font-normal text-slate-500">mmHg</span>
             </p>
           </div>
         </div>
-        <div className="mt-2 text-[10px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 font-semibold bg-emerald-500/10 px-2.5 py-1 rounded-full w-fit">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-ping" />
-          Healthy & Normal • Steady
+        <div className="mt-1.5 text-[9px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full w-fit">
+          <span className="w-1 h-1 rounded-full bg-emerald-500 inline-block animate-ping" />
+          Healthy • Steady
         </div>
       </div>
 
@@ -338,15 +335,15 @@ export default function MedicalSphere3D() {
         style={{
           transform: `translate3d(${mouseOffset.x * 0.8}px, ${mouseOffset.y * 0.8}px, 0)`
         }}
-        className="hidden sm:flex absolute top-10 -right-2 md:right-2 z-10 glass-card px-4 py-3 rounded-2xl border border-emerald-500/30 items-center gap-3 shadow-xl max-w-[230px] animate-float-delayed transition-transform duration-200 ease-out hover:scale-105"
+        className="hidden sm:flex absolute top-6 -right-2 md:right-1 z-10 glass-card px-3 py-2.5 rounded-xl border border-emerald-500/30 items-center gap-2.5 shadow-lg max-w-[195px] animate-float-delayed transition-transform duration-200 ease-out hover:scale-105"
       >
-        <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-          <ShieldCheck className="w-5 h-5" />
+        <div className="w-7 h-7 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+          <ShieldCheck className="w-4 h-4" />
         </div>
         <div className="text-left">
-          <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">Health Check</p>
+          <p className="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">Health Check</p>
           <p className="text-xs font-bold text-slate-900 dark:text-emerald-400">Kidney & Sugar Normal</p>
-          <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Overall Body Balance: 99.2%</p>
+          <p className="text-[9px] text-slate-500 dark:text-slate-400 mt-0.5">Body Balance: 99.2%</p>
         </div>
       </div>
 
@@ -355,19 +352,19 @@ export default function MedicalSphere3D() {
         style={{
           transform: `translate3d(${mouseOffset.x * 0.6}px, ${mouseOffset.y * 0.6}px, 0)`
         }}
-        className="absolute -bottom-3 right-0 md:right-2 z-10 glass-card p-4 rounded-2xl shadow-xl border border-purple-500/25 dark:border-blue-500/30 max-w-[230px] animate-float-delayed transition-transform duration-200 ease-out hover:scale-105"
+        className="absolute -bottom-2 right-0 md:right-1 z-10 glass-card p-3 rounded-xl shadow-lg border border-purple-500/25 dark:border-blue-500/30 max-w-[190px] animate-float-delayed transition-transform duration-200 ease-out hover:scale-105"
       >
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-purple-500/10 dark:bg-blue-500/15 border border-purple-500/25 dark:border-blue-400/35 flex items-center justify-center text-purple-600 dark:text-blue-400 shrink-0">
-            <Activity className="w-5 h-5 text-purple-600 dark:text-blue-400" />
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-purple-500/10 dark:bg-blue-500/15 border border-purple-500/25 dark:border-blue-400/35 flex items-center justify-center text-purple-600 dark:text-blue-400 shrink-0">
+            <Activity className="w-4 h-4 text-purple-600 dark:text-blue-400" />
           </div>
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Your Normal Range</p>
-            <p className="text-base font-extrabold text-slate-900 dark:text-blue-300">99.4% Steady</p>
+            <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Normal Range</p>
+            <p className="text-sm font-extrabold text-slate-900 dark:text-blue-300">99.4% Steady</p>
           </div>
         </div>
-        <p className="mt-2 text-[11px] text-slate-600 dark:text-slate-300 font-normal leading-snug">
-          Your daily health readings have stayed steady and healthy over 30 days.
+        <p className="mt-1.5 text-[10px] text-slate-600 dark:text-slate-300 font-normal leading-snug">
+          Readings steady over 30 days.
         </p>
       </div>
 
@@ -376,15 +373,15 @@ export default function MedicalSphere3D() {
         style={{
           transform: `translate3d(${mouseOffset.x * -0.8}px, ${mouseOffset.y * -0.8}px, 0)`
         }}
-        className="hidden sm:flex absolute bottom-8 left-2 md:left-4 z-10 glass-card px-4 py-3 rounded-2xl border border-violet-500/25 dark:border-cyan-500/30 items-center gap-3 shadow-xl max-w-[235px] animate-float-gentle transition-transform duration-200 ease-out hover:scale-105"
+        className="hidden sm:flex absolute bottom-4 left-1 md:left-3 z-10 glass-card px-3 py-2.5 rounded-xl border border-violet-500/25 dark:border-cyan-500/30 items-center gap-2.5 shadow-lg max-w-[195px] animate-float-gentle transition-transform duration-200 ease-out hover:scale-105"
       >
-        <div className="w-9 h-9 rounded-xl bg-violet-500/10 dark:bg-cyan-500/15 text-violet-600 dark:text-cyan-400 flex items-center justify-center shrink-0">
-          <Sparkles className="w-5 h-5" />
+        <div className="w-7 h-7 rounded-lg bg-violet-500/10 dark:bg-cyan-500/15 text-violet-600 dark:text-cyan-400 flex items-center justify-center shrink-0">
+          <Sparkles className="w-4 h-4" />
         </div>
         <div className="text-left">
-          <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">Understand Your Results</p>
-          <p className="text-xs font-bold text-slate-900 dark:text-cyan-300">30-Day Health Risk: Very Low (0.2%)</p>
-          <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Sleep & daily rhythm in sync</p>
+          <p className="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">Results Analysis</p>
+          <p className="text-xs font-bold text-slate-900 dark:text-cyan-300">Risk: Very Low (0.2%)</p>
+          <p className="text-[9px] text-slate-500 dark:text-slate-400 mt-0.5">Rhythm in sync</p>
         </div>
       </div>
 
@@ -393,17 +390,17 @@ export default function MedicalSphere3D() {
         style={{
           transform: `translate3d(${mouseOffset.x * -1.1}px, ${mouseOffset.y * -1.1}px, 0)`
         }}
-        className="hidden md:flex absolute top-1/2 -left-8 -translate-y-1/2 z-10 glass-card px-3.5 py-2.5 rounded-xl border border-indigo-500/30 items-center gap-2.5 shadow-lg transition-transform duration-200 ease-out hover:scale-105"
+        className="hidden md:flex absolute top-1/2 -left-6 -translate-y-1/2 z-10 glass-card px-3 py-2 rounded-lg border border-indigo-500/30 items-center gap-2 shadow-md transition-transform duration-200 ease-out hover:scale-105"
       >
-        <div className="w-7 h-7 rounded-lg bg-indigo-500/15 text-indigo-500 dark:text-indigo-400 flex items-center justify-center shrink-0">
-          <Calendar className="w-4 h-4" />
+        <div className="w-6 h-6 rounded-md bg-indigo-500/15 text-indigo-500 dark:text-indigo-400 flex items-center justify-center shrink-0">
+          <Calendar className="w-3.5 h-3.5" />
         </div>
         <div>
-          <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 block leading-tight">
-            Day 42 Daily Record
+          <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200 block leading-tight">
+            Day 42 Record
           </span>
-          <span className="text-[9px] text-slate-500 dark:text-slate-400 leading-none">
-            Daily check-ups recorded
+          <span className="text-[8px] text-slate-500 dark:text-slate-400 leading-none">
+            Logged daily
           </span>
         </div>
       </div>
