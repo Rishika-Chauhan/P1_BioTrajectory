@@ -70,7 +70,7 @@ export default function TheProblem() {
 
   return (
     <section
-      className={`relative py-20 transition-colors ${isDark ? 'bg-[#1D070A]' : 'bg-[#F1F0CC]'
+      className={`relative py-20 transition-colors ${isDark ? 'bg-[#050814]' : 'bg-[#F1F0CC]'
         }`}
       id="problem"
     >
@@ -91,7 +91,7 @@ export default function TheProblem() {
           </div>
 
           {/* Sub-view Switcher */}
-          <div className={`inline-flex p-1 rounded-lg border self-start md:self-auto shrink-0 ${isDark ? 'bg-[#2B0B0E] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'
+          <div className={`inline-flex p-1 rounded-lg border self-start md:self-auto shrink-0 ${isDark ? 'bg-[#0B132B] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'
             }`}>
             <button
               onClick={() => setProblemTab('paradigm')}
@@ -123,14 +123,14 @@ export default function TheProblem() {
               <div
                 key={issue.id}
                 className={`relative rounded-xl p-6 border transition-all duration-300 group flex flex-col justify-between ${isDark
-                  ? 'bg-[#2B0B0E] border-[#D5BF86]/20 hover:border-[#A71D31]'
+                  ? 'bg-[#0B132B] border-[#D5BF86]/20 hover:border-[#A71D31]'
                   : 'bg-white border-[#D5BF86]/70 hover:border-[#A71D31] shadow-xs'
                   }`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center border transition-all ${isDark
-                      ? 'bg-[#1D070A] border-[#D5BF86]/30 text-[#D5BF86]'
+                      ? 'bg-[#050814] border-[#D5BF86]/30 text-[#D5BF86]'
                       : 'bg-[#A71D31]/10 border-[#A71D31]/20 text-[#A71D31]'
                       }`}>
                       <Icon className="w-4 h-4" />
@@ -165,7 +165,7 @@ export default function TheProblem() {
             VIEW 1: INTERACTIVE PARADIGM SIMULATOR (SLIDER & DUAL-CARD VIEW)
         ========================================================================== */}
         {problemTab === 'paradigm' && (
-          <div className={`rounded-xl border p-6 sm:p-8 shadow-xs transition-all ${isDark ? 'bg-[#2B0B0E] border-[#D5BF86]/20' : 'bg-white border-[#D5BF86]/70'
+          <div className={`rounded-xl border p-6 sm:p-8 shadow-xs transition-all ${isDark ? 'bg-[#0B132B] border-[#D5BF86]/20' : 'bg-white border-[#D5BF86]/70'
             }`}>
             <div className={`flex flex-wrap items-center justify-between gap-4 pb-5 border-b ${isDark ? 'border-[#D5BF86]/20' : 'border-[#D5BF86]/40'}`}>
               <div>
@@ -190,7 +190,7 @@ export default function TheProblem() {
                       onClick={() => setSliderDay(d)}
                       className={`px-3 py-1.5 rounded-md text-xs font-sans transition-all cursor-pointer ${sliderDay === d
                         ? 'bg-[#A71D31] text-white font-bold shadow-xs'
-                        : isDark ? 'bg-[#1D070A] text-[#D5BF86] hover:text-white border border-[#D5BF86]/20' : 'bg-[#FAF9EB] text-[#8D775F] hover:text-[#3F0D12] border border-[#D5BF86]'
+                        : isDark ? 'bg-[#050814] text-[#D5BF86] hover:text-white border border-[#D5BF86]/20' : 'bg-[#FAF9EB] text-[#8D775F] hover:text-[#3F0D12] border border-[#D5BF86]'
                         }`}
                     >
                       Day {d}
@@ -204,7 +204,7 @@ export default function TheProblem() {
             <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 
               {/* Left: The Flawed Snapshot Approach */}
-              <div className={`p-5 rounded-xl border flex flex-col justify-between ${isDark ? 'bg-[#1D070A] border-[#A71D31]/40' : 'bg-[#A71D31]/10 border-[#A71D31]/30'
+              <div className={`p-5 rounded-xl border flex flex-col justify-between ${isDark ? 'bg-[#050814] border-[#A71D31]/40' : 'bg-[#A71D31]/10 border-[#A71D31]/30'
                 }`}>
                 <div>
                   <div className="flex items-center justify-between mb-3">
@@ -239,7 +239,7 @@ export default function TheProblem() {
               </div>
 
               {/* Right: The BioTrajectory Personal Longitudinal View */}
-              <div className={`p-5 rounded-xl border flex flex-col justify-between ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
+              <div className={`p-5 rounded-xl border flex flex-col justify-between ${isDark ? 'bg-[#050814] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
                 }`}>
                 <div>
                   <div className="flex items-center justify-between mb-3">
@@ -250,7 +250,7 @@ export default function TheProblem() {
                   </div>
 
                   {/* Embedded Mini Trajectory Chart */}
-                  <div className="my-2 p-3 rounded-lg bg-[#1D070A]/30 border border-[#D5BF86]/30 overflow-x-auto">
+                  <div className="my-2 p-3 rounded-lg bg-[#050814]/30 border border-[#D5BF86]/30 overflow-x-auto">
                     <svg viewBox={`0 0 ${miniChartWidth} ${miniChartHeight}`} className="w-full h-auto min-w-[380px]">
                       {/* Baseline Corridor Band */}
                       <rect
@@ -323,7 +323,7 @@ export default function TheProblem() {
             VIEW 2: EPIDEMIOLOGICAL SILENT PROGRESSION VISUALIZATION
         ========================================================================== */}
         {problemTab === 'epidemiology' && (
-          <div className={`rounded-xl border p-6 sm:p-8 shadow-xs transition-all ${isDark ? 'bg-[#2B0B0E] border-[#D5BF86]/20' : 'bg-white border-[#D5BF86]/70'
+          <div className={`rounded-xl border p-6 sm:p-8 shadow-xs transition-all ${isDark ? 'bg-[#0B132B] border-[#D5BF86]/20' : 'bg-white border-[#D5BF86]/70'
             }`}>
             <div className="max-w-3xl mb-6">
               <span className="text-[11px] font-sans uppercase font-bold text-[#A71D31] dark:text-[#D5BF86]">
@@ -349,7 +349,7 @@ export default function TheProblem() {
                 <div
                   key={s.stage}
                   className={`p-3.5 rounded-lg border flex flex-col justify-between ${s.reversible
-                    ? 'bg-[#FAF9EB] border-[#D5BF86] dark:bg-[#1D070A] dark:border-[#D5BF86]/30'
+                    ? 'bg-[#FAF9EB] border-[#D5BF86] dark:bg-[#050814] dark:border-[#D5BF86]/30'
                     : 'bg-[#A71D31]/10 border-[#A71D31]/30 dark:bg-[#A71D31]/15'
                     }`}
                 >

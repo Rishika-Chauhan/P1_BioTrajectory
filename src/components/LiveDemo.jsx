@@ -588,7 +588,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
 
   return (
     <section
-      className={`relative pt-24 pb-16 transition-colors overflow-hidden ${isDark ? 'bg-[#1D070A] text-[#FAF9EB]' : 'bg-[#F1F0CC] text-[#3F0D12]'
+      className={`relative pt-24 pb-16 transition-colors overflow-hidden ${isDark ? 'bg-[#050814] text-[#FAF9EB]' : 'bg-[#F1F0CC] text-[#3F0D12]'
         }`}
       id="live-prototype"
     >
@@ -602,7 +602,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
             1. EXECUTIVE STATUS & TELEMETRY BAR
         ========================================================================== */}
         <section className={`rounded-xl p-6 sm:p-7 relative overflow-hidden transition-all border ${isDark
-          ? 'bg-[#2B0B0E] border-[#D5BF86]/20 shadow-[0_4px_24px_rgba(0,0,0,0.5)]'
+          ? 'bg-[#0B132B] border-[#D5BF86]/20 shadow-[0_4px_24px_rgba(0,0,0,0.5)]'
           : 'bg-white border-[#D5BF86]/70 shadow-xs'
           }`}>
           {/* Ruby Red Left Accent Line */}
@@ -643,7 +643,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
             <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-[#D5BF86]/40 dark:border-[#D5BF86]/20">
               {/* Left Cluster: Persona Switchers & Data Sovereignty Export */}
               <div className="flex flex-wrap items-center gap-2">
-                <div className={`flex items-center p-1 rounded-lg border text-xs font-sans ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
+                <div className={`flex items-center p-1 rounded-lg border text-xs font-sans ${isDark ? 'bg-[#050814] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
                   }`}>
                   {patientList.map((p) => {
                     const isSelected = selectedPersonaId === p.id;
@@ -667,7 +667,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
                   <button
                     onClick={handleExportCSV}
                     className={`flex items-center gap-1 font-sans text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-colors border ${isDark
-                      ? 'bg-[#2B0B0E] hover:bg-[#3F0D12] text-[#FAF9EB] border-[#D5BF86]/30'
+                      ? 'bg-[#0B132B] hover:bg-[#3F0D12] text-[#FAF9EB] border-[#D5BF86]/30'
                       : 'bg-white hover:bg-[#FAF9EB] text-[#3F0D12] border-[#D5BF86] shadow-xs'
                       }`}
                     title="Download verified patient measurements in CSV format"
@@ -680,7 +680,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
                   <button
                     onClick={handleExportJSON}
                     className={`flex items-center gap-1 font-sans text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-colors border ${isDark
-                      ? 'bg-[#2B0B0E] hover:bg-[#3F0D12] text-[#FAF9EB] border-[#D5BF86]/30'
+                      ? 'bg-[#0B132B] hover:bg-[#3F0D12] text-[#FAF9EB] border-[#D5BF86]/30'
                       : 'bg-white hover:bg-[#FAF9EB] text-[#3F0D12] border-[#D5BF86] shadow-xs'
                       }`}
                     title="Download verified patient measurements in JSON format"
@@ -693,7 +693,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
                   <button
                     onClick={handleResetDataset}
                     className={`p-1.5 rounded-lg transition-colors border ${isDark
-                      ? 'bg-[#2B0B0E] hover:bg-[#3F0D12] text-[#D5BF86] hover:text-[#A71D31] border-[#D5BF86]/30'
+                      ? 'bg-[#0B132B] hover:bg-[#3F0D12] text-[#D5BF86] hover:text-[#A71D31] border-[#D5BF86]/30'
                       : 'bg-white hover:bg-[#FAF9EB] text-[#8D775F] hover:text-[#A71D31] border-[#D5BF86] shadow-xs'
                       }`}
                     title="Reset active dataset to factory baseline"
@@ -709,7 +709,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
                 <button
                   onClick={() => setActiveTab('scanner')}
                   className={`flex items-center gap-1.5 font-sans text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors border ${isDark
-                    ? 'bg-[#2B0B0E] hover:bg-[#3F0D12] text-[#FAF9EB] border-[#D5BF86]/30'
+                    ? 'bg-[#0B132B] hover:bg-[#3F0D12] text-[#FAF9EB] border-[#D5BF86]/30'
                     : 'bg-white hover:bg-[#FAF9EB] text-[#3F0D12] border-[#D5BF86] shadow-xs'
                     }`}
                   type="button"
@@ -722,7 +722,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
                   <button
                     onClick={onOpenProfile}
                     className={`flex items-center gap-1.5 font-sans text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors border ${isDark
-                      ? 'bg-[#2B0B0E] hover:bg-[#3F0D12] text-[#D5BF86] border-[#D5BF86]/40'
+                      ? 'bg-[#0B132B] hover:bg-[#3F0D12] text-[#D5BF86] border-[#D5BF86]/40'
                       : 'bg-white hover:bg-[#FAF9EB] text-[#A71D31] border-[#D5BF86] shadow-xs'
                       }`}
                     type="button"
@@ -736,7 +736,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
                 <button
                   onClick={onOpenReportModal}
                   className={`flex items-center gap-1.5 font-sans text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors border ${isDark
-                    ? 'bg-[#2B0B0E] hover:bg-[#3F0D12] text-[#FAF9EB] border-[#D5BF86]/30'
+                    ? 'bg-[#0B132B] hover:bg-[#3F0D12] text-[#FAF9EB] border-[#D5BF86]/30'
                     : 'bg-white hover:bg-[#FAF9EB] text-[#3F0D12] border-[#D5BF86] shadow-xs'
                     }`}
                   type="button"
@@ -764,7 +764,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Bento 1: Trend Stability */}
           <div className={`rounded-xl p-5 flex flex-col justify-between transition-all border ${isDark
-            ? 'bg-[#2B0B0E] border-[#D5BF86]/20 hover:border-[#D5BF86]/40'
+            ? 'bg-[#0B132B] border-[#D5BF86]/20 hover:border-[#D5BF86]/40'
             : 'bg-white border-[#D5BF86]/70 hover:border-[#D5BF86] shadow-xs'
             }`}>
             <div className="flex items-center justify-between">
@@ -802,7 +802,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
 
           {/* Bento 2: Active Indicators */}
           <div className={`rounded-xl p-5 flex flex-col justify-between transition-all border ${isDark
-            ? 'bg-[#2B0B0E] border-[#D5BF86]/20 hover:border-[#D5BF86]/40'
+            ? 'bg-[#0B132B] border-[#D5BF86]/20 hover:border-[#D5BF86]/40'
             : 'bg-white border-[#D5BF86]/70 hover:border-[#D5BF86] shadow-xs'
             }`}>
             <div className="flex items-center justify-between">
@@ -834,7 +834,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
 
           {/* Bento 3: Notable Variance Flag */}
           <div className={`rounded-xl p-5 flex flex-col justify-between transition-all border-l-4 border-l-[#A71D31] border ${isDark
-            ? 'bg-[#2B0B0E] border-[#D5BF86]/20 hover:border-[#D5BF86]/40'
+            ? 'bg-[#0B132B] border-[#D5BF86]/20 hover:border-[#D5BF86]/40'
             : 'bg-white border-[#D5BF86]/70 hover:border-[#D5BF86] shadow-xs'
             }`}>
             <div className="flex items-center justify-between">
@@ -870,7 +870,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
 
           {/* Bento 4: Wearable Context Sync */}
           <div className={`rounded-xl p-5 flex flex-col justify-between transition-all border ${isDark
-            ? 'bg-[#2B0B0E] border-[#D5BF86]/20 hover:border-[#D5BF86]/40'
+            ? 'bg-[#0B132B] border-[#D5BF86]/20 hover:border-[#D5BF86]/40'
             : 'bg-white border-[#D5BF86]/70 hover:border-[#D5BF86] shadow-xs'
             }`}>
             <div className="flex items-center justify-between">
@@ -916,7 +916,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
             3. GEMINI AI LONGITUDINAL PLAIN-LANGUAGE INSIGHT CARD (STITCH SPEC)
         ========================================================================== */}
         <section className={`rounded-xl p-6 sm:p-7 relative overflow-hidden transition-all border ${isDark
-          ? 'bg-[#2B0B0E] border-[#D5BF86]/20 shadow-[0_4px_24px_rgba(0,0,0,0.5)]'
+          ? 'bg-[#0B132B] border-[#D5BF86]/20 shadow-[0_4px_24px_rgba(0,0,0,0.5)]'
           : 'bg-white border-[#D5BF86]/70 shadow-xs'
           }`}>
           {/* AI Subtle decorative flourish */}
@@ -944,7 +944,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
               </div>
 
               {/* Boundary badge */}
-              <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${isDark ? 'bg-[#1D070A] text-[#D5BF86] border border-[#D5BF86]/30' : 'bg-[#FAF9EB] text-[#3F0D12] border border-[#D5BF86]'
+              <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${isDark ? 'bg-[#050814] text-[#D5BF86] border border-[#D5BF86]/30' : 'bg-[#FAF9EB] text-[#3F0D12] border border-[#D5BF86]'
                 }`}>
                 <ShieldCheck className="w-3.5 h-3.5 text-[#A71D31]" />
                 <span>Non-Diagnostic • Pattern Analysis Only</span>
@@ -954,7 +954,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
             {/* 4 Structured Interpretation Bento Boxes */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Card 1: What Changed */}
-              <div className={`rounded-lg p-4 flex flex-col gap-1.5 border ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB]/60 border-[#D5BF86]/60'
+              <div className={`rounded-lg p-4 flex flex-col gap-1.5 border ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB]/60 border-[#D5BF86]/60'
                 }`}>
                 <div className="flex items-center gap-1.5 text-[#A71D31] font-sans text-sm font-semibold">
                   <TrendingUp className="w-4 h-4" />
@@ -966,7 +966,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
               </div>
 
               {/* Card 2: What It Likely Reflects */}
-              <div className={`rounded-lg p-4 flex flex-col gap-1.5 border ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB]/60 border-[#D5BF86]/60'
+              <div className={`rounded-lg p-4 flex flex-col gap-1.5 border ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB]/60 border-[#D5BF86]/60'
                 }`}>
                 <div className="flex items-center gap-1.5 text-[#8D775F] dark:text-[#D5BF86] font-sans text-sm font-semibold">
                   <Info className="w-4 h-4" />
@@ -978,7 +978,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
               </div>
 
               {/* Card 3: What This DOES NOT Mean */}
-              <div className={`rounded-lg p-4 flex flex-col gap-1.5 border ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB]/60 border-[#D5BF86]/60'
+              <div className={`rounded-lg p-4 flex flex-col gap-1.5 border ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB]/60 border-[#D5BF86]/60'
                 }`}>
                 <div className="flex items-center gap-1.5 text-[#8D775F] dark:text-[#D5BF86] font-sans text-sm font-semibold">
                   <AlertTriangle className="w-4 h-4 text-[#A71D31]" />
@@ -990,7 +990,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
               </div>
 
               {/* Card 4: Suggested Next Step */}
-              <div className={`rounded-lg p-4 flex flex-col gap-1.5 border ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB]/60 border-[#D5BF86]/60'
+              <div className={`rounded-lg p-4 flex flex-col gap-1.5 border ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB]/60 border-[#D5BF86]/60'
                 }`}>
                 <div className="flex items-center gap-1.5 text-[#3F0D12] dark:text-[#FAF9EB] font-sans text-sm font-semibold">
                   <CheckCircle2 className="w-4 h-4 text-[#A71D31]" />
@@ -1015,7 +1015,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
                   value={customGeminiQuery}
                   onChange={(e) => setCustomGeminiQuery(e.target.value)}
                   placeholder="Ask Gemini about your baseline..."
-                  className={`px-3 py-1.5 text-xs rounded-lg border focus:outline-none w-full sm:w-64 ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30 text-white focus:border-[#A71D31]' : 'bg-[#FAF9EB] border-[#D5BF86] text-[#3F0D12] focus:border-[#A71D31]'
+                  className={`px-3 py-1.5 text-xs rounded-lg border focus:outline-none w-full sm:w-64 ${isDark ? 'bg-[#050814] border-[#D5BF86]/30 text-white focus:border-[#A71D31]' : 'bg-[#FAF9EB] border-[#D5BF86] text-[#3F0D12] focus:border-[#A71D31]'
                     }`}
                 />
                 <button
@@ -1035,7 +1035,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
             4. MAIN LONGITUDINAL BIOMARKER TRAJECTORY & MULTI-VIEW SUITE
         ========================================================================== */}
         <section className={`rounded-xl p-6 sm:p-7 relative overflow-hidden transition-all border ${isDark
-          ? 'bg-[#2B0B0E] border-[#D5BF86]/20 shadow-[0_4px_24px_rgba(0,0,0,0.5)]'
+          ? 'bg-[#0B132B] border-[#D5BF86]/20 shadow-[0_4px_24px_rgba(0,0,0,0.5)]'
           : 'bg-white border-[#D5BF86]/70 shadow-xs'
           }`}>
           {/* Main Trajectory Toolbar */}
@@ -1050,7 +1050,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
             {/* Timeframe & Analyte Selector Filters */}
             <div className="flex flex-wrap items-center gap-3">
               {/* 7D, 30D, 90D, 1Y toggles */}
-              <div className={`p-1 rounded-lg flex items-center gap-1 border ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
+              <div className={`p-1 rounded-lg flex items-center gap-1 border ${isDark ? 'bg-[#050814] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
                 }`}>
                 {[
                   { label: '7D', val: 7 },
@@ -1086,7 +1086,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
                       onClick={() => setSelectedBiomarker(bio.id)}
                       className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-sans font-semibold transition-all ${isSelected
                         ? 'bg-[#A71D31]/15 text-[#A71D31] dark:text-[#D5BF86] ring-1 ring-[#A71D31] font-bold'
-                        : isDark ? 'bg-[#1D070A] text-[#D5BF86] hover:text-white border border-[#D5BF86]/20' : 'bg-[#FAF9EB] text-[#8D775F] hover:text-[#3F0D12] border border-[#D5BF86]'
+                        : isDark ? 'bg-[#050814] text-[#D5BF86] hover:text-white border border-[#D5BF86]/20' : 'bg-[#FAF9EB] text-[#8D775F] hover:text-[#3F0D12] border border-[#D5BF86]'
                         }`}
                     >
                       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: bio.color }}></span>
@@ -1099,7 +1099,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
           </div>
 
           {/* Sub-View Switcher Tabs */}
-          <div className={`mt-2 mb-6 flex flex-wrap items-center gap-1.5 p-1 rounded-xl border text-xs font-sans ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
+          <div className={`mt-2 mb-6 flex flex-wrap items-center gap-1.5 p-1 rounded-xl border text-xs font-sans ${isDark ? 'bg-[#050814] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
             }`}>
             {[
               { id: 'trajectory', label: 'Trajectory Envelope', icon: Activity },
@@ -1118,7 +1118,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg font-semibold transition-all ${isActive
                     ? 'bg-[#A71D31] text-white shadow-xs font-bold'
-                    : isDark ? 'text-[#D5BF86] hover:text-white hover:bg-[#2B0B0E]' : 'text-[#8D775F] hover:text-[#3F0D12] hover:bg-white'
+                    : isDark ? 'text-[#D5BF86] hover:text-white hover:bg-[#0B132B]' : 'text-[#8D775F] hover:text-[#3F0D12] hover:bg-white'
                     }`}
                 >
                   <Icon className="w-3.5 h-3.5" />
@@ -1133,8 +1133,8 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
             <div className="flex flex-col gap-4">
               {/* Baseline Sufficiency & Data-Integrity Status Banner */}
               <div className={`p-4 rounded-xl border flex flex-wrap items-center justify-between gap-4 transition-all ${isBaselineActive
-                ? isDark ? 'bg-[#1D070A] border-[#D5BF86]/40' : 'bg-[#FAF9EB] border-[#D5BF86]'
-                : isDark ? 'bg-[#1D070A] border-[#A71D31]/40' : 'bg-[#FAF9EB] border-[#A71D31]/40'
+                ? isDark ? 'bg-[#050814] border-[#D5BF86]/40' : 'bg-[#FAF9EB] border-[#D5BF86]'
+                : isDark ? 'bg-[#050814] border-[#A71D31]/40' : 'bg-[#FAF9EB] border-[#A71D31]/40'
                 }`}>
                 <div className="flex items-center space-x-3">
                   <div className={`w-3 h-3 rounded-full ${isBaselineActive ? 'bg-[#A71D31] shadow-[0_0_10px_#A71D31]' : 'bg-[#D5BF86] animate-ping'
@@ -1188,7 +1188,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
               </div>
 
               {/* Main SVG Visualization */}
-              <div className={`relative w-full rounded-xl p-4 overflow-x-auto border ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB]/40 border-[#D5BF86]/70'
+              <div className={`relative w-full rounded-xl p-4 overflow-x-auto border ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB]/40 border-[#D5BF86]/70'
                 }`}>
                 <svg
                   viewBox={`0 0 ${chartWidth} ${chartHeight}`}
@@ -1388,7 +1388,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
                                 ? '#D5BF86'
                                 : '#3F0D12'
                           }
-                          stroke={isDark ? '#1D070A' : '#FAF9EB'}
+                          stroke={isDark ? '#050814' : '#FAF9EB'}
                           strokeWidth="1.5"
                           pointerEvents="none"
                           style={{ transition: 'r 120ms ease' }}
@@ -1427,9 +1427,9 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
               {/* Fixed HUD Dock below chart */}
               <div className={`min-h-[72px] rounded-xl p-4 flex flex-wrap items-center justify-between gap-4 border transition-all ${hoveredPoint
                 ? (hoveredPoint.flagged || (hoveredPoint[selectedBiomarker] >= currentBiomarkerMeta.criticalThreshold))
-                  ? isDark ? 'bg-[#1D070A] border-[#A71D31]/40' : 'bg-[#A71D31]/10 border-[#A71D31]/30'
-                  : isDark ? 'bg-[#1D070A] border-[#D5BF86]/40' : 'bg-[#FAF9EB] border-[#D5BF86] shadow-xs'
-                : isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB]/60 border-[#D5BF86]/60'
+                  ? isDark ? 'bg-[#050814] border-[#A71D31]/40' : 'bg-[#A71D31]/10 border-[#A71D31]/30'
+                  : isDark ? 'bg-[#050814] border-[#D5BF86]/40' : 'bg-[#FAF9EB] border-[#D5BF86] shadow-xs'
+                : isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB]/60 border-[#D5BF86]/60'
                 }`}>
                 {hoveredPoint ? (
                   <>
@@ -1497,7 +1497,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
                       <Activity className="w-4 h-4 text-[#A71D31] animate-pulse" />
                       <span>Hover over any daily marker dot to inspect telemetry readings & clinical notes</span>
                     </div>
-                    <span className="text-[11px] px-2.5 py-1 rounded bg-[#FAF9EB] dark:bg-[#1D070A] text-[#3F0D12] dark:text-[#FAF9EB] border border-[#D5BF86]/40">
+                    <span className="text-[11px] px-2.5 py-1 rounded bg-[#FAF9EB] dark:bg-[#050814] text-[#3F0D12] dark:text-[#FAF9EB] border border-[#D5BF86]/40">
                       Click marker to inspect full record
                     </span>
                   </div>
@@ -1505,7 +1505,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
               </div>
 
               {/* Bottom Legend & Calibration Status */}
-              <div className={`p-3 rounded-lg flex flex-wrap items-center justify-between gap-3 text-xs font-sans ${isDark ? 'bg-[#1D070A] border border-[#D5BF86]/20' : 'bg-[#FAF9EB] border border-[#D5BF86]/60'
+              <div className={`p-3 rounded-lg flex flex-wrap items-center justify-between gap-3 text-xs font-sans ${isDark ? 'bg-[#050814] border border-[#D5BF86]/20' : 'bg-[#FAF9EB] border border-[#D5BF86]/60'
                 }`}>
                 <div className="flex items-center gap-4 text-[#8D775F] dark:text-[#D5BF86]">
                   <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#A71D31]"></span> Specific Gravity</span>
@@ -1587,7 +1587,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
           {activeTab === 'scanner' && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mt-2">
               {/* Left 7 cols: Camera Viewfinder / Photo Upload */}
-              <div className={`lg:col-span-7 rounded-xl p-5 border ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB]/50 border-[#D5BF86]/60'
+              <div className={`lg:col-span-7 rounded-xl p-5 border ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB]/50 border-[#D5BF86]/60'
                 }`}>
                 <div className="flex items-center justify-between pb-3 border-b border-inherit text-xs font-sans">
                   <div className="flex items-center gap-2">
@@ -1598,14 +1598,14 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
                     <span className="px-2 py-0.5 rounded bg-[#D5BF86]/20 text-[#3F0D12] dark:text-[#D5BF86] font-semibold border border-[#D5BF86]/40">
                       {ambientLux} Lux (Optimal)
                     </span>
-                    <span className="px-2 py-0.5 rounded bg-[#FAF9EB] dark:bg-[#2B0B0E] text-[#8D775F] dark:text-[#D5BF86] border border-[#D5BF86]/30">
+                    <span className="px-2 py-0.5 rounded bg-[#FAF9EB] dark:bg-[#0B132B] text-[#8D775F] dark:text-[#D5BF86] border border-[#D5BF86]/30">
                       Tilt: {tiltAngleDeg}°
                     </span>
                   </div>
                 </div>
 
                 {/* Real Photo Upload Bar */}
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-lg border bg-[#FAF9EB] dark:bg-[#1D070A] border-[#D5BF86]/40 text-xs">
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-lg border bg-[#FAF9EB] dark:bg-[#050814] border-[#D5BF86]/40 text-xs">
                   <div className="flex items-center gap-2">
                     <Upload className="w-4 h-4 text-[#A71D31]" />
                     <span className="font-semibold text-xs text-[#3F0D12] dark:text-[#FAF9EB]">Upload Real Strip Photo:</span>
@@ -1629,7 +1629,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
                 </div>
 
                 {/* Viewport Simulation / Uploaded Photo Box */}
-                <div className="mt-3 relative w-full h-[320px] rounded-lg overflow-hidden bg-[#1D070A] border border-[#D5BF86]/30 flex items-center justify-center">
+                <div className="mt-3 relative w-full h-[320px] rounded-lg overflow-hidden bg-[#050814] border border-[#D5BF86]/30 flex items-center justify-center">
                   <div className="absolute inset-4 border border-dashed border-[#D5BF86]/50 rounded pointer-events-none flex flex-col justify-between p-2 z-20">
                     <span className="text-[10px] text-[#D5BF86] font-mono">TARGET ALIGNED: CIE L*a*b* STANDARD</span>
                     <span className="text-[10px] text-[#D5BF86] font-mono">
@@ -1709,7 +1709,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
               </div>
 
               {/* Right 5 cols: Value Audit & Confirm */}
-              <div className={`lg:col-span-5 rounded-xl p-5 border ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB]/50 border-[#D5BF86]/60'
+              <div className={`lg:col-span-5 rounded-xl p-5 border ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB]/50 border-[#D5BF86]/60'
                 }`}>
                 <h3 className="font-sans text-sm font-bold uppercase tracking-wider text-[#A71D31] mb-1">
                   Step 2: Mandatory Patient Audit
@@ -1719,7 +1719,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
                 </p>
 
                 <div className="space-y-3 text-xs font-sans">
-                  <div className="flex items-center justify-between p-2.5 rounded bg-white dark:bg-[#1D070A] border border-[#D5BF86]/40">
+                  <div className="flex items-center justify-between p-2.5 rounded bg-white dark:bg-[#050814] border border-[#D5BF86]/40">
                     <span className="font-semibold text-[#3F0D12] dark:text-[#FAF9EB]">Protein (Albumin)</span>
                     <input
                       type="number"
@@ -1729,7 +1729,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between p-2.5 rounded bg-white dark:bg-[#1D070A] border border-[#D5BF86]/40">
+                  <div className="flex items-center justify-between p-2.5 rounded bg-white dark:bg-[#050814] border border-[#D5BF86]/40">
                     <span className="font-semibold text-[#3F0D12] dark:text-[#FAF9EB]">Specific Gravity</span>
                     <input
                       type="number"
@@ -1740,7 +1740,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between p-2.5 rounded bg-white dark:bg-[#1D070A] border border-[#D5BF86]/40">
+                  <div className="flex items-center justify-between p-2.5 rounded bg-white dark:bg-[#050814] border border-[#D5BF86]/40">
                     <span className="font-semibold text-[#3F0D12] dark:text-[#FAF9EB]">Urine pH</span>
                     <input
                       type="number"
@@ -1751,7 +1751,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between p-2.5 rounded bg-white dark:bg-[#1D070A] border border-[#D5BF86]/40">
+                  <div className="flex items-center justify-between p-2.5 rounded bg-white dark:bg-[#050814] border border-[#D5BF86]/40">
                     <span className="font-semibold text-[#3F0D12] dark:text-[#FAF9EB]">Ketones (AcAc)</span>
                     <input
                       type="number"
@@ -1786,7 +1786,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
           {/* VIEW TAB 6: GROUNDED GEMINI AI LAB */}
           {activeTab === 'gemini' && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mt-2">
-              <div className={`lg:col-span-5 rounded-xl p-5 border ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB]/50 border-[#D5BF86]/60'
+              <div className={`lg:col-span-5 rounded-xl p-5 border ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB]/50 border-[#D5BF86]/60'
                 }`}>
                 <h3 className="font-sans text-xs font-bold uppercase tracking-wider text-[#A71D31] mb-3">
                   Clinical Inquiry Presets
@@ -1798,7 +1798,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
                       onClick={() => setSelectedGeminiPrompt(p)}
                       className={`w-full text-left p-3 rounded-lg border text-xs font-sans transition-all cursor-pointer ${selectedGeminiPrompt.id === p.id
                         ? 'bg-[#A71D31]/15 border-[#A71D31] text-[#3F0D12] dark:text-[#FAF9EB] font-semibold'
-                        : isDark ? 'bg-[#1D070A] border-[#D5BF86]/20 text-[#D5BF86] hover:text-white' : 'bg-white border-[#D5BF86]/40 text-[#473228] hover:border-[#D5BF86]'
+                        : isDark ? 'bg-[#050814] border-[#D5BF86]/20 text-[#D5BF86] hover:text-white' : 'bg-white border-[#D5BF86]/40 text-[#473228] hover:border-[#D5BF86]'
                         }`}
                     >
                       <span className="block font-bold mb-0.5">{p.title}</span>
@@ -1808,7 +1808,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
                 </div>
               </div>
 
-              <div className={`lg:col-span-7 rounded-xl p-5 border ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB]/50 border-[#D5BF86]/60'
+              <div className={`lg:col-span-7 rounded-xl p-5 border ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB]/50 border-[#D5BF86]/60'
                 }`}>
                 <div className="flex items-center gap-2 pb-3 border-b border-inherit">
                   <Sparkles className="w-4 h-4 text-[#A71D31]" />
@@ -1818,19 +1818,19 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
                 </div>
 
                 <div className="mt-4 space-y-3 font-sans text-xs">
-                  <div className="p-3 rounded bg-white dark:bg-[#1D070A] border border-[#D5BF86]/40">
+                  <div className="p-3 rounded bg-white dark:bg-[#050814] border border-[#D5BF86]/40">
                     <span className="font-bold text-[#A71D31] block mb-1">1. Confirmed Telemetry Facts:</span>
                     <p className="leading-relaxed text-[#473228] dark:text-[#E8E5BA]">{selectedGeminiPrompt.response.facts}</p>
                   </div>
-                  <div className="p-3 rounded bg-white dark:bg-[#1D070A] border border-[#D5BF86]/40">
+                  <div className="p-3 rounded bg-white dark:bg-[#050814] border border-[#D5BF86]/40">
                     <span className="font-bold text-[#8D775F] dark:text-[#D5BF86] block mb-1">2. Physiological Explanations:</span>
                     <p className="leading-relaxed text-[#473228] dark:text-[#E8E5BA]">{selectedGeminiPrompt.response.context}</p>
                   </div>
-                  <div className="p-3 rounded bg-white dark:bg-[#1D070A] border border-[#D5BF86]/40">
+                  <div className="p-3 rounded bg-white dark:bg-[#050814] border border-[#D5BF86]/40">
                     <span className="font-bold text-[#8D775F] dark:text-[#D5BF86] block mb-1">3. Measurement Boundaries:</span>
                     <p className="leading-relaxed text-[#473228] dark:text-[#E8E5BA]">{selectedGeminiPrompt.response.limitations}</p>
                   </div>
-                  <div className="p-3 rounded bg-white dark:bg-[#1D070A] border border-[#D5BF86]/40">
+                  <div className="p-3 rounded bg-white dark:bg-[#050814] border border-[#D5BF86]/40">
                     <span className="font-bold text-[#3F0D12] dark:text-[#FAF9EB] block mb-1">4. Action & Clinician Guidance:</span>
                     <p className="leading-relaxed text-[#473228] dark:text-[#E8E5BA]">{selectedGeminiPrompt.response.recommendation}</p>
                   </div>
@@ -1841,7 +1841,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
 
           {/* VIEW TAB 7: DOCTOR HANDOVER REPORT */}
           {activeTab === 'clinician' && (
-            <div className={`rounded-xl p-6 border mt-2 ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB]/50 border-[#D5BF86]/60'
+            <div className={`rounded-xl p-6 border mt-2 ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB]/50 border-[#D5BF86]/60'
               }`}>
               <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-inherit">
                 <div>
@@ -1860,19 +1860,19 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
               </div>
 
               <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs font-sans">
-                <div className="p-3 rounded bg-white dark:bg-[#1D070A] border border-[#D5BF86]/40">
+                <div className="p-3 rounded bg-white dark:bg-[#050814] border border-[#D5BF86]/40">
                   <span className="text-[#8D775F] text-[10px] uppercase block">Patient</span>
                   <strong className="text-[#3F0D12] dark:text-[#FAF9EB]">{activePersona.name} ({activePersona.age}y)</strong>
                 </div>
-                <div className="p-3 rounded bg-white dark:bg-[#1D070A] border border-[#D5BF86]/40">
+                <div className="p-3 rounded bg-white dark:bg-[#050814] border border-[#D5BF86]/40">
                   <span className="text-[#8D775F] text-[10px] uppercase block">Logged Sessions</span>
                   <strong className="text-[#3F0D12] dark:text-[#FAF9EB]">{activeHistory.length} Sessions Active</strong>
                 </div>
-                <div className="p-3 rounded bg-white dark:bg-[#1D070A] border border-[#D5BF86]/40">
+                <div className="p-3 rounded bg-white dark:bg-[#050814] border border-[#D5BF86]/40">
                   <span className="text-[#8D775F] text-[10px] uppercase block">Peak Variance</span>
                   <strong className="text-[#A71D31]">Day 22 (32 mg/dL PRO)</strong>
                 </div>
-                <div className="p-3 rounded bg-white dark:bg-[#1D070A] border border-[#D5BF86]/40">
+                <div className="p-3 rounded bg-white dark:bg-[#050814] border border-[#D5BF86]/40">
                   <span className="text-[#8D775F] text-[10px] uppercase block">Audit Status</span>
                   <strong className="text-[#3F0D12] dark:text-[#FAF9EB]">100% Patient Verified</strong>
                 </div>
@@ -1885,7 +1885,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
             5. RECENT STRIP SCANS & OPTICAL TELEMETRY TABLE (STITCH SPEC)
         ========================================================================== */}
         <section className={`rounded-xl p-6 sm:p-7 relative overflow-hidden transition-all border ${isDark
-          ? 'bg-[#2B0B0E] border-[#D5BF86]/20 shadow-[0_4px_24px_rgba(0,0,0,0.5)]'
+          ? 'bg-[#0B132B] border-[#D5BF86]/20 shadow-[0_4px_24px_rgba(0,0,0,0.5)]'
           : 'bg-white border-[#D5BF86]/70 shadow-xs'
           }`}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3">
@@ -1910,7 +1910,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
           <div className="overflow-x-auto w-full mt-3">
             <table className="w-full text-left border-collapse text-xs font-sans">
               <thead>
-                <tr className={`border-b text-[#8D775F] uppercase tracking-wider text-[11px] ${isDark ? 'border-[#D5BF86]/20 bg-[#1D070A]' : 'border-[#D5BF86]/40 bg-[#FAF9EB]'
+                <tr className={`border-b text-[#8D775F] uppercase tracking-wider text-[11px] ${isDark ? 'border-[#D5BF86]/20 bg-[#050814]' : 'border-[#D5BF86]/40 bg-[#FAF9EB]'
                   }`}>
                   <th className="py-3 px-4 rounded-l-lg">Timestamp & Context</th>
                   <th className="py-3 px-4">Spectro Patch</th>
@@ -1922,7 +1922,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
               </thead>
               <tbody className={`divide-y ${isDark ? 'divide-[#D5BF86]/10' : 'divide-[#D5BF86]/20'}`}>
                 {recentScansList.map((scan) => (
-                  <tr key={scan.id} className="hover:bg-[#FAF9EB]/60 dark:hover:bg-[#1D070A]/50 transition-colors">
+                  <tr key={scan.id} className="hover:bg-[#FAF9EB]/60 dark:hover:bg-[#050814]/50 transition-colors">
                     {/* Timestamp & Context */}
                     <td className="py-3.5 px-4">
                       <div className="flex flex-col">
@@ -2001,7 +2001,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
             6. PERSISTENT ACTION & SAFETY GUIDANCE DOCK (STITCH SPEC)
         ========================================================================== */}
         <section className={`rounded-xl p-5 flex flex-col md:flex-row items-center justify-between gap-4 border ${isDark
-          ? 'bg-[#2B0B0E] border-[#D5BF86]/20'
+          ? 'bg-[#0B132B] border-[#D5BF86]/20'
           : 'bg-white border-[#D5BF86]/70 shadow-xs'
           }`}>
           <div className="flex items-center gap-3 text-left">
@@ -2024,7 +2024,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
                 alert("Reminder scheduled for tomorrow at 8:00 AM for your second morning void test strip.");
               }}
               className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors border cursor-pointer ${isDark
-                ? 'bg-[#1D070A] hover:bg-[#3F0D12] text-[#FAF9EB] border-[#D5BF86]/30'
+                ? 'bg-[#050814] hover:bg-[#3F0D12] text-[#FAF9EB] border-[#D5BF86]/30'
                 : 'bg-[#FAF9EB] hover:bg-white text-[#3F0D12] border-[#D5BF86]'
                 }`}
               type="button"
@@ -2062,7 +2062,7 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
       {/* Spectrum Inspection Modal */}
       {inspectedScanModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className={`w-full max-w-lg rounded-2xl p-6 border shadow-2xl ${isDark ? 'bg-[#2B0B0E] border-[#D5BF86]/30 text-[#FAF9EB]' : 'bg-[#FAF9EB] border-[#D5BF86] text-[#3F0D12]'
+          <div className={`w-full max-w-lg rounded-2xl p-6 border shadow-2xl ${isDark ? 'bg-[#0B132B] border-[#D5BF86]/30 text-[#FAF9EB]' : 'bg-[#FAF9EB] border-[#D5BF86] text-[#3F0D12]'
             }`}>
             <div className="flex items-center justify-between pb-3 border-b border-[#D5BF86]/40">
               <div className="flex items-center gap-2">
@@ -2091,12 +2091,12 @@ export default function LiveDemo({ onOpenReportModal, onOpenProfile }) {
                 </div>
               </div>
 
-              <div className="p-3 rounded bg-white dark:bg-[#1D070A] border border-[#D5BF86]/40">
+              <div className="p-3 rounded bg-white dark:bg-[#050814] border border-[#D5BF86]/40">
                 <span className="font-bold block mb-1 text-[#8D775F] uppercase text-[10px]">Wearable Sync:</span>
                 <p className="text-[#473228] dark:text-[#E8E5BA]">{inspectedScanModal.wearable}</p>
               </div>
 
-              <div className="p-3 rounded bg-white dark:bg-[#1D070A] border border-[#D5BF86]/40">
+              <div className="p-3 rounded bg-white dark:bg-[#050814] border border-[#D5BF86]/40">
                 <span className="font-bold block mb-1 text-[#8D775F] uppercase text-[10px]">Analyte Deltas:</span>
                 <div className="flex flex-wrap gap-2">
                   {inspectedScanModal.biomarkers.map((b, i) => (

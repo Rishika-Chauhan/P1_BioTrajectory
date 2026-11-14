@@ -26,6 +26,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { trajectoryStorage } from '../../services/trajectoryStorage';
+import { BluetoothService } from '../../services/bluetoothService';
 
 const AGE_RANGES = [
   { id: '< 18', label: 'Under 18' },
@@ -76,6 +77,18 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('profile');
   const [toastMessage, setToastMessage] = useState(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [urineDeviceEnabled, setUrineDeviceEnabledState] = useState(() => BluetoothService.isUrineDeviceEnabled());
+
+  const handleToggleUrineDevice = () => {
+    const nextVal = !urineDeviceEnabled;
+    setUrineDeviceEnabledState(nextVal);
+    BluetoothService.setUrineDeviceEnabled(nextVal);
+    showToast(
+      nextVal
+        ? 'Urine Device switched ON! Protein, pH, Glucose & Nitrite telemetry are now active on your Dashboard.'
+        : 'Urine Device switched OFF. Urine telemetry is now hidden from your Dashboard.'
+    );
+  };
 
   // Profile Form (Hydrated from healthProfile)
   const [name, setName] = useState(healthProfile?.name || currentUser?.name || 'Pranjal Sharma');
@@ -225,6 +238,7 @@ export default function SettingsPage() {
       <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 text-sm font-semibold overflow-x-auto shadow-xs">
         {[
           { id: 'profile', label: 'Health Profile & Goals', icon: User },
+          { id: 'devices', label: 'Urine Device & Peripherals', icon: Droplet },
           { id: 'security', label: 'Privacy & Consent Preferences', icon: ShieldCheck },
           { id: 'ai', label: 'AI Assistant', icon: Bot },
           { id: 'notifications', label: 'Notifications', icon: Bell },
@@ -484,6 +498,130 @@ export default function SettingsPage() {
             </button>
           </div>
         </form>
+      )}
+
+      {/* =========================================================================
+          TAB: URINE DIAGNOSTIC DEVICE & SENSORS (SETTINGS MODE)
+      ========================================================================== */}
+      {activeTab === 'devices' && (
+        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-xs space-y-7 text-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
+            <div>
+              <div className="flex items-center gap-3">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                  Urine Diagnostic Device Mode
+                </h3>
+                <span className={`text-xs px-3 py-1 rounded-full font-bold border flex items-center gap-1.5 ${
+                  urineDeviceEnabled
+                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+                    : 'bg-slate-500/10 text-slate-500 border-slate-400/30'
+                }`}>
+                  <span className={`w-2 h-2 rounded-full ${urineDeviceEnabled ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                  {urineDeviceEnabled ? 'Device Active on Dashboard' : 'Device Switched OFF'}
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Controls whether your BioTrajectory 10SG Optical Urine Analyzer telemetry is displayed on your main Dashboard.
+              </p>
+            </div>
+
+            {/* Interactive Setting Mode Toggle Switch */}
+            <button
+              type="button"
+              onClick={handleToggleUrineDevice}
+              className={`relative inline-flex h-9 w-18 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#00685f] focus:ring-offset-2 ${
+                urineDeviceEnabled ? 'bg-[#00685f]' : 'bg-slate-300 dark:bg-slate-700'
+              }`}
+              role="switch"
+              aria-checked={urineDeviceEnabled}
+            >
+              <span
+                aria-hidden="true"
+                className={`pointer-events-none inline-block h-8 w-8 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out flex items-center justify-center text-xs font-bold ${
+                  urineDeviceEnabled ? 'translate-x-9 text-[#00685f]' : 'translate-x-0 text-slate-400'
+                }`}
+              >
+                {urineDeviceEnabled ? 'ON' : 'OFF'}
+              </span>
+            </button>
+          </div>
+
+          {/* Biomarkers Streaming Explanation */}
+          <div className="space-y-4">
+            <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">
+              Telemetry Channels Streamed to Dashboard
+            </h4>
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              When switched <strong className="text-emerald-600 dark:text-emerald-400 font-semibold">ON</strong>, the following 4 clinical biomarker readings are calculated and rendered on your main Dashboard:
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-800 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-900 dark:text-white">1. Protein (Albumin)</span>
+                  <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-500 font-bold">mg/dL</span>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                  Monitors glomerular barrier permeability and renal filtration integrity to detect microalbumin variation early.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-800 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-900 dark:text-white">2. pH Level</span>
+                  <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 font-bold">pH 6.0 – 7.0</span>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                  Reflects systemic acid-base equilibrium, dietary electrolyte influence, and metabolic buffering.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-800 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-900 dark:text-white">3. Glucose Level</span>
+                  <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-500 font-bold">mg/dL</span>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                  Detects renal glycemic spillage occurring when serum glucose exceeds the biological tubular reabsorption threshold (~180 mg/dL).
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-800 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-900 dark:text-white">4. Nitrite Level</span>
+                  <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-purple-500/10 text-purple-500 font-bold">Indicator</span>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                  Identifies bacterial nitrate-to-nitrite reduction activity, providing early urinary tract microbiome surveillance.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Hardware Connection Card */}
+          <div className="p-5 rounded-2xl bg-cyan-500/5 dark:bg-cyan-500/10 border border-cyan-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-cyan-500/20 text-cyan-500 dark:text-cyan-400 flex items-center justify-center shrink-0">
+                <Droplet className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="font-bold text-slate-900 dark:text-white">BioTrajectory Smart Optical 10SG Spectrophotometer</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">BLE GATT Stream • 10-Channel Reflectance Sensor • Battery 96%</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleToggleUrineDevice}
+              className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs ${
+                urineDeviceEnabled
+                  ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 hover:bg-rose-500/25'
+                  : 'bg-[#00685f] text-white hover:bg-[#00524b]'
+              }`}
+            >
+              {urineDeviceEnabled ? 'Turn Device OFF' : 'Turn Device ON'}
+            </button>
+          </div>
+        </div>
       )}
 
       {/* =========================================================================

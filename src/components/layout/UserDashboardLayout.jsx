@@ -15,8 +15,8 @@ import {
   Menu,
   X,
   Bell,
-  Activity,
-  Compass
+  Compass,
+  Bluetooth
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../common/ThemeToggle';
@@ -34,6 +34,7 @@ export default function UserDashboardLayout() {
   const navItems = [
     { label: 'Home', path: '/dashboard', icon: LayoutDashboard },
     { label: 'My Day', path: '/dashboard/reports', icon: FileSpreadsheet },
+    { label: 'Connected Devices', path: '/dashboard/devices', icon: Bluetooth },
     { label: 'My Health', path: '/dashboard/analytics', icon: LineChart },
     { label: 'My Records', path: '/dashboard/history', icon: FolderHeart },
     { label: 'Explore', path: '/explore', icon: Compass },
@@ -170,7 +171,16 @@ export default function UserDashboardLayout() {
           </div>
 
           {/* Right Header Actions */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <Link
+              to="/dashboard/devices"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-xs font-bold text-cyan-700 dark:text-cyan-300 transition-all cursor-pointer shadow-xs active:scale-95"
+              title="Bluetooth Connected Health Devices"
+            >
+              <Bluetooth className="w-3.5 h-3.5 text-cyan-500 animate-pulse" />
+              <span className="hidden sm:inline">Bluetooth Devices</span>
+            </Link>
+
             <ThemeToggle />
 
             {/* Notifications Popover */}

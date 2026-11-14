@@ -8,8 +8,8 @@ import {
   Eye,
   EyeOff,
   ShieldCheck,
-  CheckCircle2,
-  AlertTriangle
+  AlertTriangle,
+  Undo2
 } from 'lucide-react';
 import { useDoctorAuth } from '../../context/DoctorAuthContext';
 
@@ -35,7 +35,7 @@ export default function DoctorLoginPage() {
       } else {
         setError('Invalid medical credentials. Please check your email and password.');
       }
-    } catch (err) {
+    } catch {
       setError('Login failed. Please try again.');
     } finally {
       setLoading(false);
@@ -43,18 +43,44 @@ export default function DoctorLoginPage() {
   };
 
   const handleDemoVerifiedLogin = async () => {
-    await loginDoctor('dr.thorne@biotrajectory.health', 'verifiedDoctorPass123');
+    await loginDoctor('doctor@biotrajectory.health', 'doctor123');
     navigate('/doctor/dashboard');
   };
 
   const handleDemoPendingLogin = async () => {
-    await loginDoctor('dr.pending@biotrajectory.health', 'pendingDoctorPass123');
-    navigate('/doctor/dashboard');
+    await loginDoctor('doctor.pending@biotrajectory.health', 'doctor123');
+    navigate('/doctor/pending');
   };
 
   return (
-    <div className="w-full max-w-xl mx-auto px-4 py-16 space-y-8">
+    <div className="w-full max-w-xl mx-auto px-4 py-12 space-y-6">
       
+      {/* Navigation & Undo Bar */}
+      <div className="flex items-center justify-between px-1">
+        <button
+          type="button"
+          onClick={() => {
+            if (window.history.length > 1) {
+              navigate(-1);
+            } else {
+              navigate('/');
+            }
+          }}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl glass-card text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400 hover:border-cyan-500/40 transition-all cursor-pointer shadow-xs active:scale-95 group"
+          title="Undo and return to previous page"
+        >
+          <Undo2 className="w-4 h-4 text-cyan-600 dark:text-cyan-400 group-hover:-rotate-45 transition-transform" />
+          <span>Back to Previous Page</span>
+        </button>
+
+        <Link
+          to="/"
+          className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+        >
+          Home
+        </Link>
+      </div>
+
       {/* Brand Header */}
       <div className="text-center space-y-3">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-gradient-to-tr from-cyan-500 to-blue-600 shadow-xl shadow-cyan-500/20 text-white mb-2">
@@ -162,6 +188,9 @@ export default function DoctorLoginPage() {
               <span>Login as Pending MD</span>
             </button>
           </div>
+          <p className="text-center text-xs text-slate-500 dark:text-slate-400 font-mono">
+            Verified: doctor@biotrajectory.health • Password: doctor123
+          </p>
         </div>
 
         {/* Registration Link */}

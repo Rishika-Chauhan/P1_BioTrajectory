@@ -163,7 +163,7 @@ export default function AttractiveLineChart({
 
         {/* Display Mode Selector */}
         <div className="flex flex-wrap items-center gap-2">
-          <div className={`inline-flex p-1 rounded-lg border text-xs font-sans ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
+          <div className={`inline-flex p-1 rounded-lg border text-xs font-sans ${isDark ? 'bg-[#050814] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
             }`}>
             <button
               onClick={() => setDisplayMode('overlay')}
@@ -196,7 +196,7 @@ export default function AttractiveLineChart({
 
           {/* Time range switcher */}
           {setTimeRange && (
-            <div className={`inline-flex p-1 rounded-xl border text-xs font-mono-code ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
+            <div className={`inline-flex p-1 rounded-xl border text-xs font-mono-code ${isDark ? 'bg-[#050814] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
               }`}>
               {[7, 14, 30].map((r) => (
                 <button
@@ -226,7 +226,7 @@ export default function AttractiveLineChart({
               onClick={() => onSelectBiomarker && onSelectBiomarker(bio.id)}
               className={`px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${selectedBiomarker === bio.id
                 ? 'bg-[#A71D31]/15 text-[#A71D31] border-[#A71D31] font-bold'
-                : isDark ? 'bg-[#1D070A] text-[#D5BF86] border-[#D5BF86]/20 hover:text-white' : 'bg-[#FAF9EB] text-[#8D775F] border-[#D5BF86] hover:text-[#3F0D12]'
+                : isDark ? 'bg-[#050814] text-[#D5BF86] border-[#D5BF86]/20 hover:text-white' : 'bg-[#FAF9EB] text-[#8D775F] border-[#D5BF86] hover:text-[#3F0D12]'
                 }`}
             >
               {bio.shortName} ({bio.name})
@@ -246,7 +246,7 @@ export default function AttractiveLineChart({
               onClick={() => onSelectBleMetric && onSelectBleMetric(key)}
               className={`px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${selectedBleMetric === key
                 ? 'bg-[#D5BF86]/30 text-[#3F0D12] dark:text-[#FAF9EB] border-[#D5BF86] font-bold'
-                : isDark ? 'bg-[#1D070A] text-[#D5BF86] border-[#D5BF86]/20 hover:text-white' : 'bg-[#FAF9EB] text-[#8D775F] border-[#D5BF86] hover:text-[#3F0D12]'
+                : isDark ? 'bg-[#050814] text-[#D5BF86] border-[#D5BF86]/20 hover:text-white' : 'bg-[#FAF9EB] text-[#8D775F] border-[#D5BF86] hover:text-[#3F0D12]'
                 }`}
             >
               {cfg.shortLabel}
@@ -511,7 +511,7 @@ export default function AttractiveLineChart({
 
       {/* Bottom Cross-Modal Analytics Bar */}
       <div className="mt-6 pt-4 border-t border-[#D5BF86]/30 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-mono-code">
-        <div className={`p-3 rounded-xl border ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'}`}>
+        <div className={`p-3 rounded-xl border ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'}`}>
           <span className="block text-[10px] uppercase text-[#8D775F]">Cross-Stream Correlation</span>
           <strong className="text-sm text-[#A71D31] mt-0.5 block">
             r = {correlation} ({correlation > 0.7 ? 'Strong Concordance' : 'Independent'})
@@ -519,7 +519,7 @@ export default function AttractiveLineChart({
           <span className="text-[10px] text-[#8D775F] dark:text-[#D5BF86]">Pearson Coefficient</span>
         </div>
 
-        <div className={`p-3 rounded-xl border ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'}`}>
+        <div className={`p-3 rounded-xl border ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'}`}>
           <span className="block text-[10px] uppercase text-[#8D775F]">Biomarker 10-Day Median</span>
           <strong className="text-sm text-[#3F0D12] dark:text-[#FAF9EB] mt-0.5 block">
             {bioMeta.baselineMean} {bioMeta.unit}
@@ -527,7 +527,7 @@ export default function AttractiveLineChart({
           <span className="text-[10px] text-[#8D775F] dark:text-[#D5BF86]">Rolling IQR Median</span>
         </div>
 
-        <div className={`p-3 rounded-xl border ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'}`}>
+        <div className={`p-3 rounded-xl border ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'}`}>
           <span className="block text-[10px] uppercase text-[#8D775F]">Connected Sensor Average</span>
           <strong className="text-sm mt-0.5 block" style={{ color: bleMeta.color }}>
             {(bleVals.reduce((a, b) => a + b, 0) / bleVals.length).toFixed(1)} {bleMeta.unit}
@@ -535,7 +535,7 @@ export default function AttractiveLineChart({
           <span className="text-[10px] text-[#8D775F] dark:text-[#D5BF86]">Mean BLE Sensor Value</span>
         </div>
 
-        <div className={`p-3 rounded-xl border ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'}`}>
+        <div className={`p-3 rounded-xl border ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'}`}>
           <span className="block text-[10px] uppercase text-[#8D775F]">Clinical Concordance Status</span>
           <strong className="text-sm text-[#A71D31] mt-0.5 block">
             Homeostasis Concordant

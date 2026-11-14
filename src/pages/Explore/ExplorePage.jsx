@@ -3,21 +3,11 @@ import { Link } from 'react-router-dom';
 import {
   Search,
   ArrowRight,
-  Heart,
-  Droplets,
-  Activity,
-  ShieldCheck,
   Info,
-  Sparkles,
   BookOpen,
-  Filter,
-  Globe,
   Database,
-  Calendar,
   AlertTriangle,
-  FileText,
-  Thermometer,
-  Stethoscope
+  LogIn
 } from 'lucide-react';
 import {
   DISEASES_DATABASE,
@@ -25,6 +15,7 @@ import {
   SUB_CATEGORIES
 } from '../../data/diseasesData';
 import { DatasetService, OFFICIAL_SOURCES } from '../../services/datasetService';
+import { getDiseaseImages } from '../../data/diseaseImages';
 
 export default function ExplorePage() {
   const [activeTab, setActiveTab] = useState('library'); // 'library' or 'datasets'
@@ -38,11 +29,12 @@ export default function ExplorePage() {
   const [selectedYear, setSelectedYear] = useState('All');
   const [selectedMetric, setSelectedMetric] = useState('All');
   const [datasetsList, setDatasetsList] = useState([]);
-  const [isLoadingDatasets, setIsLoadingDatasets] = useState(false);
+  const [_isLoadingDatasets, setIsLoadingDatasets] = useState(false);
+  const isMountedRef = React.useRef(true);
 
   // Load datasets when dataset tab is active or filters change
   useEffect(() => {
-    let isMounted = true;
+    isMountedRef.current = true;
     async function fetchDatasets() {
       setIsLoadingDatasets(true);
       try {
@@ -51,15 +43,15 @@ export default function ExplorePage() {
           year: selectedYear,
           metricType: selectedMetric
         });
-        if (isMounted) setDatasetsList(results);
+        if (isMountedRef.current) setDatasetsList(results);
       } catch (err) {
         console.error('Failed to load datasets:', err);
       } finally {
-        if (isMounted) setIsLoadingDatasets(false);
+        if (isMountedRef.current) setIsLoadingDatasets(false);
       }
     }
     fetchDatasets();
-    return () => { isMounted = false; };
+    return () => { isMountedRef.current = false; };
   }, [datasetSearch, selectedCountry, selectedYear, selectedMetric]);
 
   // Filter diseases in library
@@ -88,13 +80,24 @@ export default function ExplorePage() {
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
       
-      {/* Header Banner */}
-      <div className="space-y-4 max-w-3xl">
+      {/* Top Navigation Bar: Back to Login */}
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800/80">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[14px] font-bold bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-500/25 shadow-xs">
           <BookOpen className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
           <span>Public Health Library & Official Datasets</span>
         </div>
 
+        <Link
+          to="/login"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-[14px] font-bold text-cyan-700 dark:text-cyan-300 transition-all cursor-pointer shadow-xs active:scale-95"
+        >
+          <LogIn className="w-4 h-4" />
+          <span>Back to Login</span>
+        </Link>
+      </div>
+
+      {/* Header Banner */}
+      <div className="space-y-4 max-w-3xl">
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
           Understand Your Health
         </h1>
@@ -238,40 +241,59 @@ export default function ExplorePage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredDiseases.map(disease => (
-                  <Link
-                    key={disease.id}
-                    to={`/explore/${disease.id}`}
-                    className="glass-card glass-card-hover group p-6 sm:p-7 rounded-3xl flex flex-col justify-between space-y-5 transition-all"
-                  >
-                    <div className="space-y-3.5">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-bold px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-500/20">
-                          {disease.categoryGroup}
+                {filteredDiseases.map(disease => {
+                  const diseaseImg = getDiseaseImages(disease.id);
+                  return (
+                    <Link
+                      key={disease.id}
+                      to={`/explore/${disease.id}`}
+                      className="glass-card glass-card-hover group rounded-3xl flex flex-col justify-between overflow-hidden transition-all border border-slate-200/80 dark:border-slate-800 hover:border-cyan-500/40 shadow-sm"
+                    >
+                      {/* Clinical Thumbnail Image */}
+                      <div className="relative w-full h-48 overflow-hidden bg-slate-100 dark:bg-slate-800">
+                        <img
+                          src={diseaseImg.primaryImage}
+                          alt={disease.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
+                        <span className="absolute bottom-3 left-3 text-[11px] font-bold text-white bg-slate-900/70 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/20">
+                          {diseaseImg.badge || disease.categoryGroup}
                         </span>
-
-                        {disease.isSymptomSign && (
-                          <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30">
-                            Sign / Symptom
-                          </span>
-                        )}
                       </div>
 
-                      <h3 className="text-2xl font-bold text-slate-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
-                        {disease.name}
-                      </h3>
+                      <div className="p-6 space-y-4 flex-1 flex flex-col justify-between">
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-bold px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-500/20">
+                              {disease.categoryGroup}
+                            </span>
 
-                      <p className="text-[15px] text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-3">
-                        {disease.shortDescription}
-                      </p>
-                    </div>
+                            {disease.isSymptomSign && (
+                              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30">
+                                Sign / Symptom
+                              </span>
+                            )}
+                          </div>
 
-                    <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[15px] font-bold text-cyan-600 dark:text-cyan-400 group-hover:translate-x-1 transition-transform">
-                      <span>Read Simple Guide</span>
-                      <ArrowRight className="w-5 h-5" />
-                    </div>
-                  </Link>
-                ))}
+                          <h3 className="text-2xl font-bold text-slate-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
+                            {disease.name}
+                          </h3>
+
+                          <p className="text-[15px] text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2">
+                            {disease.shortDescription}
+                          </p>
+                        </div>
+
+                        <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[15px] font-bold text-cyan-600 dark:text-cyan-400 group-hover:translate-x-1 transition-transform">
+                          <span>Read Simple Guide & Photos</span>
+                          <ArrowRight className="w-5 h-5" />
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </div>

@@ -22,7 +22,7 @@ export default function ConsentModal({ isOpen, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/80 backdrop-blur-md animate-fadeIn">
-      <div className={`relative w-full max-w-lg border rounded-3xl shadow-2xl overflow-hidden p-6 sm:p-8 space-y-6 ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30 text-[#FAF9EB]' : 'bg-[#FAF9EB] border-[#D5BF86] text-[#3F0D12]'
+      <div className={`relative w-full max-w-lg border rounded-3xl shadow-2xl overflow-hidden p-6 sm:p-8 space-y-6 ${isDark ? 'bg-[#050814] border-[#D5BF86]/30 text-[#FAF9EB]' : 'bg-[#FAF9EB] border-[#D5BF86] text-[#3F0D12]'
         }`}>
 
         {/* Header */}

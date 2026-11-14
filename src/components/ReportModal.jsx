@@ -49,7 +49,7 @@ export default function ReportModal({ isOpen, onClose }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/80 backdrop-blur-md animate-fadeIn">
 
       {/* Modal Container */}
-      <div className={`relative w-full max-w-4xl border rounded-3xl shadow-2xl overflow-hidden my-8 ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
+      <div className={`relative w-full max-w-4xl border rounded-3xl shadow-2xl overflow-hidden my-8 ${isDark ? 'bg-[#050814] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
         }`}>
 
         {/* Top Control Bar (Non-Printable) */}
@@ -69,7 +69,7 @@ export default function ReportModal({ isOpen, onClose }) {
                   onClick={() => setSelectedPersonaId(p.id)}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-mono transition-all ${selectedPersonaId === p.id
                     ? 'bg-[#A71D31] text-white font-bold shadow-xs'
-                    : isDark ? 'bg-[#1D070A] text-[#D5BF86] border border-[#D5BF86]/30 hover:text-white' : 'bg-[#FAF9EB] text-[#3F0D12] border border-[#D5BF86] hover:bg-[#D5BF86]/20'
+                    : isDark ? 'bg-[#050814] text-[#D5BF86] border border-[#D5BF86]/30 hover:text-white' : 'bg-[#FAF9EB] text-[#3F0D12] border border-[#D5BF86] hover:bg-[#D5BF86]/20'
                     }`}
                 >
                   {p.name.split(' ')[0]}
@@ -125,7 +125,7 @@ export default function ReportModal({ isOpen, onClose }) {
           </div>
 
           {/* Patient Specs Grid */}
-          <div className={`grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl border mb-6 font-mono text-[11px] ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-white border-[#D5BF86]'
+          <div className={`grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl border mb-6 font-mono text-[11px] ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-white border-[#D5BF86]'
             }`}>
             <div>
               <span className="block text-[9px] uppercase text-[#8D775F]">Subject</span>
@@ -151,7 +151,7 @@ export default function ReportModal({ isOpen, onClose }) {
               Longitudinal Parameter Sparklines (30-Day Trend Slopes)
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className={`p-3 rounded-xl border flex items-center justify-between ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-white border-[#D5BF86]'
+              <div className={`p-3 rounded-xl border flex items-center justify-between ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-white border-[#D5BF86]'
                 }`}>
                 <div>
                   <span className="block text-[10px] font-mono uppercase text-[#8D775F]">Protein (PRO)</span>
@@ -160,7 +160,7 @@ export default function ReportModal({ isOpen, onClose }) {
                 {renderSparkline('protein', '#A71D31')}
               </div>
 
-              <div className={`p-3 rounded-xl border flex items-center justify-between ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-white border-[#D5BF86]'
+              <div className={`p-3 rounded-xl border flex items-center justify-between ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-white border-[#D5BF86]'
                 }`}>
                 <div>
                   <span className="block text-[10px] font-mono uppercase text-[#8D775F]">Specific Gravity (SG)</span>
@@ -169,7 +169,7 @@ export default function ReportModal({ isOpen, onClose }) {
                 {renderSparkline('specificGravity', '#8D775F')}
               </div>
 
-              <div className={`p-3 rounded-xl border flex items-center justify-between ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-white border-[#D5BF86]'
+              <div className={`p-3 rounded-xl border flex items-center justify-between ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-white border-[#D5BF86]'
                 }`}>
                 <div>
                   <span className="block text-[10px] font-mono uppercase text-[#8D775F]">pH Level</span>
@@ -240,7 +240,7 @@ export default function ReportModal({ isOpen, onClose }) {
           </div>
 
           {/* Clinician Discussion Questions */}
-          <div className={`p-4 rounded-xl border mb-6 ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-white border-[#D5BF86]'
+          <div className={`p-4 rounded-xl border mb-6 ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-white border-[#D5BF86]'
             }`}>
             <h4 className="text-xs font-mono uppercase tracking-wider font-bold mb-2 text-[#A71D31]">
               3. Suggested Discussion Questions for Physician Consultation:
@@ -252,7 +252,7 @@ export default function ReportModal({ isOpen, onClose }) {
           </div>
 
           {/* Non-Diagnostic Clinical Boundary Disclaimer */}
-          <div className={`p-4 rounded-xl border text-[10px] leading-relaxed mb-6 ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20 text-[#8D775F]' : 'bg-white border-[#D5BF86] text-[#8D775F]'
+          <div className={`p-4 rounded-xl border text-[10px] leading-relaxed mb-6 ${isDark ? 'bg-[#050814] border-[#D5BF86]/20 text-[#8D775F]' : 'bg-white border-[#D5BF86] text-[#8D775F]'
             }`}>
             <strong className="block mb-1 text-[#A71D31] font-bold">
               CLINICAL SCOPE & REGULATORY BOUNDARY NOTICE:

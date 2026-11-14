@@ -1,40 +1,31 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import {
   Heart,
   Activity,
   ShieldCheck,
-  Zap,
-  TrendingDown,
   Sparkles,
-  Calendar,
-  Layers,
-  Dna
+  Calendar
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function MedicalSphere3D() {
   const containerRef = useRef(null);
   const { isDark } = useTheme();
-  const [webGlSupported, setWebGlSupported] = useState(true);
+  const [webGlSupported] = useState(() => {
+    try {
+      const canvas = document.createElement('canvas');
+      return !!(canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
+    } catch {
+      return false;
+    }
+  });
   const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
+    if (!webGlSupported) return;
     const container = containerRef.current;
     if (!container) return;
-
-    // Check WebGL availability
-    try {
-      const canvas = document.createElement('canvas');
-      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-      if (!gl) {
-        setWebGlSupported(false);
-        return;
-      }
-    } catch (e) {
-      setWebGlSupported(false);
-      return;
-    }
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -69,114 +60,22 @@ export default function MedicalSphere3D() {
     const secondaryHex = isDark ? 0x5479ff : 0x8b5cf6;
     const accentHex = isDark ? 0x14b8a6 : 0x6366f1;
 
-    // 1. Central Holographic Biological Core (Inner pulsating wireframe shell)
-    const coreGeo = new THREE.SphereGeometry(1.25, 24, 24);
-    const coreMat = new THREE.MeshBasicMaterial({
-      color: primaryHex,
-      wireframe: true,
+    // Concentric Expanding Heartbeat Energy Pulses (Holographic White Shockwave Rings)
+    const pulseGeo = new THREE.RingGeometry(1.6, 1.66, 64);
+    const pulseMat1 = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
       transparent: true,
-      opacity: isDark ? 0.28 : 0.35
+      opacity: 0,
+      side: THREE.DoubleSide
     });
-    const coreSphere = new THREE.Mesh(coreGeo, coreMat);
-    rootGroup.add(coreSphere);
-
-    // 2. Middle Anatomical Geodesic Lattice (Icosahedron)
-    const latticeGeo = new THREE.IcosahedronGeometry(2.05, 2);
-    const latticeMat = new THREE.MeshBasicMaterial({
-      color: secondaryHex,
-      wireframe: true,
+    const pulseMat2 = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
       transparent: true,
-      opacity: isDark ? 0.32 : 0.4
+      opacity: 0,
+      side: THREE.DoubleSide
     });
-    const latticeMesh = new THREE.Mesh(latticeGeo, latticeMat);
-    rootGroup.add(latticeMesh);
-
-    // 3. Dense Biomarker Data Nodes (Points on icosahedral vertices)
-    const nodesGeo = new THREE.IcosahedronGeometry(2.28, 3);
-    const nodesMat = new THREE.PointsMaterial({
-      color: primaryHex,
-      size: isDark ? 0.06 : 0.075,
-      transparent: true,
-      opacity: isDark ? 0.85 : 0.95
-    });
-    const nodesMesh = new THREE.Points(nodesGeo, nodesMat);
-    rootGroup.add(nodesMesh);
-
-    // 4. Dynamic Synaptic / Neural Biometric Connecting Lines
-    const nodePos = nodesGeo.attributes.position;
-    const lineIndices = [];
-    const nodeCount = nodePos.count;
-    // Create connection pairs between proximate node vertices
-    for (let i = 0; i < nodeCount; i += 3) {
-      for (let j = i + 1; j < Math.min(i + 7, nodeCount); j++) {
-        const v1 = new THREE.Vector3(nodePos.getX(i), nodePos.getY(i), nodePos.getZ(i));
-        const v2 = new THREE.Vector3(nodePos.getX(j), nodePos.getY(j), nodePos.getZ(j));
-        if (v1.distanceTo(v2) < 1.45) {
-          lineIndices.push(v1.x, v1.y, v1.z, v2.x, v2.y, v2.z);
-        }
-      }
-    }
-    const linesGeo = new THREE.BufferGeometry();
-    linesGeo.setAttribute('position', new THREE.Float32BufferAttribute(lineIndices, 3));
-    const linesMat = new THREE.LineBasicMaterial({
-      color: primaryHex,
-      transparent: true,
-      opacity: isDark ? 0.28 : 0.35,
-      linewidth: 1
-    });
-    const connectingLines = new THREE.LineSegments(linesGeo, linesMat);
-    rootGroup.add(connectingLines);
-
-    // 5. Multiple Concentric Rotating Orbital Rings
-    const createRing = (radiusX, radiusY, tiltX, tiltY, colorHex, opacityVal) => {
-      const curve = new THREE.EllipseCurve(0, 0, radiusX, radiusY, 0, 2 * Math.PI, false, 0);
-      const points = curve.getPoints(140);
-      const ringGeo = new THREE.BufferGeometry().setFromPoints(points.map(p => new THREE.Vector3(p.x, p.y, 0)));
-      const ringMat = new THREE.LineBasicMaterial({
-        color: colorHex,
-        transparent: true,
-        opacity: opacityVal,
-        linewidth: 1.5
-      });
-      const ring = new THREE.Line(ringGeo, ringMat);
-      ring.rotation.x = tiltX;
-      ring.rotation.y = tiltY;
-      return ring;
-    };
-
-    const ring1 = createRing(3.1, 2.9, Math.PI / 3, Math.PI / 6, primaryHex, isDark ? 0.55 : 0.65);
-    const ring2 = createRing(3.55, 3.2, -Math.PI / 3.8, Math.PI / 4, secondaryHex, isDark ? 0.45 : 0.55);
-    const ring3 = createRing(2.65, 2.5, Math.PI / 2.2, -Math.PI / 5, accentHex, isDark ? 0.4 : 0.5);
-    const ring4 = createRing(3.9, 3.7, Math.PI / 4.5, -Math.PI / 3.2, isDark ? 0x00d9ff : 0xa855f7, isDark ? 0.35 : 0.45);
-    rootGroup.add(ring1);
-    rootGroup.add(ring2);
-    rootGroup.add(ring3);
-    rootGroup.add(ring4);
-
-    // 6. Orbiting Biomarker Data Node Beads with Pulse Glow
-    const beadGeo = new THREE.SphereGeometry(0.085, 12, 12);
-    const bead1 = new THREE.Mesh(beadGeo, new THREE.MeshBasicMaterial({ color: primaryHex }));
-    const bead2 = new THREE.Mesh(beadGeo, new THREE.MeshBasicMaterial({ color: secondaryHex }));
-    const bead3 = new THREE.Mesh(beadGeo, new THREE.MeshBasicMaterial({ color: accentHex }));
-    ring1.add(bead1);
-    ring2.add(bead2);
-    ring3.add(bead3);
-
-    // 7. Subtle Expanding Heartbeat Energy Pulses (Holographic Shockwave Rings)
-    const createPulseRing = () => {
-      const ringGeo = new THREE.RingGeometry(1.2, 1.25, 48);
-      const ringMat = new THREE.MeshBasicMaterial({
-        color: primaryHex,
-        transparent: true,
-        opacity: 0,
-        side: THREE.DoubleSide
-      });
-      const mesh = new THREE.Mesh(ringGeo, ringMat);
-      mesh.rotation.x = Math.PI / 2.5;
-      return mesh;
-    };
-    const pulseRing1 = createPulseRing();
-    const pulseRing2 = createPulseRing();
+    const pulseRing1 = new THREE.Mesh(pulseGeo, pulseMat1);
+    const pulseRing2 = new THREE.Mesh(pulseGeo, pulseMat2);
     rootGroup.add(pulseRing1);
     rootGroup.add(pulseRing2);
 
@@ -234,23 +133,20 @@ export default function MedicalSphere3D() {
     }
 
     // Mouse movement interaction & parallax
-    let mouseX = 0;
-    let mouseY = 0;
-    let targetX = 0;
-    let targetY = 0;
+    const mousePos = { currentX: 0, currentY: 0, targetX: 0, targetY: 0 };
 
     const handleMouseMove = (e) => {
       const rect = container.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       const y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
-      mouseX = x * 0.45;
-      mouseY = y * 0.45;
+      mousePos.currentX = x * 0.45;
+      mousePos.currentY = y * 0.45;
       setMouseOffset({ x: x * 15, y: y * 15 });
     };
 
     const handleMouseLeave = () => {
-      mouseX = 0;
-      mouseY = 0;
+      mousePos.currentX = 0;
+      mousePos.currentY = 0;
       setMouseOffset({ x: 0, y: 0 });
     };
 
@@ -272,58 +168,34 @@ export default function MedicalSphere3D() {
 
     // Animation Loop
     let animationFrameId;
-    const clock = new THREE.Clock();
+    const startTime = performance.now();
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
 
-      const time = clock.getElapsedTime();
+      const time = (performance.now() - startTime) * 0.001;
       const delta = prefersReducedMotion ? 0.005 : time;
 
       // Smooth mouse interpolation
-      targetX += (mouseX - targetX) * 0.04;
-      targetY += (mouseY - targetY) * 0.04;
+      mousePos.targetX += (mousePos.currentX - mousePos.targetX) * 0.04;
+      mousePos.targetY += (mousePos.currentY - mousePos.targetY) * 0.04;
 
-      rootGroup.rotation.y = delta * 0.18 + targetX;
-      rootGroup.rotation.x = Math.sin(delta * 0.25) * 0.12 + targetY;
+      rootGroup.rotation.y = delta * 0.18 + mousePos.targetX;
+      rootGroup.rotation.x = Math.sin(delta * 0.25) * 0.12 + mousePos.targetY;
 
       // Orbiting light follows dynamic trajectory
       orbitingLight.position.x = Math.sin(delta * 0.8) * 4.5;
       orbitingLight.position.y = Math.cos(delta * 0.6) * 3.5;
       orbitingLight.position.z = Math.sin(delta * 0.5) * 4.0;
 
-      // Rotate concentric rings in counter-orbits
-      ring1.rotation.z = delta * 0.25;
-      ring2.rotation.z = -delta * 0.22;
-      ring3.rotation.z = delta * 0.15;
-      ring4.rotation.z = -delta * 0.18;
-
-      // Move beads along orbital path
-      bead1.position.x = Math.cos(delta * 1.5) * 3.1;
-      bead1.position.y = Math.sin(delta * 1.5) * 2.9;
-
-      bead2.position.x = Math.cos(-delta * 1.2) * 3.55;
-      bead2.position.y = Math.sin(-delta * 1.2) * 3.2;
-
-      bead3.position.x = Math.sin(delta * 1.1) * 2.65;
-      bead3.position.y = Math.cos(delta * 1.1) * 2.5;
-
       // Heartbeat pulse waves
       const pulse1 = (time * 0.55) % 1.0;
-      pulseRing1.scale.setScalar(1.0 + pulse1 * 2.6);
-      pulseRing1.material.opacity = Math.max(0, (1 - pulse1) * 0.45);
+      pulseRing1.scale.setScalar(1.0 + pulse1 * 2.2);
+      pulseMat1.opacity = Math.max(0, (1 - pulse1) * (isDark ? 0.35 : 0.22));
 
       const pulse2 = ((time * 0.55) + 0.5) % 1.0;
-      pulseRing2.scale.setScalar(1.0 + pulse2 * 2.6);
-      pulseRing2.material.opacity = Math.max(0, (1 - pulse2) * 0.45);
-
-      // Subtle biological breath pulse in core sphere
-      const breath = Math.sin(delta * 2.0) * 0.04;
-      coreSphere.scale.setScalar(1.0 + breath);
-      coreSphere.rotation.y = -delta * 0.15;
-
-      // Neural lines pulsing opacity
-      linesMat.opacity = (isDark ? 0.22 : 0.3) + Math.sin(delta * 3.0) * 0.12;
+      pulseRing2.scale.setScalar(1.0 + pulse2 * 2.2);
+      pulseMat2.opacity = Math.max(0, (1 - pulse2) * (isDark ? 0.35 : 0.22));
 
       particleCloud.rotation.y = delta * 0.08;
 
@@ -342,20 +214,15 @@ export default function MedicalSphere3D() {
       if (container && renderer.domElement && container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
-      coreGeo.dispose();
-      coreMat.dispose();
-      latticeGeo.dispose();
-      latticeMat.dispose();
-      nodesGeo.dispose();
-      nodesMat.dispose();
-      linesGeo.dispose();
-      linesMat.dispose();
+      pulseGeo.dispose();
+      pulseMat1.dispose();
+      pulseMat2.dispose();
       particlesGeo.dispose();
       particlesMat.dispose();
       renderer.dispose();
       scene.clear();
     };
-  }, [isDark]);
+  }, [isDark, webGlSupported]);
 
   return (
     <div className="relative w-full h-[500px] md:h-[600px] flex items-center justify-center select-none overflow-visible">
@@ -375,6 +242,45 @@ export default function MedicalSphere3D() {
           </div>
         </div>
       )}
+
+      {/* FIXED WHITE CIRCLES AROUND LOGO (Non-rotating, concentric, clinical precision system) */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+        <div className="relative flex items-center justify-center">
+
+          {/* Circle 4: Outermost Fixed White Circle (Wide delicate orbital boundary) */}
+          <div className="absolute w-[440px] h-[440px] sm:w-[480px] sm:h-[480px] md:w-[530px] md:h-[530px] rounded-full border border-dotted border-white dark:border-white/20 shadow-[0_0_0_1px_rgba(203,213,225,0.4)] dark:shadow-[0_0_35px_rgba(255,255,255,0.12)] pointer-events-none" />
+
+          {/* Circle 3: Outer Fixed White Circle (Smooth circular halo) */}
+          <div className="absolute w-[350px] h-[350px] sm:w-[380px] sm:h-[380px] md:w-[420px] md:h-[420px] rounded-full border border-white dark:border-white/35 shadow-[0_0_0_1px_rgba(203,213,225,0.5),0_4px_16px_rgba(0,0,0,0.03)] dark:shadow-[0_0_25px_rgba(255,255,255,0.2)] pointer-events-none" />
+
+          {/* Circle 2: Mid Fixed White Circle (Fine dashed white ring with 4 fixed cardinal markers) */}
+          <div className="absolute w-[260px] h-[260px] sm:w-[285px] sm:h-[285px] md:w-[315px] md:h-[315px] rounded-full border border-dashed border-white dark:border-white/60 shadow-[0_0_0_1px_rgba(203,213,225,0.6),0_4px_20px_rgba(0,0,0,0.04)] dark:shadow-[0_0_25px_rgba(255,255,255,0.35)] pointer-events-none flex items-center justify-center">
+            {/* 4 Fixed Cardinal Markers for High-Precision Diagnostic Feel */}
+            <div className="absolute -top-1 w-2 h-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,1),0_0_0_1px_rgba(203,213,225,0.6)]" />
+            <div className="absolute -bottom-1 w-2 h-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,1),0_0_0_1px_rgba(203,213,225,0.6)]" />
+            <div className="absolute -left-1 w-2 h-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,1),0_0_0_1px_rgba(203,213,225,0.6)]" />
+            <div className="absolute -right-1 w-2 h-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,1),0_0_0_1px_rgba(203,213,225,0.6)]" />
+          </div>
+
+          {/* Circle 1: Inner Fixed White Circle (Solid bright white ring with subtle halo glow) */}
+          <div className="absolute w-[180px] h-[180px] sm:w-[200px] sm:h-[200px] md:w-[220px] md:h-[220px] rounded-full border-2 border-white dark:border-white shadow-[0_0_0_1px_rgba(203,213,225,0.7),0_4px_24px_rgba(6,182,212,0.18)] dark:shadow-[0_0_30px_rgba(255,255,255,0.5),inset_0_0_15px_rgba(255,255,255,0.25)] bg-white/20 dark:bg-white/5 backdrop-blur-xs pointer-events-none" />
+
+          {/* Central Fixed White Circular Badge directly embracing the Emblem */}
+          <div className="relative w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-full bg-white dark:bg-slate-900/90 shadow-[0_6px_35px_rgba(6,182,212,0.22),0_0_0_2px_rgba(255,255,255,1)] dark:shadow-[0_0_35px_rgba(255,255,255,0.28),0_0_0_2px_rgba(255,255,255,0.85)] border-2 border-white flex items-center justify-center p-3 z-10">
+            {/* Ambient Radial Color Bloom Behind Logo */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-400/20 via-teal-300/15 to-blue-500/20 blur-md pointer-events-none" />
+
+            {/* Rigid Emblem Image: perfectly stationary & upright */}
+            <img
+              src="/biotrajectory-emblem.png"
+              alt="BioTrajectory"
+              className="w-20 h-20 sm:w-24 sm:h-24 md:w-26 md:h-26 object-contain select-none relative z-10"
+              draggable={false}
+            />
+          </div>
+
+        </div>
+      </div>
 
       {/* Floating Ambient Glow Behind Sphere */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
@@ -396,7 +302,7 @@ export default function MedicalSphere3D() {
             <Heart className="w-5 h-5 text-violet-600 dark:text-cyan-400 animate-pulse" />
           </div>
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Health Trajectory</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Blood Pressure</p>
             <p className="text-base font-extrabold text-slate-900 dark:text-cyan-300">
               121 / 78 <span className="text-xs font-normal text-slate-500">mmHg</span>
             </p>
@@ -404,11 +310,11 @@ export default function MedicalSphere3D() {
         </div>
         <div className="mt-2 text-[10px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 font-semibold bg-emerald-500/10 px-2.5 py-1 rounded-full w-fit">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-ping" />
-          Optimal Baseline • Stable
+          Healthy & Normal • Steady
         </div>
       </div>
 
-      {/* 2. Biomarker Analysis (Top Right) */}
+      {/* 2. Health Check (Top Right) */}
       <div
         style={{
           transform: `translate3d(${mouseOffset.x * 0.8}px, ${mouseOffset.y * 0.8}px, 0)`
@@ -419,13 +325,13 @@ export default function MedicalSphere3D() {
           <ShieldCheck className="w-5 h-5" />
         </div>
         <div className="text-left">
-          <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">Biomarker Analysis</p>
-          <p className="text-xs font-bold text-slate-900 dark:text-emerald-400">Kidney & Glucose Clear</p>
-          <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Cellular Homeostasis: 99.2%</p>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">Health Check</p>
+          <p className="text-xs font-bold text-slate-900 dark:text-emerald-400">Kidney & Sugar Normal</p>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Overall Body Balance: 99.2%</p>
         </div>
       </div>
 
-      {/* 3. Personal Baseline (Bottom Right) */}
+      {/* 3. Your Normal Range (Bottom Right) */}
       <div
         style={{
           transform: `translate3d(${mouseOffset.x * 0.6}px, ${mouseOffset.y * 0.6}px, 0)`
@@ -437,16 +343,16 @@ export default function MedicalSphere3D() {
             <Activity className="w-5 h-5 text-purple-600 dark:text-blue-400" />
           </div>
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Personal Baseline</p>
-            <p className="text-base font-extrabold text-slate-900 dark:text-blue-300">99.4% Stability</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Your Normal Range</p>
+            <p className="text-base font-extrabold text-slate-900 dark:text-blue-300">99.4% Steady</p>
           </div>
         </div>
         <p className="mt-2 text-[11px] text-slate-600 dark:text-slate-300 font-normal leading-snug">
-          Multi-signal longitudinal stability verified across 30 days.
+          Your daily health readings have stayed steady and healthy over 30 days.
         </p>
       </div>
 
-      {/* 4. AI Health Insights (Bottom Left) */}
+      {/* 4. Understand Your Results (Bottom Left) */}
       <div
         style={{
           transform: `translate3d(${mouseOffset.x * -0.8}px, ${mouseOffset.y * -0.8}px, 0)`
@@ -457,13 +363,13 @@ export default function MedicalSphere3D() {
           <Sparkles className="w-5 h-5" />
         </div>
         <div className="text-left">
-          <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">AI Health Insights</p>
-          <p className="text-xs font-bold text-slate-900 dark:text-cyan-300">30-Day Trajectory Risk: Low (0.2%)</p>
-          <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Circadian rhythm in sync</p>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">Understand Your Results</p>
+          <p className="text-xs font-bold text-slate-900 dark:text-cyan-300">30-Day Health Risk: Very Low (0.2%)</p>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Sleep & daily rhythm in sync</p>
         </div>
       </div>
 
-      {/* 5. Medical Timeline (Center Left Minimal Badge) */}
+      {/* 5. Daily Record (Center Left Minimal Badge) */}
       <div
         style={{
           transform: `translate3d(${mouseOffset.x * -1.1}px, ${mouseOffset.y * -1.1}px, 0)`
@@ -475,10 +381,10 @@ export default function MedicalSphere3D() {
         </div>
         <div>
           <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 block leading-tight">
-            Day 42 Active Timeline
+            Day 42 Daily Record
           </span>
           <span className="text-[9px] text-slate-500 dark:text-slate-400 leading-none">
-            Continuous trajectory stream
+            Daily check-ups recorded
           </span>
         </div>
       </div>

@@ -51,6 +51,26 @@ export const VITALS_BASELINES = {
     normalMin: 1.010,
     normalMax: 1.025,
     description: 'Renal concentration & hydration index.'
+  },
+  spo2: {
+    label: 'Blood Oxygen Saturation (SpO2)',
+    unit: '%',
+    normalMin: 95,
+    normalMax: 100,
+    optimal: 98,
+    description: 'Resting peripheral capillary oxygen saturation.'
+  },
+  urineGlucose: {
+    label: 'Urine Glucose',
+    unit: 'mg/dL',
+    normal: 'Negative (<15)',
+    description: 'Renal threshold glycemic excretion indicator.'
+  },
+  urineNitrites: {
+    label: 'Urine Nitrites',
+    unit: 'presence',
+    normal: 'Negative',
+    description: 'Bacterial nitrate reduction indicator for urinary health.'
   }
 };
 
@@ -61,12 +81,16 @@ export const SAMPLE_DAILY_VITALS_7D = [
     systolic: 122,
     diastolic: 79,
     pulse: 68,
+    spo2: 99,
     steps: 9240,
     distance: 6.4,
     exerciseMins: 45,
+    urineProtein: 'Negative',
     urineProteinMg: 0,
     urineSG: 1.018,
     urinePH: 6.5,
+    urineGlucose: 'Negative (0 mg/dL)',
+    urineNitrites: 'Negative',
     notes: 'Morning brisk outdoor walk, hydrated well'
   },
   {
@@ -75,12 +99,16 @@ export const SAMPLE_DAILY_VITALS_7D = [
     systolic: 128,
     diastolic: 82,
     pulse: 74,
+    spo2: 98,
     steps: 7650,
     distance: 5.3,
     exerciseMins: 30,
+    urineProtein: 'Negative',
     urineProteinMg: 0,
     urineSG: 1.022,
     urinePH: 6.2,
+    urineGlucose: 'Negative (0 mg/dL)',
+    urineNitrites: 'Negative',
     notes: 'Work desk day, mild afternoon fatigue'
   },
   {
@@ -89,12 +117,16 @@ export const SAMPLE_DAILY_VITALS_7D = [
     systolic: 131,
     diastolic: 84,
     pulse: 76,
+    spo2: 98,
     steps: 8100,
     distance: 5.7,
     exerciseMins: 35,
+    urineProtein: 'Trace (15 mg/dL)',
     urineProteinMg: 15, // trace
     urineSG: 1.024,
     urinePH: 6.0,
+    urineGlucose: 'Negative (0 mg/dL)',
+    urineNitrites: 'Negative',
     notes: 'Heavy project deadline, late dinner'
   },
   {
@@ -103,12 +135,16 @@ export const SAMPLE_DAILY_VITALS_7D = [
     systolic: 135,
     diastolic: 86,
     pulse: 78,
+    spo2: 97,
     steps: 6400,
     distance: 4.4,
     exerciseMins: 20,
+    urineProtein: 'Trace (15 mg/dL)',
     urineProteinMg: 15,
     urineSG: 1.026,
     urinePH: 5.8,
+    urineGlucose: 'Negative (0 mg/dL)',
+    urineNitrites: 'Negative',
     notes: 'High sodium intake at restaurant, lower hydration'
   },
   {
@@ -117,12 +153,16 @@ export const SAMPLE_DAILY_VITALS_7D = [
     systolic: 129,
     diastolic: 83,
     pulse: 72,
+    spo2: 99,
     steps: 8900,
     distance: 6.2,
     exerciseMins: 40,
+    urineProtein: 'Negative',
     urineProteinMg: 0,
     urineSG: 1.019,
     urinePH: 6.4,
+    urineGlucose: 'Negative (0 mg/dL)',
+    urineNitrites: 'Negative',
     notes: 'Zone 2 cycling session, increased water intake'
   },
   {
@@ -131,12 +171,16 @@ export const SAMPLE_DAILY_VITALS_7D = [
     systolic: 124,
     diastolic: 80,
     pulse: 70,
+    spo2: 98,
     steps: 10450,
     distance: 7.3,
     exerciseMins: 50,
+    urineProtein: 'Negative',
     urineProteinMg: 0,
     urineSG: 1.017,
     urinePH: 6.6,
+    urineGlucose: 'Negative (0 mg/dL)',
+    urineNitrites: 'Negative',
     notes: 'Evening run, feeling rested'
   },
   {
@@ -145,12 +189,16 @@ export const SAMPLE_DAILY_VITALS_7D = [
     systolic: 121,
     diastolic: 78,
     pulse: 66,
+    spo2: 99,
     steps: 11200,
     distance: 7.9,
     exerciseMins: 55,
+    urineProtein: 'Negative',
     urineProteinMg: 0,
     urineSG: 1.016,
     urinePH: 6.5,
+    urineGlucose: 'Negative (0 mg/dL)',
+    urineNitrites: 'Negative',
     notes: 'Weekend recovery hike, normal readings'
   }
 ];

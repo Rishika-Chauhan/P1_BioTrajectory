@@ -13,6 +13,92 @@ const AuthContext = createContext(null);
 
 export const USER_ROLES = ROLES;
 
+export const DEMO_USERS = [
+  {
+    role: USER_ROLES.ADMIN,
+    roleTitle: 'Platform Administrator',
+    email: 'admin@biotrajectory.health',
+    password: 'admin123',
+    name: 'Dr. Sarah Vance',
+    displayName: 'Dr. Sarah Vance (Admin)',
+    uid: 'demo_admin_usr_001',
+    id: 'demo_admin_usr_001',
+    emailVerified: true,
+    photoURL: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80',
+    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80',
+    claims: { role: 'ADMIN', admin: true },
+    token: 'mock_demo_token_admin',
+    joinedDate: '2024-03-01',
+    badge: 'Admin Access',
+    description: 'Manage users, doctor verification, health content, system reports, and population trends.'
+  },
+  {
+    role: USER_ROLES.DOCTOR,
+    roleTitle: 'Verified Physician (MD)',
+    email: 'doctor@biotrajectory.health',
+    aliasEmail: 'dr.thorne@biotrajectory.health',
+    password: 'doctor123',
+    name: 'Dr. Aris Thorne',
+    displayName: 'Dr. Aris Thorne, MD',
+    uid: 'doc_88921_aris',
+    id: 'doc_88921_aris',
+    emailVerified: true,
+    photoURL: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=300&q=80',
+    avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=300&q=80',
+    phone: '+1 (555) 234-8901',
+    registrationNumber: 'MED-REG-2016-89214',
+    specialization: 'Cardiology & Preventive Medicine',
+    qualification: 'MD, FACC, Harvard Medical School',
+    clinic: 'Metro Cardiology Specialists & Heart Health Center',
+    clinicName: 'Metro Cardiology Specialists & Heart Health Center',
+    consultationFee: '$120',
+    claims: { role: 'DOCTOR', medicalRegNumber: 'MED-REG-2016-89214', clinicName: 'Metro Cardiology Specialists & Heart Health Center' },
+    token: 'mock_demo_token_doctor',
+    joinedDate: '2024-01-10',
+    badge: 'Clinical MD',
+    bio: 'Specialist in longitudinal cardiovascular monitoring, hypertension control, and preventive lifestyle trajectories.',
+    description: 'Clinical consultations, review patient health records, write digital prescriptions, and scan patient QR.'
+  },
+  {
+    role: USER_ROLES.USER,
+    roleTitle: 'Patient / Health User',
+    email: 'patient@biotrajectory.health',
+    aliasEmail: 'user@biotrajectory.health',
+    password: 'patient123',
+    name: 'Eleanor Vance',
+    displayName: 'Eleanor Vance',
+    uid: 'usr_pat_00921',
+    id: 'usr_pat_00921',
+    emailVerified: true,
+    photoURL: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80',
+    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80',
+    claims: { role: 'USER' },
+    token: 'mock_demo_token_patient',
+    joinedDate: '2024-05-15',
+    badge: 'Patient User',
+    description: 'Personal health overview, vitals tracking (BP, Glucose, Steps), AI Health Assistant, and personal QR card.'
+  },
+  {
+    role: USER_ROLES.DOCTOR_PENDING,
+    roleTitle: 'Doctor (Pending Verification)',
+    email: 'doctor.pending@biotrajectory.health',
+    password: 'doctor123',
+    name: 'Dr. Marcus Sterling',
+    displayName: 'Dr. Marcus Sterling, MD',
+    uid: 'doc_pending_3319',
+    id: 'doc_pending_3319',
+    emailVerified: true,
+    registrationNumber: 'MED-REG-2025-00412',
+    specialization: 'Neurology & Cognitive Health',
+    qualification: 'MD, Johns Hopkins University',
+    claims: { role: 'DOCTOR_PENDING', medicalRegNumber: 'MED-REG-2025-00412' },
+    token: 'mock_demo_token_doctor_pending',
+    joinedDate: '2026-11-01',
+    badge: 'Pending Review',
+    description: 'Doctor registration submitted for administrative credential verification.'
+  }
+];
+
 export const getDashboardPath = (role) => {
   switch (role) {
     case USER_ROLES.ADMIN:
@@ -55,6 +141,21 @@ export function AuthProvider({ children }) {
         if (!active) return;
 
         if (!authUser) {
+          try {
+            const savedDemo = localStorage.getItem('biotrajectory-demo-user');
+            if (savedDemo) {
+              const parsed = JSON.parse(savedDemo);
+              if (parsed && parsed.role) {
+                setCurrentUser(parsed);
+                setTokenClaims(parsed.claims || {});
+                setIsAuthLoading(false);
+                return;
+              }
+            }
+          } catch (e) {
+            console.error('Error hydrating demo session:', e);
+          }
+
           setCurrentUser(null);
           setTokenClaims(null);
           setIsAuthLoading(false);
@@ -146,6 +247,37 @@ export function AuthProvider({ children }) {
         throw new Error('Please enter your email and password.');
       }
 
+      const cleanEmail = String(email).trim().toLowerCase();
+      const cleanPass = String(password).trim();
+
+      // Check if credentials match any of the built-in demo accounts
+      const matchedDemo = DEMO_USERS.find(
+        (u) =>
+          (u.email.toLowerCase() === cleanEmail ||
+            (u.aliasEmail && u.aliasEmail.toLowerCase() === cleanEmail)) &&
+          (u.password === cleanPass || cleanPass === 'password123' || cleanPass === 'demo123')
+      );
+
+      if (matchedDemo) {
+        const authenticatedUser = {
+          ...matchedDemo,
+          token: matchedDemo.token || 'mock_demo_token'
+        };
+
+        setCurrentUser(authenticatedUser);
+        setTokenClaims(matchedDemo.claims || {});
+        localStorage.setItem('biotrajectory-demo-user', JSON.stringify(authenticatedUser));
+        localStorage.setItem('biotrajectory-auth-user', JSON.stringify(authenticatedUser));
+        if (
+          matchedDemo.role === USER_ROLES.DOCTOR ||
+          matchedDemo.role === USER_ROLES.DOCTOR_PENDING
+        ) {
+          localStorage.setItem('biotrajectory-doctor-user', JSON.stringify(authenticatedUser));
+        }
+
+        return authenticatedUser;
+      }
+
       const authUser = await FirebaseService.signInWithEmail(
         email,
         password,
@@ -174,6 +306,8 @@ export function AuthProvider({ children }) {
         token: tokenResult?.token
       };
 
+      localStorage.removeItem('biotrajectory-demo-user');
+      localStorage.setItem('biotrajectory-auth-user', JSON.stringify(authenticatedUser));
       setCurrentUser(authenticatedUser);
       setTokenClaims(claims);
 
@@ -249,10 +383,16 @@ export function AuthProvider({ children }) {
   // Logout
   const logout = async () => {
     try {
-      await FirebaseService.signOut();
+      try {
+        await FirebaseService.signOut();
+      } catch (err) {
+        // Fallback for demo session without Firebase
+      }
       setCurrentUser(null);
       setTokenClaims(null);
 
+      localStorage.removeItem('biotrajectory-demo-user');
+      localStorage.removeItem('biotrajectory-auth-user');
       localStorage.removeItem('biotrajectory-doctor-user');
 
       return true;
@@ -260,6 +400,21 @@ export function AuthProvider({ children }) {
       setAuthError(error.message || 'Logout failed.');
       return false;
     }
+  };
+
+  // Quick login helper for demo accounts
+  const loginDemoUser = async (roleOrEmail) => {
+    const clean = String(roleOrEmail).trim().toLowerCase();
+    const target = DEMO_USERS.find(
+      (u) =>
+        u.role.toLowerCase() === clean ||
+        u.email.toLowerCase() === clean ||
+        (u.aliasEmail && u.aliasEmail.toLowerCase() === clean)
+    );
+    if (target) {
+      return await login(target.email, target.password, true);
+    }
+    return null;
   };
 
   // Refresh token and custom claims.
@@ -352,6 +507,8 @@ export function AuthProvider({ children }) {
       currentUser?.role === USER_ROLES.UNKNOWN,
 
     login,
+    loginDemoUser,
+    DEMO_USERS,
     register,
     logout,
     refreshToken,

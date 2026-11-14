@@ -189,7 +189,7 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
   return (
     <div className="space-y-5 animate-fadeIn">
       {/* Top Controller Bar */}
-      <div className={`p-6 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'
+      <div className={`p-6 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'
         }`}>
         <div>
           <div className="flex items-center space-x-2 mb-1">
@@ -231,7 +231,7 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
                 } catch (e) { }
               }}
               className={`px-3.5 py-2 rounded-lg text-xs font-sans font-semibold uppercase tracking-wider border flex items-center space-x-1.5 transition-all ${isDark
-                ? 'bg-[#2A0B10] border-[#D5BF86]/30 hover:bg-[#1D070A] text-[#FAF9EB]'
+                ? 'bg-[#2A0B10] border-[#D5BF86]/30 hover:bg-[#050814] text-[#FAF9EB]'
                 : 'bg-white border-[#D5BF86] hover:bg-[#FAF9EB] text-[#3F0D12] shadow-xs'
                 }`}
             >
@@ -272,7 +272,7 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
                 onClick={() => setActiveTab(f.id)}
                 className={`px-3 py-1.5 rounded-lg transition-all ${activeTab === f.id
                   ? 'bg-[#A71D31] text-white font-bold shadow-xs'
-                  : isDark ? 'bg-[#1D070A] text-[#8D775F] border border-[#D5BF86]/20 hover:text-white' : 'bg-white text-[#473228] hover:text-[#3F0D12] border border-[#D5BF86]'
+                  : isDark ? 'bg-[#050814] text-[#8D775F] border border-[#D5BF86]/20 hover:text-white' : 'bg-white text-[#473228] hover:text-[#3F0D12] border border-[#D5BF86]'
                   }`}
               >
                 {f.label}
@@ -295,7 +295,7 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
                       ? 'bg-[#2A0B10] border-[#A71D31] shadow-md ring-1 ring-[#A71D31]/40'
                       : 'bg-[#FAF9EB] border-[#A71D31] shadow-md ring-1 ring-[#A71D31]/40'
                     : isDark
-                      ? 'bg-[#1D070A] border-[#D5BF86]/20 hover:border-[#D5BF86]/40'
+                      ? 'bg-[#050814] border-[#D5BF86]/20 hover:border-[#D5BF86]/40'
                       : 'bg-white border-[#D5BF86] hover:border-[#A71D31]/50 shadow-xs'
                     }`}
                 >
@@ -344,7 +344,7 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
                     </div>
 
                     {/* Live Metric Stream Display */}
-                    <div className={`p-3 rounded-xl border mb-3 flex items-center justify-between font-mono-code ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'
+                    <div className={`p-3 rounded-xl border mb-3 flex items-center justify-between font-mono-code ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'
                       }`}>
                       <div>
                         <span className="text-[10px] uppercase text-[#8D775F] block">
@@ -419,7 +419,7 @@ export default function BluetoothHub({ onSyncDeviceData, onSelectMetricForChart 
         </div>
 
         {/* Right 4 Cols: Selected Device Deep-Dive & GATT Inspector */}
-        <div className={`lg:col-span-4 rounded-2xl border p-6 shadow-xl ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
+        <div className={`lg:col-span-4 rounded-2xl border p-6 shadow-xl ${isDark ? 'bg-[#050814] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
           }`}>
           <div className="flex items-center justify-between pb-3 border-b border-inherit mb-4">
             <span className="text-xs font-mono-code font-bold uppercase text-[#A71D31]">

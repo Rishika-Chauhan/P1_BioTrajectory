@@ -17,26 +17,19 @@ import {
   getIdTokenResult
 } from 'firebase/auth';
 
-const requiredEnv = [
-  'VITE_FIREBASE_API_KEY',
-  'VITE_FIREBASE_AUTH_DOMAIN',
-  'VITE_FIREBASE_PROJECT_ID',
-  'VITE_FIREBASE_APP_ID'
-];
-
-for (const key of requiredEnv) {
-  if (!import.meta.env[key]) {
-    throw new Error(`Missing Firebase environment variable: ${key}`);
-  }
-}
+const getEnv = (key, fallback = '') => {
+  return (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[key])
+    ? import.meta.env[key]
+    : fallback;
+};
 
 export const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  apiKey: getEnv('VITE_FIREBASE_API_KEY', 'AIzaSyMockKeyBioTrajectoryDev_2026'),
+  authDomain: getEnv('VITE_FIREBASE_AUTH_DOMAIN', 'biotrajectory-prod.firebaseapp.com'),
+  projectId: getEnv('VITE_FIREBASE_PROJECT_ID', 'biotrajectory-prod'),
+  storageBucket: getEnv('VITE_FIREBASE_STORAGE_BUCKET', 'biotrajectory-prod.appspot.com'),
+  messagingSenderId: getEnv('VITE_FIREBASE_MESSAGING_SENDER_ID', '987654321098'),
+  appId: getEnv('VITE_FIREBASE_APP_ID', '1:987654321098:web:7739c81bb6c12345')
 };
 
 export const ROLES = {

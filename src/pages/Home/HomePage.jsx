@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  Activity,
   ArrowRight,
   ShieldCheck,
   CheckCircle2,
@@ -10,20 +9,15 @@ import {
   Lock,
   ChevronRight,
   Heart,
-  Footprints,
   Clock,
-  Droplets,
   MessageSquare,
   Stethoscope,
-  Sparkles,
-  HelpCircle,
-  UserCheck,
-  TrendingUp,
-  Cpu
+  HelpCircle
 } from 'lucide-react';
 import MedicalSphere3D from '../../components/common/MedicalSphere3D';
 import FloatingParticles from '../../components/common/FloatingParticles';
 import DisclaimerBanner from '../../components/common/DisclaimerBanner';
+import SplashScreen from '../../components/common/SplashScreen';
 
 export default function HomePage() {
   const [heroParallax, setHeroParallax] = useState({ x: 0, y: 0 });
@@ -46,15 +40,12 @@ export default function HomePage() {
     transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
   };
 
-  const staggerContainer = {
-    initial: {},
-    whileInView: { transition: { staggerChildren: 0.1 } },
-    viewport: { once: true }
-  };
-
   return (
     <div className="w-full flex flex-col items-center overflow-hidden bg-grid-medical relative">
       
+      {/* BioTrajectory First Entrance Logo Splash Screen */}
+      <SplashScreen />
+
       {/* 1. HERO SECTION */}
       <section
         onMouseMove={handleHeroMouseMove}
@@ -87,11 +78,6 @@ export default function HomePage() {
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             className="lg:col-span-6 space-y-6 text-center lg:text-left"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[14px] font-bold bg-violet-500/10 dark:bg-cyan-500/10 border border-violet-500/25 dark:border-cyan-500/25 text-violet-700 dark:text-cyan-400 shadow-xs">
-              <Sparkles className="w-4 h-4 text-violet-600 dark:text-cyan-400" />
-              <span>Easy Health Tracking & Longevity</span>
-            </div>
-
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.12]">
               Your Health Is More Than <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 dark:from-cyan-400 dark:via-blue-500 dark:to-indigo-500">a Number.</span>
             </h1>
@@ -107,7 +93,7 @@ export default function HomePage() {
                   to="/explore"
                   className="group flex items-center gap-2 px-7 py-4 rounded-2xl text-[16px] font-bold text-slate-900 dark:text-white border-2 border-violet-500/50 dark:border-cyan-500/60 hover:bg-violet-500/10 dark:hover:bg-cyan-500/10 hover:border-violet-600 dark:hover:border-cyan-400 transition-all cursor-pointer shadow-sm hover:shadow-md"
                 >
-                  <span>Explore BioTrajectory</span>
+                  <span>Explore</span>
                   <ChevronRight className="w-5 h-5 text-violet-600 dark:text-cyan-400 group-hover:translate-x-1.5 transition-transform duration-200" />
                 </Link>
               </motion.div>

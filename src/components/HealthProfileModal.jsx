@@ -227,7 +227,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
         }`}>
 
         {/* Modal Top Bar */}
-        <div className={`p-5 sm:p-6 border-b flex items-center justify-between gap-4 ${isDark ? 'border-[#D5BF86]/20 bg-[#1D070A]' : 'border-[#D5BF86]/40 bg-white'
+        <div className={`p-5 sm:p-6 border-b flex items-center justify-between gap-4 ${isDark ? 'border-[#D5BF86]/20 bg-[#050814]' : 'border-[#D5BF86]/40 bg-white'
           }`}>
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-xl bg-[#A71D31]/15 text-[#A71D31] dark:text-[#D5BF86] border border-[#A71D31]/30 flex items-center justify-center shrink-0">
@@ -281,7 +281,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
           ========================================================================== */}
           {step === 1 && (
             <div className="space-y-5 text-xs sm:text-sm">
-              <div className={`p-4 rounded-2xl border ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'
+              <div className={`p-4 rounded-2xl border ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'
                 }`}>
                 <h3 className="font-bold text-sm sm:text-base text-[#A71D31] dark:text-[#D5BF86] mb-1">
                   Why Point-in-Time Tests Miss the Big Picture
@@ -292,7 +292,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
               </div>
 
               {/* Visual Baseline & Trajectory Demonstration (Directly illustrating the platform chart) */}
-              <div className={`p-4 rounded-2xl border ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30' : 'bg-white border-[#D5BF86]/70 shadow-sm'
+              <div className={`p-4 rounded-2xl border ${isDark ? 'bg-[#050814] border-[#D5BF86]/30' : 'bg-white border-[#D5BF86]/70 shadow-sm'
                 }`}>
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-2 pb-2 border-b border-[#D5BF86]/40">
                   <div className="flex items-center space-x-2">
@@ -311,7 +311,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
                 </p>
 
                 {/* Interactive SVG Chart matching the actual platform baseline graph */}
-                <div className="w-full overflow-hidden rounded-xl bg-[#FAF9EB]/40 dark:bg-[#1D070A]/60 border border-[#D5BF86]/40 p-2">
+                <div className="w-full overflow-hidden rounded-xl bg-[#FAF9EB]/40 dark:bg-[#050814]/60 border border-[#D5BF86]/40 p-2">
                   <svg viewBox="0 0 540 180" className="w-full h-auto select-none font-mono">
                     <defs>
                       <linearGradient id="onboardingAreaGrad" x1="0" y1="0" x2="0" y2="1">
@@ -420,7 +420,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
                         {pt.isSpike && (
                           <circle cx={pt.x} cy={pt.y} r="8" fill="none" stroke="#A71D31" strokeWidth="1.2" opacity="0.6" />
                         )}
-                        <circle cx={pt.x} cy={pt.y} r={pt.isSpike ? 4.5 : 3} fill={pt.color} stroke={isDark ? '#1D070A' : '#FAF9EB'} strokeWidth="1" />
+                        <circle cx={pt.x} cy={pt.y} r={pt.isSpike ? 4.5 : 3} fill={pt.color} stroke={isDark ? '#050814' : '#FAF9EB'} strokeWidth="1" />
                         <text x={pt.x} y="174" textAnchor="middle" className={`text-[8px] ${pt.isSpike ? 'fill-[#A71D31] font-bold' : 'fill-[#8D775F]'}`}>
                           {pt.label}
                         </text>
@@ -440,7 +440,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
               </div>
 
               {/* Explicit Boundaries: What BioTrajectory Does and Does NOT Do */}
-              <div className={`p-4 rounded-2xl border space-y-3 ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'
+              <div className={`p-4 rounded-2xl border space-y-3 ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'
                 }`}>
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#8D775F]">
                   <ShieldCheck className="w-4 h-4 text-[#A71D31]" />
@@ -490,7 +490,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Pranjal Sharma"
-                  className={`w-full p-3.5 rounded-xl border text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#A71D31] ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30 text-white' : 'bg-white border-[#D5BF86] text-[#3F0D12]'
+                  className={`w-full p-3.5 rounded-xl border text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#A71D31] ${isDark ? 'bg-[#050814] border-[#D5BF86]/30 text-white' : 'bg-white border-[#D5BF86] text-[#3F0D12]'
                     }`}
                 />
                 <p className="text-[11px] text-[#8D775F]">
@@ -515,7 +515,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
                         onClick={() => setAgeRange(r.id)}
                         className={`p-3 rounded-xl border text-xs font-semibold text-left transition-all cursor-pointer ${isSelected
                           ? 'bg-[#A71D31]/15 border-[#A71D31] text-[#A71D31] dark:text-[#D5BF86] ring-1 ring-[#A71D31]'
-                          : isDark ? 'bg-[#1D070A] border-[#D5BF86]/20 text-[#D5BF86] hover:text-white' : 'bg-white border-[#D5BF86]/50 text-[#3F0D12]'
+                          : isDark ? 'bg-[#050814] border-[#D5BF86]/20 text-[#D5BF86] hover:text-white' : 'bg-white border-[#D5BF86]/50 text-[#3F0D12]'
                           }`}
                       >
                         {r.label}
@@ -537,7 +537,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
                       onClick={() => setGender(g)}
                       className={`p-2.5 rounded-xl border text-xs font-medium transition-all cursor-pointer ${gender === g
                         ? 'bg-[#A71D31]/15 border-[#A71D31] text-[#A71D31] dark:text-[#D5BF86] font-bold'
-                        : isDark ? 'bg-[#1D070A] border-[#D5BF86]/20 text-[#D5BF86]' : 'bg-white border-[#D5BF86]/50 text-[#8D775F]'
+                        : isDark ? 'bg-[#050814] border-[#D5BF86]/20 text-[#D5BF86]' : 'bg-white border-[#D5BF86]/50 text-[#8D775F]'
                         }`}
                     >
                       {g}
@@ -554,7 +554,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
           {step === 3 && (
             <div className="space-y-5">
               {/* Unit Toggle */}
-              <div className="flex items-center justify-between p-3.5 rounded-2xl border bg-[#FAF9EB] dark:bg-[#1D070A] border-[#D5BF86]/40">
+              <div className="flex items-center justify-between p-3.5 rounded-2xl border bg-[#FAF9EB] dark:bg-[#050814] border-[#D5BF86]/40">
                 <div>
                   <span className="font-bold text-xs uppercase tracking-wider block text-[#3F0D12] dark:text-[#FAF9EB]">Preferred Measurement Units</span>
                   <span className="text-[11px] text-[#8D775F]">Choose between international metric or standard imperial.</span>
@@ -596,7 +596,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
                     value={height}
                     onChange={(e) => setHeight(e.target.value)}
                     placeholder={units === 'metric' ? 'e.g. 175' : 'e.g. 69'}
-                    className={`w-full p-3.5 rounded-xl border text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#A71D31] ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30 text-white' : 'bg-white border-[#D5BF86] text-[#3F0D12]'
+                    className={`w-full p-3.5 rounded-xl border text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#A71D31] ${isDark ? 'bg-[#050814] border-[#D5BF86]/30 text-white' : 'bg-white border-[#D5BF86] text-[#3F0D12]'
                       }`}
                   />
                 </div>
@@ -611,13 +611,13 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
                     value={weight}
                     onChange={(e) => setWeight(e.target.value)}
                     placeholder={units === 'metric' ? 'e.g. 70' : 'e.g. 154'}
-                    className={`w-full p-3.5 rounded-xl border text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#A71D31] ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30 text-white' : 'bg-white border-[#D5BF86] text-[#3F0D12]'
+                    className={`w-full p-3.5 rounded-xl border text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#A71D31] ${isDark ? 'bg-[#050814] border-[#D5BF86]/30 text-white' : 'bg-white border-[#D5BF86] text-[#3F0D12]'
                       }`}
                   />
                 </div>
               </div>
 
-              <div className={`p-4 rounded-2xl border text-xs leading-relaxed flex items-start gap-3 ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20 text-[#D5BF86]' : 'bg-[#FAF9EB] border-[#D5BF86] text-[#473228]'
+              <div className={`p-4 rounded-2xl border text-xs leading-relaxed flex items-start gap-3 ${isDark ? 'bg-[#050814] border-[#D5BF86]/20 text-[#D5BF86]' : 'bg-[#FAF9EB] border-[#D5BF86] text-[#473228]'
                 }`}>
                 <Info className="w-4 h-4 text-[#A71D31] shrink-0 mt-0.5" />
                 <span>
@@ -649,7 +649,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
                       onClick={() => setActivityLevel(act.id)}
                       className={`p-3 rounded-xl border text-left transition-all ${activityLevel === act.id
                         ? 'bg-[#A71D31]/15 border-[#A71D31] text-[#3F0D12] dark:text-[#FAF9EB] ring-1 ring-[#A71D31]'
-                        : isDark ? 'bg-[#1D070A] border-[#D5BF86]/20 text-[#8D775F]' : 'bg-[#FAF9EB] border-[#D5BF86] text-[#473228]'
+                        : isDark ? 'bg-[#050814] border-[#D5BF86]/20 text-[#8D775F]' : 'bg-[#FAF9EB] border-[#D5BF86] text-[#473228]'
                         }`}
                     >
                       <span className="font-bold text-xs block">{act.id}</span>
@@ -675,7 +675,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
                       onClick={() => setHydrationHabit(hyd)}
                       className={`p-3 rounded-xl border text-xs text-left transition-all font-semibold ${hydrationHabit === hyd
                         ? 'bg-[#A71D31]/15 border-[#A71D31] text-[#A71D31] ring-1 ring-[#A71D31]'
-                        : isDark ? 'bg-[#1D070A] border-[#D5BF86]/20 text-[#8D775F]' : 'bg-[#FAF9EB] border-[#D5BF86] text-[#473228]'
+                        : isDark ? 'bg-[#050814] border-[#D5BF86]/20 text-[#8D775F]' : 'bg-[#FAF9EB] border-[#D5BF86] text-[#473228]'
                         }`}
                     >
                       {hyd}
@@ -701,7 +701,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
                       onClick={() => setTestingSchedule(sched.id)}
                       className={`p-3 rounded-xl border text-left transition-all ${testingSchedule === sched.id
                         ? 'bg-[#A71D31]/15 border-[#A71D31] text-[#3F0D12] dark:text-[#FAF9EB] ring-1 ring-[#A71D31]'
-                        : isDark ? 'bg-[#1D070A] border-[#D5BF86]/20 text-[#8D775F]' : 'bg-[#FAF9EB] border-[#D5BF86] text-[#473228]'
+                        : isDark ? 'bg-[#050814] border-[#D5BF86]/20 text-[#8D775F]' : 'bg-[#FAF9EB] border-[#D5BF86] text-[#473228]'
                         }`}
                     >
                       <span className="font-bold text-xs block">{sched.id}</span>
@@ -732,7 +732,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
                       onClick={() => toggleGoal(g.title)}
                       className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex items-start gap-3.5 ${isChecked
                         ? 'bg-[#A71D31]/10 border-[#A71D31] shadow-xs'
-                        : isDark ? 'bg-[#1D070A] border-[#D5BF86]/20 hover:border-[#D5BF86]/40' : 'bg-[#FAF9EB] border-[#D5BF86] hover:border-[#A71D31]/50'
+                        : isDark ? 'bg-[#050814] border-[#D5BF86]/20 hover:border-[#D5BF86]/40' : 'bg-[#FAF9EB] border-[#D5BF86] hover:border-[#A71D31]/50'
                         }`}
                     >
                       <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${isChecked
@@ -769,7 +769,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
                   value={customGoal}
                   onChange={(e) => setCustomGoal(e.target.value)}
                   placeholder="e.g., Track post-marathon recovery and renal clearance over 30 days"
-                  className={`w-full p-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-[#A71D31] ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30 text-white' : 'bg-[#FAF9EB] border-[#D5BF86] text-[#3F0D12]'
+                  className={`w-full p-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-[#A71D31] ${isDark ? 'bg-[#050814] border-[#D5BF86]/30 text-white' : 'bg-[#FAF9EB] border-[#D5BF86] text-[#3F0D12]'
                     }`}
                 />
               </div>
@@ -781,7 +781,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
           ========================================================================== */}
           {step === 6 && (
             <div className="space-y-4 text-xs sm:text-sm">
-              <div className={`p-4 rounded-2xl border ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'
+              <div className={`p-4 rounded-2xl border ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'
                 }`}>
                 <h3 className="font-bold text-sm text-[#A71D31] mb-1">
                   Patient Data Sovereignty & Informed Consent
@@ -795,7 +795,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
                 {/* Consent 1: Local Storage and Processing (Required) */}
                 <label className={`p-4 rounded-2xl border flex items-start gap-3.5 cursor-pointer transition-colors ${consentStore
                   ? 'bg-[#A71D31]/10 border-[#A71D31]'
-                  : isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'
+                  : isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'
                   }`}>
                   <input
                     type="checkbox"
@@ -816,7 +816,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
                 {/* Consent 2: Doctor Sharing (Separate & Optional) */}
                 <label className={`p-4 rounded-2xl border flex items-start gap-3.5 cursor-pointer transition-colors ${consentDoctor
                   ? 'bg-[#A71D31]/10 border-[#A71D31]'
-                  : isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'
+                  : isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'
                   }`}>
                   <input
                     type="checkbox"
@@ -837,7 +837,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
                 {/* Consent 3: AI Assistant (Separate & Optional) */}
                 <label className={`p-4 rounded-2xl border flex items-start gap-3.5 cursor-pointer transition-colors ${consentAI
                   ? 'bg-[#A71D31]/10 border-[#A71D31]'
-                  : isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'
+                  : isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]'
                   }`}>
                   <input
                     type="checkbox"
@@ -882,7 +882,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
           ========================================================================== */}
           {step === 7 && (
             <div className="space-y-5">
-              <div className={`p-5 rounded-3xl border ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
+              <div className={`p-5 rounded-3xl border ${isDark ? 'bg-[#050814] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
                 }`}>
                 <div className="flex items-center gap-3 pb-3 border-b border-inherit">
                   <div className="w-12 h-12 rounded-2xl bg-[#A71D31]/20 text-[#A71D31] flex items-center justify-center font-extrabold text-lg">
@@ -925,7 +925,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
                   <span className="px-2.5 py-1 rounded-full bg-[#D5BF86]/20 text-[#3F0D12] dark:text-[#FAF9EB] border border-[#D5BF86] font-semibold flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3" /> Doctor Packet Enabled
                   </span>
-                  <span className="px-2.5 py-1 rounded-full bg-[#FAF9EB] dark:bg-[#1D070A] text-[#8D775F] border border-[#D5BF86] font-semibold flex items-center gap-1">
+                  <span className="px-2.5 py-1 rounded-full bg-[#FAF9EB] dark:bg-[#050814] text-[#8D775F] border border-[#D5BF86] font-semibold flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3 text-[#A71D31]" /> Non-Diagnostic Boundary Locked
                   </span>
                 </div>
@@ -952,7 +952,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
         </div>
 
         {/* Modal Footer Controls */}
-        <div className={`p-4 sm:p-6 border-t flex items-center justify-between gap-3 ${isDark ? 'border-[#D5BF86]/20 bg-[#1D070A]' : 'border-[#D5BF86] bg-[#FAF9EB]'
+        <div className={`p-4 sm:p-6 border-t flex items-center justify-between gap-3 ${isDark ? 'border-[#D5BF86]/20 bg-[#050814]' : 'border-[#D5BF86] bg-[#FAF9EB]'
           }`}>
           {step > 1 ? (
             <button

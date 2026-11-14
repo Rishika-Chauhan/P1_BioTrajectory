@@ -9,9 +9,12 @@ import {
   Droplet,
   CheckCircle2,
   FileSpreadsheet,
-  X
+  X,
+  Bluetooth,
+  RefreshCw
 } from 'lucide-react';
 import { SAMPLE_DAILY_VITALS_7D } from '../../data/vitalsData';
+import { BluetoothService } from '../../services/bluetoothService';
 import DisclaimerBanner from '../../components/common/DisclaimerBanner';
 
 export default function DailyReportsPage() {
@@ -20,6 +23,7 @@ export default function DailyReportsPage() {
   const [records, setRecords] = useState(SAMPLE_DAILY_VITALS_7D);
   const [modalOpen, setModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
+  const [isImportingBLE, setIsImportingBLE] = useState(false);
 
   // New reading form state with simple terms
   const [newReading, setNewReading] = useState({
@@ -39,6 +43,46 @@ export default function DailyReportsPage() {
   const showToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  const handleImportFromBluetooth = async () => {
+    setIsImportingBLE(true);
+    try {
+      await BluetoothService.syncAllConnectedDevices();
+      const vitals = BluetoothService.getLatestVitals();
+      setNewReading(prev => ({
+        ...prev,
+        systolic: String(vitals.systolic || prev.systolic),
+        diastolic: String(vitals.diastolic || prev.diastolic),
+        pulse: String(vitals.pulse || prev.pulse),
+        steps: String(vitals.steps || prev.steps),
+        distance: String(vitals.distance || prev.distance),
+        exerciseMins: String(vitals.exerciseMins || prev.exerciseMins),
+        urineProteinMg: String(vitals.urineProteinMg ?? prev.urineProteinMg),
+        urineSG: String(vitals.urineSG || prev.urineSG),
+        urinePH: String(vitals.urinePH || prev.urinePH),
+        notes: `Imported via Bluetooth (${vitals.urineSource || 'Omron Cuff + Watch + Optical Analyzer'})`
+      }));
+      showToast('Imported readings from connected Bluetooth devices!');
+    } catch {
+      const vitals = BluetoothService.getLatestVitals();
+      setNewReading(prev => ({
+        ...prev,
+        systolic: String(vitals.systolic || prev.systolic),
+        diastolic: String(vitals.diastolic || prev.diastolic),
+        pulse: String(vitals.pulse || prev.pulse),
+        steps: String(vitals.steps || prev.steps),
+        distance: String(vitals.distance || prev.distance),
+        exerciseMins: String(vitals.exerciseMins || prev.exerciseMins),
+        urineProteinMg: String(vitals.urineProteinMg ?? prev.urineProteinMg),
+        urineSG: String(vitals.urineSG || prev.urineSG),
+        urinePH: String(vitals.urinePH || prev.urinePH),
+        notes: 'Imported from Bluetooth cached telemetry'
+      }));
+      showToast('Loaded latest cached Bluetooth telemetry!');
+    } finally {
+      setIsImportingBLE(false);
+    }
   };
 
   const handleAddReading = (e) => {
@@ -314,6 +358,28 @@ export default function DailyReportsPage() {
               </button>
             </div>
 
+            {/* Quick Bluetooth Import Banner */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-950/40 via-cyan-950/40 to-indigo-950/40 border border-cyan-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0">
+                  <Bluetooth className="w-5 h-5 animate-pulse" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900 dark:text-white text-[15px]">Smart Device Quick-Import</h4>
+                  <p className="text-[13px] text-slate-500 dark:text-slate-400">Fill instantly from connected BP Cuff, Smart Watch & Urine Analyzer</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleImportFromBluetooth}
+                disabled={isImportingBLE}
+                className="px-4 py-2 rounded-xl text-[14px] font-bold bg-cyan-400 text-slate-950 hover:bg-cyan-300 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0 shadow-sm"
+              >
+                <RefreshCw className={`w-4 h-4 ${isImportingBLE ? 'animate-spin' : ''}`} />
+                <span>{isImportingBLE ? 'Syncing...' : 'Import from BLE'}</span>
+              </button>
+            </div>
+
             <form onSubmit={handleAddReading} className="space-y-5 text-[16px]">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
@@ -386,6 +452,54 @@ export default function DailyReportsPage() {
                     className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono"
                   />
                 </div>
+              </div>
+
+              {/* Urine Diagnostic Analyzer Inputs */}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-[15px]">
+                    <Droplet className="w-4 h-4 text-blue-500" />
+                    <span>Urine Analyzer Diagnostic</span>
+                  </span>
+                  <span className="text-[12px] px-2 py-0.5 rounded bg-blue-500/10 text-blue-500 dark:text-blue-400 font-mono">
+                    Spectrophotometer / Strip
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Protein (mg/dL)</label>
+                    <input
+                      type="number"
+                      value={newReading.urineProteinMg}
+                      onChange={e => setNewReading({ ...newReading, urineProteinMg: e.target.value })}
+                      placeholder="0"
+                      className="w-full p-2.5 rounded-xl bg-white dark:bg-[#101827] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Specific Gravity</label>
+                    <input
+                      type="text"
+                      value={newReading.urineSG}
+                      onChange={e => setNewReading({ ...newReading, urineSG: e.target.value })}
+                      placeholder="1.018"
+                      className="w-full p-2.5 rounded-xl bg-white dark:bg-[#101827] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">pH Level</label>
+                    <input
+                      type="text"
+                      value={newReading.urinePH}
+                      onChange={e => setNewReading({ ...newReading, urinePH: e.target.value })}
+                      placeholder="6.5"
+                      className="w-full p-2.5 rounded-xl bg-white dark:bg-[#101827] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono text-sm"
+                    />
+                  </div>
+                </div>
+                <p className="text-[12px] text-slate-500 dark:text-slate-400">
+                  Target baseline: 0 mg/dL (negative), SG 1.010 - 1.025, pH 5.5 - 7.5.
+                </p>
               </div>
 
               <div className="space-y-1.5">

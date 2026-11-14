@@ -104,7 +104,7 @@ export default function AttractivePieChart() {
         </div>
 
         {/* Preset Selector Buttons */}
-        <div className={`inline-flex p-1 rounded-lg border text-xs font-sans self-start md:self-auto shrink-0 ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
+        <div className={`inline-flex p-1 rounded-lg border text-xs font-sans self-start md:self-auto shrink-0 ${isDark ? 'bg-[#050814] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
           }`}>
           {PIE_CHART_PRESETS.map((p, idx) => (
             <button
@@ -163,7 +163,7 @@ export default function AttractivePieChart() {
                     fill={seg.color}
                     transform={`translate(${dx}, ${dy})`}
                     className="cursor-pointer transition-all duration-300"
-                    stroke={isDark ? '#1D070A' : '#FAF9EB'}
+                    stroke={isDark ? '#050814' : '#FAF9EB'}
                     strokeWidth="2.5"
                     filter={isHovered ? 'url(#activePieGlow)' : 'none'}
                     onMouseEnter={() => setHoveredSegmentId(seg.id)}
@@ -175,7 +175,7 @@ export default function AttractivePieChart() {
 
             {/* Central Circular HUD Display */}
             <div
-              className={`absolute w-44 h-44 rounded-full flex flex-col items-center justify-center text-center p-4 shadow-inner border pointer-events-none transition-all ${isDark ? 'bg-[#1D070A]/95 border-[#D5BF86]/30' : 'bg-[#FAF9EB]/95 border-[#D5BF86]'
+              className={`absolute w-44 h-44 rounded-full flex flex-col items-center justify-center text-center p-4 shadow-inner border pointer-events-none transition-all ${isDark ? 'bg-[#050814]/95 border-[#D5BF86]/30' : 'bg-[#FAF9EB]/95 border-[#D5BF86]'
                 }`}
             >
               <span className="text-[10px] font-mono-code uppercase font-bold tracking-wider text-[#8D775F]">
@@ -218,10 +218,10 @@ export default function AttractivePieChart() {
                 onClick={() => setHoveredSegmentId(seg.id)}
                 className={`p-4 rounded-2xl border cursor-pointer transition-all duration-300 ${isHovered
                     ? isDark
-                      ? 'bg-[#1D070A] border-[#A71D31] shadow-md ring-1 ring-[#A71D31]/40 scale-[1.02]'
+                      ? 'bg-[#050814] border-[#A71D31] shadow-md ring-1 ring-[#A71D31]/40 scale-[1.02]'
                       : 'bg-[#FAF9EB] border-[#A71D31] shadow-sm ring-1 ring-[#A71D31]/50 scale-[1.02]'
                     : isDark
-                      ? 'bg-[#1D070A]/60 border-[#D5BF86]/20 hover:border-[#D5BF86]/40'
+                      ? 'bg-[#050814]/60 border-[#D5BF86]/20 hover:border-[#D5BF86]/40'
                       : 'bg-[#FAF9EB]/40 border-[#D5BF86]/40 hover:border-[#D5BF86]'
                   }`}
               >
@@ -266,7 +266,7 @@ export default function AttractivePieChart() {
       </div>
 
       {/* Bottom Clinical Regulatory Note */}
-      <div className={`mt-8 p-4 rounded-2xl border flex items-start space-x-3 text-xs ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20 text-[#D5BF86]' : 'bg-[#FAF9EB] border-[#D5BF86]/60 text-[#473228]'
+      <div className={`mt-8 p-4 rounded-2xl border flex items-start space-x-3 text-xs ${isDark ? 'bg-[#050814] border-[#D5BF86]/20 text-[#D5BF86]' : 'bg-[#FAF9EB] border-[#D5BF86]/60 text-[#473228]'
         }`}>
         <ShieldCheck className="w-4 h-4 text-[#A71D31] shrink-0 mt-0.5" />
         <span className="leading-relaxed">

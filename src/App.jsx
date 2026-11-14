@@ -13,6 +13,9 @@ import DoctorDashboardLayout from './components/layout/DoctorDashboardLayout';
 import AdminDashboardLayout from './components/layout/AdminDashboardLayout';
 
 import HomePage from './pages/Home/HomePage';
+import ExplorePage from './pages/Explore/ExplorePage';
+import DiseaseDetailPage from './pages/Explore/DiseaseDetailPage';
+import AboutPage from './pages/About/AboutPage';
 import LoginPage from './pages/Auth/LoginPage';
 import RegisterPage from './pages/Auth/RegisterPage';
 import ForgotPasswordPage from './pages/Auth/ForgotPasswordPage';
@@ -26,6 +29,7 @@ import AiAssistantPage from './pages/UserDashboard/AiAssistantPage';
 import DoctorConsultationPage from './pages/UserDashboard/DoctorConsultationPage';
 import QrProfilePage from './pages/UserDashboard/QrProfilePage';
 import SettingsPage from './pages/UserDashboard/SettingsPage';
+import ConnectedDevicesPage from './pages/UserDashboard/ConnectedDevicesPage';
 
 import DoctorLoginPage from './pages/DoctorPortal/DoctorLoginPage';
 import DoctorRegisterPage from './pages/DoctorPortal/DoctorRegisterPage';
@@ -74,6 +78,42 @@ function AppRoutes() {
             </>
           }
         />
+        <Route
+          path="/home"
+          element={
+            <>
+              <Navbar />
+              <HomePage />
+            </>
+          }
+        />
+        <Route
+          path="/explore"
+          element={
+            <>
+              <Navbar />
+              <ExplorePage />
+            </>
+          }
+        />
+        <Route
+          path="/explore/:id"
+          element={
+            <>
+              <Navbar />
+              <DiseaseDetailPage />
+            </>
+          }
+        />
+        <Route
+          path="/about"
+          element={
+            <>
+              <Navbar />
+              <AboutPage />
+            </>
+          }
+        />
 
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -99,6 +139,7 @@ function AppRoutes() {
           <Route path="assistant" element={<AiAssistantPage />} />
           <Route path="consultation" element={<DoctorConsultationPage />} />
           <Route path="qr" element={<QrProfilePage />} />
+          <Route path="devices" element={<ConnectedDevicesPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
 

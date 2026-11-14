@@ -63,7 +63,7 @@ export default function ManualEntryModal({ isOpen, onClose, onSave, onAddReading
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/75 backdrop-blur-md animate-fadeIn">
-      <div className={`relative w-full max-w-xl border rounded-2xl shadow-2xl overflow-hidden my-8 ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
+      <div className={`relative w-full max-w-xl border rounded-2xl shadow-2xl overflow-hidden my-8 ${isDark ? 'bg-[#050814] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
         }`}>
 
         {/* Top Header */}
@@ -97,7 +97,7 @@ export default function ManualEntryModal({ isOpen, onClose, onSave, onAddReading
               <select
                 value={form.protein}
                 onChange={(e) => setForm({ ...form, protein: Number(e.target.value) })}
-                className={`w-full p-2.5 rounded-xl border text-xs font-mono ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30 text-white' : 'bg-white border-[#D5BF86] text-[#3F0D12]'
+                className={`w-full p-2.5 rounded-xl border text-xs font-mono ${isDark ? 'bg-[#050814] border-[#D5BF86]/30 text-white' : 'bg-white border-[#D5BF86] text-[#3F0D12]'
                   }`}
               >
                 <option value={0}>Negative (0 mg/dL)</option>
@@ -116,7 +116,7 @@ export default function ManualEntryModal({ isOpen, onClose, onSave, onAddReading
               <select
                 value={form.specificGravity}
                 onChange={(e) => setForm({ ...form, specificGravity: Number(e.target.value) })}
-                className={`w-full p-2.5 rounded-xl border text-xs font-mono ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30 text-white' : 'bg-white border-[#D5BF86] text-[#3F0D12]'
+                className={`w-full p-2.5 rounded-xl border text-xs font-mono ${isDark ? 'bg-[#050814] border-[#D5BF86]/30 text-white' : 'bg-white border-[#D5BF86] text-[#3F0D12]'
                   }`}
               >
                 <option value={1.005}>1.005 (Dilute / High Hydration)</option>
@@ -134,7 +134,7 @@ export default function ManualEntryModal({ isOpen, onClose, onSave, onAddReading
               <select
                 value={form.pH}
                 onChange={(e) => setForm({ ...form, pH: Number(e.target.value) })}
-                className={`w-full p-2.5 rounded-xl border text-xs font-mono ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30 text-white' : 'bg-white border-[#D5BF86] text-[#3F0D12]'
+                className={`w-full p-2.5 rounded-xl border text-xs font-mono ${isDark ? 'bg-[#050814] border-[#D5BF86]/30 text-white' : 'bg-white border-[#D5BF86] text-[#3F0D12]'
                   }`}
               >
                 <option value={5.5}>5.5 (Acidic)</option>
@@ -152,7 +152,7 @@ export default function ManualEntryModal({ isOpen, onClose, onSave, onAddReading
               <select
                 value={form.glucose}
                 onChange={(e) => setForm({ ...form, glucose: Number(e.target.value) })}
-                className={`w-full p-2.5 rounded-xl border text-xs font-mono ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30 text-white' : 'bg-white border-[#D5BF86] text-[#3F0D12]'
+                className={`w-full p-2.5 rounded-xl border text-xs font-mono ${isDark ? 'bg-[#050814] border-[#D5BF86]/30 text-white' : 'bg-white border-[#D5BF86] text-[#3F0D12]'
                   }`}
               >
                 <option value={0}>Negative (0 mg/dL)</option>
@@ -168,7 +168,7 @@ export default function ManualEntryModal({ isOpen, onClose, onSave, onAddReading
               <select
                 value={form.ketones}
                 onChange={(e) => setForm({ ...form, ketones: Number(e.target.value) })}
-                className={`w-full p-2.5 rounded-xl border text-xs font-mono ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30 text-white' : 'bg-white border-[#D5BF86] text-[#3F0D12]'
+                className={`w-full p-2.5 rounded-xl border text-xs font-mono ${isDark ? 'bg-[#050814] border-[#D5BF86]/30 text-white' : 'bg-white border-[#D5BF86] text-[#3F0D12]'
                   }`}
               >
                 <option value={0}>Negative (0 mg/dL)</option>
@@ -185,7 +185,7 @@ export default function ManualEntryModal({ isOpen, onClose, onSave, onAddReading
               <select
                 value={form.leukocytes}
                 onChange={(e) => setForm({ ...form, leukocytes: Number(e.target.value) })}
-                className={`w-full p-2.5 rounded-xl border text-xs font-mono ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30 text-white' : 'bg-white border-[#D5BF86] text-[#3F0D12]'
+                className={`w-full p-2.5 rounded-xl border text-xs font-mono ${isDark ? 'bg-[#050814] border-[#D5BF86]/30 text-white' : 'bg-white border-[#D5BF86] text-[#3F0D12]'
                   }`}
               >
                 <option value={0}>Negative (0 Leu/µL)</option>
@@ -203,7 +203,7 @@ export default function ManualEntryModal({ isOpen, onClose, onSave, onAddReading
               type="text"
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              className={`w-full p-2.5 rounded-xl border text-xs ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/30 text-white' : 'bg-white border-[#D5BF86] text-[#3F0D12]'
+              className={`w-full p-2.5 rounded-xl border text-xs ${isDark ? 'bg-[#050814] border-[#D5BF86]/30 text-white' : 'bg-white border-[#D5BF86] text-[#3F0D12]'
                 }`}
               placeholder="e.g. Post-marathon workout, 14hr fasting"
             />

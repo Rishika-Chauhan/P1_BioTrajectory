@@ -10,7 +10,7 @@ export default function Footer({ onOpenDemo, onOpenReport }) {
   };
 
   return (
-    <footer className={`relative border-t pt-14 pb-10 text-xs transition-colors ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20 text-[#D5BF86]' : 'bg-[#FAF9EB] border-[#D5BF86] text-[#473228]'
+    <footer className={`relative border-t pt-14 pb-10 text-xs transition-colors ${isDark ? 'bg-[#050814] border-[#D5BF86]/20 text-[#D5BF86]' : 'bg-[#FAF9EB] border-[#D5BF86] text-[#473228]'
       }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 

@@ -1,19 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Clock3, CheckCircle2, XCircle, Search, ShieldAlert } from 'lucide-react';
 
 const initialApplications = [
-  { id: 'doc-1024', name: 'Dr. Neha Iyer', specialty: 'Endocrinology', license: 'MCI-88213', status: 'Pending review', risk: 'Low' },
-  { id: 'doc-1041', name: 'Dr. Aaron Cole', specialty: 'Family Medicine', license: 'MCI-11920', status: 'Pending review', risk: 'Medium' },
-  { id: 'doc-1089', name: 'Dr. Sofia Martins', specialty: 'Cardiology', license: 'MCI-43244', status: 'Approved', risk: 'Low' },
-  { id: 'doc-1102', name: 'Dr. Lucas Bennett', specialty: 'Neurology', license: 'MCI-65091', status: 'Needs info', risk: 'Medium' }
+  { id: 'doc-1024', name: 'Dr. Neha Iyer', specialty: 'Endocrinology', license: 'MCI-88213', yearsExperience: 7, status: 'Pending review', risk: 'Low', email: 'neha.iyer@health.org' },
+  { id: 'doc-1041', name: 'Dr. Aaron Cole', specialty: 'Family Medicine', license: 'MCI-11920', yearsExperience: 12, status: 'Pending review', risk: 'Medium', email: 'aaron.cole@clinic.org' },
+  { id: 'doc-1089', name: 'Dr. Sofia Martins', specialty: 'Cardiology', license: 'MCI-43244', yearsExperience: 9, status: 'Approved', risk: 'Low', email: 'sofia.martins@cardio.org' },
+  { id: 'doc-1102', name: 'Dr. Lucas Bennett', specialty: 'Neurology', license: 'MCI-65091', yearsExperience: 5, status: 'Needs info', risk: 'Medium', email: 'lucas.bennett@brain.org' }
 ];
 
 export default function AdminDoctorVerificationPage() {
-  const [applications, setApplications] = useState(initialApplications);
+  const loadStoredApplications = () => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('biotrajectory_doctor_applications') || '[]');
+      if (Array.isArray(stored) && stored.length > 0) {
+        // Merge stored with initial without duplicates
+        const uniqueStoredIds = new Set(stored.map((s) => s.id));
+        const remainingInitial = initialApplications.filter((init) => !uniqueStoredIds.has(init.id));
+        return [...stored, ...remainingInitial];
+      }
+    } catch {
+      // fallback
+    }
+    return initialApplications;
+  };
+
+  const [applications, setApplications] = useState(loadStoredApplications);
   const [search, setSearch] = useState('');
 
+  useEffect(() => {
+    const handleUpdate = () => {
+      setApplications(loadStoredApplications());
+    };
+    window.addEventListener('biotrajectory_doctor_applications_updated', handleUpdate);
+    return () => window.removeEventListener('biotrajectory_doctor_applications_updated', handleUpdate);
+  }, []);
+
   const updateStatus = (id, nextStatus) => {
-    setApplications((prev) => prev.map((item) => item.id === id ? { ...item, status: nextStatus } : item));
+    setApplications((prev) => {
+      const updated = prev.map((item) => (item.id === id ? { ...item, status: nextStatus } : item));
+      try {
+        localStorage.setItem('biotrajectory_doctor_applications', JSON.stringify(updated));
+      } catch {
+        // silent
+      }
+      return updated;
+    });
   };
 
   const filtered = applications.filter((item) => {
@@ -76,7 +107,8 @@ export default function AdminDoctorVerificationPage() {
               <tr className="border-b border-slate-800 text-slate-400 uppercase text-[10px]">
                 <th className="py-3 px-4">Applicant</th>
                 <th className="py-3 px-4">Specialty</th>
-                <th className="py-3 px-4">License</th>
+                <th className="py-3 px-4">Experience</th>
+                <th className="py-3 px-4">License Number</th>
                 <th className="py-3 px-4">Risk</th>
                 <th className="py-3 px-4">Status</th>
                 <th className="py-3 px-4 text-right">Action</th>
@@ -87,13 +119,23 @@ export default function AdminDoctorVerificationPage() {
                 <tr key={application.id} className="hover:bg-slate-800/30 transition-colors">
                   <td className="py-3 px-4">
                     <p className="font-bold text-white">{application.name}</p>
-                    <p className="text-[11px] text-slate-400">{application.id}</p>
+                    <p className="text-[11px] text-slate-400 font-mono">{application.id} {application.email ? `• ${application.email}` : ''}</p>
+                    {application.notes && (
+                      <p className="text-[11px] text-cyan-400/80 italic mt-0.5 line-clamp-1 max-w-xs">
+                        "{application.notes}"
+                      </p>
+                    )}
                   </td>
-                  <td className="py-3 px-4 text-slate-300">{application.specialty}</td>
-                  <td className="py-3 px-4 font-mono text-slate-400">{application.license}</td>
+                  <td className="py-3 px-4 text-slate-300 font-medium">{application.specialty}</td>
+                  <td className="py-3 px-4 text-slate-300 font-mono">
+                    <span className="px-2 py-0.5 rounded-lg bg-slate-800 border border-slate-700 text-[11px] font-bold">
+                      {application.yearsExperience || 5} Yrs
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 font-mono text-cyan-400 font-bold">{application.license}</td>
                   <td className="py-3 px-4">
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${application.risk === 'Low' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
-                      {application.risk}
+                      {application.risk || 'Low'}
                     </span>
                   </td>
                   <td className="py-3 px-4">
@@ -103,10 +145,10 @@ export default function AdminDoctorVerificationPage() {
                   </td>
                   <td className="py-3 px-4 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <button onClick={() => updateStatus(application.id, 'Approved')} className="inline-flex items-center gap-1 rounded-lg border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 px-2.5 py-1.5 text-[10px] font-semibold">
+                      <button onClick={() => updateStatus(application.id, 'Approved')} className="inline-flex items-center gap-1 rounded-lg border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 px-2.5 py-1.5 text-[10px] font-semibold transition-colors cursor-pointer">
                         <CheckCircle2 className="w-3 h-3" /> Approve
                       </button>
-                      <button onClick={() => updateStatus(application.id, 'Needs info')} className="inline-flex items-center gap-1 rounded-lg border border-red-500/20 bg-red-500/10 text-red-400 px-2.5 py-1.5 text-[10px] font-semibold">
+                      <button onClick={() => updateStatus(application.id, 'Needs info')} className="inline-flex items-center gap-1 rounded-lg border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20 px-2.5 py-1.5 text-[10px] font-semibold transition-colors cursor-pointer">
                         <XCircle className="w-3 h-3" /> Request info
                       </button>
                     </div>

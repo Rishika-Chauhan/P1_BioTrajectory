@@ -276,6 +276,51 @@ export default function HealthAnalyticsPage() {
         </motion.div>
       </div>
 
+      {/* Your Recent Health History */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+        className="p-8 rounded-3xl glass-card space-y-6"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Your Recent Health History</h2>
+            <p className="text-[16px] text-slate-500 dark:text-slate-400 mt-0.5">Readings from your past few days</p>
+          </div>
+          <span className="text-[14px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700/60 w-fit">
+            Past 7 Days Recorded
+          </span>
+        </div>
+
+        <div className="space-y-3.5">
+          {[...SAMPLE_DAILY_VITALS_7D].reverse().map((item, idx) => (
+            <div
+              key={idx}
+              className="p-4 sm:p-5 rounded-2xl bg-white/60 dark:bg-[#0c1220]/80 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[16px] hover:border-cyan-500/40 transition-colors"
+            >
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <span className="font-bold text-slate-900 dark:text-white">{item.date}</span>
+                  <span className="text-[14px] px-2.5 py-0.5 rounded-lg bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-bold">
+                    {item.dayName}
+                  </span>
+                  <span className="text-[12px] px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium">
+                    {item.spo2 || 98}% SpO2
+                  </span>
+                </div>
+                <p className="text-[15px] text-slate-500 dark:text-slate-400">{item.notes}</p>
+              </div>
+
+              <div className="sm:text-right space-y-0.5">
+                <p className="text-cyan-600 dark:text-cyan-400 font-bold font-mono text-[17px]">{item.systolic}/{item.diastolic} mmHg</p>
+                <p className="text-[15px] text-slate-500 dark:text-slate-400">{item.steps.toLocaleString()} steps • {item.exerciseMins}m exercise</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
       {/* Safety Notice */}
       <DisclaimerBanner text="Notice: These trends help you observe changes in your everyday body signals over time. Always discuss your readings with a licensed healthcare provider." />
     </div>

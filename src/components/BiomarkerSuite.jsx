@@ -73,7 +73,7 @@ export default function BiomarkerSuite() {
 
   return (
     <section
-      className={`relative py-20 border-t transition-colors ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#F1F0CC] border-[#D5BF86]/40'
+      className={`relative py-20 border-t transition-colors ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#F1F0CC] border-[#D5BF86]/40'
         }`}
       id="biomarkers"
     >
@@ -171,7 +171,7 @@ export default function BiomarkerSuite() {
             </div>
 
             {/* Colorimetric Reagent Pad Scale */}
-            <div className={`mt-4 p-4 rounded-lg border ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]/60'}`}>
+            <div className={`mt-4 p-4 rounded-lg border ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]/60'}`}>
               <span className="text-[11px] font-sans uppercase font-bold block mb-2 text-[#8D775F]">
                 Commercial Colorimetric Pad Spectrum (Multistix 10SG):
               </span>
@@ -193,7 +193,7 @@ export default function BiomarkerSuite() {
             {/* =========================================================================
                 INTERACTIVE PHYSIOLOGICAL CONFOUNDER SIMULATOR (PDF Section 11 & 12)
             ========================================================================== */}
-            <div className={`mt-5 p-4 rounded-lg border ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB]/60 border-[#D5BF86]/60'
+            <div className={`mt-5 p-4 rounded-lg border ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB]/60 border-[#D5BF86]/60'
               }`}>
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-sans uppercase font-bold text-[#A71D31] dark:text-[#D5BF86] flex items-center space-x-1.5">
@@ -211,7 +211,7 @@ export default function BiomarkerSuite() {
                     onClick={() => setActiveConfounder(c.id)}
                     className={`px-2.5 py-1 rounded-md text-[11px] font-sans transition-all cursor-pointer ${activeConfounder === c.id
                         ? 'bg-[#A71D31] text-white font-bold shadow-xs'
-                        : isDark ? 'bg-[#1D070A] text-[#D5BF86] hover:text-white border border-[#D5BF86]/30' : 'bg-white text-[#473228] border border-[#D5BF86]'
+                        : isDark ? 'bg-[#050814] text-[#D5BF86] hover:text-white border border-[#D5BF86]/30' : 'bg-white text-[#473228] border border-[#D5BF86]'
                       }`}
                   >
                     {c.name.split('(')[0]}
@@ -238,7 +238,7 @@ export default function BiomarkerSuite() {
 
             {/* Baseline Strategy & Non-Pathological Confounders Grid */}
             <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className={`p-4 rounded-xl border ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]/60'}`}>
+              <div className={`p-4 rounded-xl border ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]/60'}`}>
                 <span className={`text-xs font-mono-code uppercase tracking-wider block mb-1 font-semibold text-[#A71D31]`}>
                   Baseline Corridor Strategy
                 </span>
@@ -247,7 +247,7 @@ export default function BiomarkerSuite() {
                 </p>
               </div>
 
-              <div className={`p-4 rounded-xl border ${isDark ? 'bg-[#1D070A] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]/60'}`}>
+              <div className={`p-4 rounded-xl border ${isDark ? 'bg-[#050814] border-[#D5BF86]/20' : 'bg-[#FAF9EB] border-[#D5BF86]/60'}`}>
                 <span className={`text-xs font-mono-code uppercase tracking-wider block mb-1 font-semibold text-[#8D775F] dark:text-[#D5BF86]`}>
                   Measurement Confounders
                 </span>

@@ -55,10 +55,10 @@ export default function Navbar({ onOpenDemo, onOpenReport, onOpenProfile }) {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
         ? isDark
-          ? 'bg-[#1D070A]/92 backdrop-blur-2xl border-b border-[#D5BF86]/20 shadow-[0_4px_25px_rgba(0,0,0,0.6)]'
+          ? 'bg-[#050814]/92 backdrop-blur-2xl border-b border-[#D5BF86]/20 shadow-[0_4px_25px_rgba(0,0,0,0.6)]'
           : 'bg-[#FFFFFF]/95 backdrop-blur-2xl border-b border-[#D5BF86]/60 shadow-[0_1px_12px_rgba(63,13,18,0.04)]'
         : isDark
-          ? 'bg-[#1D070A]/80 backdrop-blur-md border-b border-[#D5BF86]/15'
+          ? 'bg-[#050814]/80 backdrop-blur-md border-b border-[#D5BF86]/15'
           : 'bg-[#F1F0CC]/90 backdrop-blur-md border-b border-[#D5BF86]/50'
         }`}
     >
@@ -137,7 +137,7 @@ export default function Navbar({ onOpenDemo, onOpenReport, onOpenProfile }) {
             <button
               onClick={toggleTheme}
               className={`p-2 rounded-xl border transition-all flex items-center justify-center shrink-0 ${isDark
-                ? 'border-[#D5BF86]/30 text-[#D5BF86] bg-[#2B0B0E] hover:bg-[#3F0D12] shadow-xs'
+                ? 'border-[#D5BF86]/30 text-[#D5BF86] bg-[#0B132B] hover:bg-[#3F0D12] shadow-xs'
                 : 'border-[#D5BF86] text-[#3F0D12] bg-white hover:bg-[#FAF9EB] shadow-xs'
                 }`}
               title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
@@ -149,7 +149,7 @@ export default function Navbar({ onOpenDemo, onOpenReport, onOpenProfile }) {
             <button
               onClick={onOpenProfile}
               className={`text-xs font-semibold tracking-wide px-2.5 sm:px-3 py-2 rounded-xl border transition-all flex items-center space-x-1.5 shrink-0 ${isDark
-                ? 'border-[#D5BF86]/30 hover:border-[#A71D31] text-[#FAF9EB] hover:text-white bg-[#2B0B0E] hover:bg-[#3F0D12]'
+                ? 'border-[#D5BF86]/30 hover:border-[#A71D31] text-[#FAF9EB] hover:text-white bg-[#0B132B] hover:bg-[#3F0D12]'
                 : 'border-[#D5BF86] hover:border-[#A71D31] text-[#3F0D12] hover:text-[#A71D31] bg-white hover:bg-[#FAF9EB] shadow-xs'
                 }`}
               title="View and update your health profile, units, and consent preferences"
@@ -162,7 +162,7 @@ export default function Navbar({ onOpenDemo, onOpenReport, onOpenProfile }) {
             <button
               onClick={onOpenReport}
               className={`text-xs font-semibold tracking-wide px-2.5 sm:px-3 py-2 rounded-xl border transition-all flex items-center space-x-1.5 shrink-0 ${isDark
-                ? 'border-[#D5BF86]/30 hover:border-[#A71D31] text-[#FAF9EB] hover:text-white bg-[#2B0B0E] hover:bg-[#3F0D12]'
+                ? 'border-[#D5BF86]/30 hover:border-[#A71D31] text-[#FAF9EB] hover:text-white bg-[#0B132B] hover:bg-[#3F0D12]'
                 : 'border-[#D5BF86] hover:border-[#A71D31] text-[#3F0D12] hover:text-[#A71D31] bg-white hover:bg-[#FAF9EB] shadow-xs'
                 }`}
               title="Export Clinician Handover Packet"
@@ -189,7 +189,7 @@ export default function Navbar({ onOpenDemo, onOpenReport, onOpenProfile }) {
           <div className="lg:hidden flex items-center space-x-2">
             <button
               onClick={toggleTheme}
-              className={`p-2 rounded-xl border ${isDark ? 'border-[#D5BF86]/30 text-[#D5BF86] bg-[#2B0B0E]' : 'border-[#D5BF86] text-[#3F0D12] bg-white'
+              className={`p-2 rounded-xl border ${isDark ? 'border-[#D5BF86]/30 text-[#D5BF86] bg-[#0B132B]' : 'border-[#D5BF86] text-[#3F0D12] bg-white'
                 }`}
             >
               {isDark ? <Sun className="w-4 h-4 text-[#D5BF86]" /> : <Moon className="w-4 h-4 text-[#3F0D12]" />}
@@ -197,7 +197,7 @@ export default function Navbar({ onOpenDemo, onOpenReport, onOpenProfile }) {
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`p-2 rounded-xl border ${isDark ? 'border-[#D5BF86]/30 text-[#FAF9EB] bg-[#2B0B0E]' : 'border-[#D5BF86] text-[#3F0D12] bg-white'
+              className={`p-2 rounded-xl border ${isDark ? 'border-[#D5BF86]/30 text-[#FAF9EB] bg-[#0B132B]' : 'border-[#D5BF86] text-[#3F0D12] bg-white'
                 }`}
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -209,7 +209,7 @@ export default function Navbar({ onOpenDemo, onOpenReport, onOpenProfile }) {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className={`lg:hidden px-5 pt-3 pb-6 space-y-2 border-b animate-fadeIn ${isDark ? 'bg-[#1D070A]/95 backdrop-blur-2xl border-[#D5BF86]/20' : 'bg-[#FAF9EB]/95 backdrop-blur-2xl border-[#D5BF86] shadow-2xl'
+        <div className={`lg:hidden px-5 pt-3 pb-6 space-y-2 border-b animate-fadeIn ${isDark ? 'bg-[#050814]/95 backdrop-blur-2xl border-[#D5BF86]/20' : 'bg-[#FAF9EB]/95 backdrop-blur-2xl border-[#D5BF86] shadow-2xl'
           }`}>
           {navLinks.map((item) => (
             <a
@@ -231,7 +231,7 @@ export default function Navbar({ onOpenDemo, onOpenReport, onOpenProfile }) {
                 setMobileMenuOpen(false);
                 if (onOpenProfile) onOpenProfile();
               }}
-              className={`w-full py-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center space-x-2 ${isDark ? 'border-[#D5BF86]/30 text-[#FAF9EB] bg-[#2B0B0E]' : 'border-[#D5BF86] text-[#3F0D12] bg-white'
+              className={`w-full py-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center space-x-2 ${isDark ? 'border-[#D5BF86]/30 text-[#FAF9EB] bg-[#0B132B]' : 'border-[#D5BF86] text-[#3F0D12] bg-white'
                 }`}
             >
               <User className="w-4 h-4 text-[#A71D31]" />
@@ -243,7 +243,7 @@ export default function Navbar({ onOpenDemo, onOpenReport, onOpenProfile }) {
                 setMobileMenuOpen(false);
                 onOpenReport();
               }}
-              className={`w-full py-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center space-x-2 ${isDark ? 'border-[#D5BF86]/30 text-[#FAF9EB] bg-[#2B0B0E]' : 'border-[#D5BF86] text-[#3F0D12] bg-white'
+              className={`w-full py-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center space-x-2 ${isDark ? 'border-[#D5BF86]/30 text-[#FAF9EB] bg-[#0B132B]' : 'border-[#D5BF86] text-[#3F0D12] bg-white'
                 }`}
             >
               <FileText className="w-4 h-4 text-[#A71D31]" />
