@@ -6,98 +6,19 @@ import React, {
   useEffect
 } from 'react';
 
-import { FirebaseService, ROLES, auth } from '../services/firebase';
+import {
+  FirebaseService,
+  ROLES,
+  auth
+} from '../services/firebase';
+
 import { trajectoryStorage } from '../services/trajectoryStorage';
 
 const AuthContext = createContext(null);
 
 export const USER_ROLES = ROLES;
 
-export const DEMO_USERS = [
-  {
-    role: USER_ROLES.ADMIN,
-    roleTitle: 'Platform Administrator',
-    email: 'admin@biotrajectory.health',
-    password: 'admin123',
-    name: 'Dr. Sarah Vance',
-    displayName: 'Dr. Sarah Vance (Admin)',
-    uid: 'demo_admin_usr_001',
-    id: 'demo_admin_usr_001',
-    emailVerified: true,
-    photoURL: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80',
-    claims: { role: 'ADMIN', admin: true },
-    token: 'mock_demo_token_admin',
-    joinedDate: '2024-03-01',
-    badge: 'Admin Access',
-    description: 'Manage users, doctor verification, health content, system reports, and population trends.'
-  },
-  {
-    role: USER_ROLES.DOCTOR,
-    roleTitle: 'Verified Physician (MD)',
-    email: 'doctor@biotrajectory.health',
-    aliasEmail: 'dr.thorne@biotrajectory.health',
-    password: 'doctor123',
-    name: 'Dr. Aris Thorne',
-    displayName: 'Dr. Aris Thorne, MD',
-    uid: 'doc_88921_aris',
-    id: 'doc_88921_aris',
-    emailVerified: true,
-    photoURL: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=300&q=80',
-    avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=300&q=80',
-    phone: '+1 (555) 234-8901',
-    registrationNumber: 'MED-REG-2016-89214',
-    specialization: 'Cardiology & Preventive Medicine',
-    qualification: 'MD, FACC, Harvard Medical School',
-    clinic: 'Metro Cardiology Specialists & Heart Health Center',
-    clinicName: 'Metro Cardiology Specialists & Heart Health Center',
-    consultationFee: '$120',
-    claims: { role: 'DOCTOR', medicalRegNumber: 'MED-REG-2016-89214', clinicName: 'Metro Cardiology Specialists & Heart Health Center' },
-    token: 'mock_demo_token_doctor',
-    joinedDate: '2024-01-10',
-    badge: 'Clinical MD',
-    bio: 'Specialist in longitudinal cardiovascular monitoring, hypertension control, and preventive lifestyle trajectories.',
-    description: 'Clinical consultations, review patient health records, write digital prescriptions, and scan patient QR.'
-  },
-  {
-    role: USER_ROLES.USER,
-    roleTitle: 'Patient / Health User',
-    email: 'patient@biotrajectory.health',
-    aliasEmail: 'user@biotrajectory.health',
-    password: 'patient123',
-    name: 'Eleanor Vance',
-    displayName: 'Eleanor Vance',
-    uid: 'usr_pat_00921',
-    id: 'usr_pat_00921',
-    emailVerified: true,
-    photoURL: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80',
-    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80',
-    claims: { role: 'USER' },
-    token: 'mock_demo_token_patient',
-    joinedDate: '2024-05-15',
-    badge: 'Patient User',
-    description: 'Personal health overview, vitals tracking (BP, Glucose, Steps), AI Health Assistant, and personal QR card.'
-  },
-  {
-    role: USER_ROLES.DOCTOR_PENDING,
-    roleTitle: 'Doctor (Pending Verification)',
-    email: 'doctor.pending@biotrajectory.health',
-    password: 'doctor123',
-    name: 'Dr. Marcus Sterling',
-    displayName: 'Dr. Marcus Sterling, MD',
-    uid: 'doc_pending_3319',
-    id: 'doc_pending_3319',
-    emailVerified: true,
-    registrationNumber: 'MED-REG-2025-00412',
-    specialization: 'Neurology & Cognitive Health',
-    qualification: 'MD, Johns Hopkins University',
-    claims: { role: 'DOCTOR_PENDING', medicalRegNumber: 'MED-REG-2025-00412' },
-    token: 'mock_demo_token_doctor_pending',
-    joinedDate: '2026-11-01',
-    badge: 'Pending Review',
-    description: 'Doctor registration submitted for administrative credential verification.'
-  }
-];
+const ALLOWED_ROLES = new Set(Object.values(USER_ROLES));
 
 export const getDashboardPath = (role) => {
   switch (role) {
@@ -122,6 +43,37 @@ export const getDashboardPath = (role) => {
   }
 };
 
+function getTrustedRole(claims) {
+  const role = claims?.role;
+
+  return typeof role === 'string' && ALLOWED_ROLES.has(role)
+    ? role
+    : USER_ROLES.USER;
+}
+
+function buildAppUser(firebaseUser, claims = {}) {
+  return {
+    uid: firebaseUser.uid,
+    id: firebaseUser.uid,
+    email: firebaseUser.email,
+    name:
+      firebaseUser.displayName ||
+      firebaseUser.email?.split('@')[0] ||
+      'User',
+    displayName: firebaseUser.displayName,
+    photoURL: firebaseUser.photoURL,
+    avatar: firebaseUser.photoURL || null,
+    emailVerified: firebaseUser.emailVerified,
+    role: getTrustedRole(claims),
+    claims,
+    joinedDate: firebaseUser.metadata?.creationTime
+      ? new Date(firebaseUser.metadata.creationTime)
+          .toISOString()
+          .split('T')[0]
+      : new Date().toISOString().split('T')[0]
+  };
+}
+
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
@@ -132,30 +84,15 @@ export function AuthProvider({ children }) {
     () => trajectoryStorage.getHealthProfile()
   );
 
-  // Listen to actual Firebase authentication state.
+  // Only Firebase Authentication can establish a session.
   useEffect(() => {
     let active = true;
 
     const unsubscribe = FirebaseService.onAuthStateChanged(
-      async (authUser) => {
+      async (firebaseUser) => {
         if (!active) return;
 
-        if (!authUser) {
-          try {
-            const savedDemo = localStorage.getItem('biotrajectory-demo-user');
-            if (savedDemo) {
-              const parsed = JSON.parse(savedDemo);
-              if (parsed && parsed.role) {
-                setCurrentUser(parsed);
-                setTokenClaims(parsed.claims || {});
-                setIsAuthLoading(false);
-                return;
-              }
-            }
-          } catch (e) {
-            console.error('Error hydrating demo session:', e);
-          }
-
+        if (!firebaseUser) {
           setCurrentUser(null);
           setTokenClaims(null);
           setIsAuthLoading(false);
@@ -164,33 +101,12 @@ export function AuthProvider({ children }) {
 
         try {
           const tokenResult =
-            await FirebaseService.getIdTokenResult(authUser);
+            await FirebaseService.getIdTokenResult(firebaseUser, true);
 
           if (!active) return;
 
           const claims = tokenResult?.claims || {};
-
-          const appUser = {
-            uid: authUser.uid,
-            id: authUser.uid,
-            email: authUser.email,
-            name:
-              authUser.displayName ||
-              authUser.email?.split('@')[0] ||
-              'User',
-            displayName: authUser.displayName,
-            photoURL: authUser.photoURL,
-            avatar: authUser.photoURL || null,
-            emailVerified: authUser.emailVerified,
-            role: claims.role || USER_ROLES.USER,
-            claims,
-            token: tokenResult?.token || null,
-            joinedDate: authUser.metadata?.creationTime
-              ? new Date(authUser.metadata.creationTime)
-                  .toISOString()
-                  .split('T')[0]
-              : new Date().toISOString().split('T')[0]
-          };
+          const appUser = buildAppUser(firebaseUser, claims);
 
           setCurrentUser(appUser);
           setTokenClaims(claims);
@@ -204,7 +120,9 @@ export function AuthProvider({ children }) {
             setAuthError(error.message);
           }
         } finally {
-          if (active) setIsAuthLoading(false);
+          if (active) {
+            setIsAuthLoading(false);
+          }
         }
       }
     );
@@ -215,7 +133,7 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  // Health profile synchronization.
+  // Synchronize the existing health profile.
   useEffect(() => {
     const handleProfileUpdate = (event) => {
       if (event.detail?.profile) {
@@ -238,115 +156,69 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  // Login
+  // Real Firebase login only.
   const login = async (email, password, rememberMe = true) => {
     setAuthError(null);
 
     try {
-      if (!email || !password) {
-        throw new Error('Please enter both your email address and password.');
+      if (!email?.trim() || !password) {
+        throw new Error('Please enter your email and password.');
       }
 
-      const cleanEmail = String(email).trim().toLowerCase();
-      const cleanPass = String(password).trim();
-
-      // Check if credentials match any of the built-in demo accounts
-      const matchedDemo = DEMO_USERS.find(
-        (u) =>
-          (u.email.toLowerCase() === cleanEmail ||
-            (u.aliasEmail && u.aliasEmail.toLowerCase() === cleanEmail)) &&
-          (u.password === cleanPass || cleanPass === 'password123' || cleanPass === 'demo123')
-      );
-
-      if (matchedDemo) {
-        const authenticatedUser = {
-          ...matchedDemo,
-          token: matchedDemo.token || 'mock_demo_token'
-        };
-
-        setCurrentUser(authenticatedUser);
-        setTokenClaims(matchedDemo.claims || {});
-        localStorage.setItem('biotrajectory-demo-user', JSON.stringify(authenticatedUser));
-        localStorage.setItem('biotrajectory-auth-user', JSON.stringify(authenticatedUser));
-        if (
-          matchedDemo.role === USER_ROLES.DOCTOR ||
-          matchedDemo.role === USER_ROLES.DOCTOR_PENDING
-        ) {
-          localStorage.setItem('biotrajectory-doctor-user', JSON.stringify(authenticatedUser));
-        }
-
-        return authenticatedUser;
-      }
-
-      const authUser = await FirebaseService.signInWithEmail(
-        email,
+      const firebaseUser = await FirebaseService.signInWithEmail(
+        email.trim(),
         password,
         rememberMe
       );
 
-      if (!authUser) {
-        throw new Error('Invalid login credentials. Please check your email and password.');
+      if (!firebaseUser) {
+        throw new Error('Firebase authentication failed.');
       }
 
       const tokenResult =
-        await FirebaseService.getIdTokenResult(authUser, true);
+        await FirebaseService.getIdTokenResult(firebaseUser, true);
 
-      const claims = tokenResult?.claims || authUser.claims || {};
+      const claims = tokenResult?.claims || {};
+      const appUser = buildAppUser(firebaseUser, claims);
 
-      const authenticatedUser = {
-        uid: authUser.uid,
-        id: authUser.uid,
-        email: authUser.email,
-        name:
-          authUser.displayName ||
-          authUser.name ||
-          authUser.email?.split('@')[0] ||
-          'User',
-        displayName: authUser.displayName || authUser.name,
-        photoURL: authUser.photoURL,
-        avatar: authUser.photoURL || null,
-        emailVerified: authUser.emailVerified ?? true,
-        role: claims.role || authUser.role || USER_ROLES.USER,
-        claims,
-        token: tokenResult?.token
-      };
-
-      localStorage.removeItem('biotrajectory-demo-user');
-      localStorage.setItem('biotrajectory-auth-user', JSON.stringify(authenticatedUser));
-      setCurrentUser(authenticatedUser);
+      setCurrentUser(appUser);
       setTokenClaims(claims);
 
-      return authenticatedUser;
+      return appUser;
     } catch (error) {
       console.error('Login error:', error);
+
       let message = error.message || 'Login failed.';
-      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
-        message = 'Invalid login credentials. Please check your email and password.';
+
+      if (
+        error.code === 'auth/invalid-credential' ||
+        error.code === 'auth/wrong-password'
+      ) {
+        message = 'Invalid email or password.';
       } else if (error.code === 'auth/user-not-found') {
-        message = 'No account found with this email. Please register as a patient first.';
+        message = 'No account found with this email.';
       } else if (error.code === 'auth/too-many-requests') {
-        message = 'Too many failed login attempts. Please wait a few moments and try again.';
+        message = 'Too many attempts. Please try again later.';
       }
+
       setAuthError(message);
       throw new Error(message);
     }
   };
 
-  // Public registration: USER role only.
+  // Public registration can create USER accounts only.
+  // The role argument is intentionally not accepted.
   const register = async ({
     fullName,
     email,
     password,
-    privacyConsent,
-    role = USER_ROLES.USER
+    privacyConsent
   }) => {
     setAuthError(null);
 
     try {
       if (!privacyConsent) {
-        throw new Error(
-          'Please accept the privacy policy before registering.'
-        );
+        throw new Error('Please accept the privacy policy.');
       }
 
       if (!fullName?.trim() || !email?.trim() || !password) {
@@ -357,109 +229,71 @@ export function AuthProvider({ children }) {
         throw new Error('Password must contain at least 8 characters.');
       }
 
-      const authUser = await FirebaseService.signUp(
-        email,
+      const firebaseUser = await FirebaseService.signUp(
+        email.trim(),
         password,
-        fullName,
-        role
+        fullName.trim()
       );
 
       const tokenResult =
-        await FirebaseService.getIdTokenResult(authUser, true);
+        await FirebaseService.getIdTokenResult(firebaseUser, true);
 
-      const claims = tokenResult?.claims || authUser.claims || {};
+      const claims = tokenResult?.claims || {};
+      const appUser = buildAppUser(firebaseUser, claims);
 
-      const registeredUser = {
-        uid: authUser.uid,
-        id: authUser.uid,
-        email: authUser.email,
-        name: authUser.displayName || fullName,
-        displayName: authUser.displayName || fullName,
-        photoURL: authUser.photoURL,
-        avatar: authUser.photoURL || null,
-        emailVerified: authUser.emailVerified ?? true,
-        role: claims.role || role,
-        claims,
-        token: tokenResult?.token,
-        joinedDate: new Date().toISOString().split('T')[0]
-      };
-
-      setCurrentUser(registeredUser);
+      setCurrentUser(appUser);
       setTokenClaims(claims);
 
-      return registeredUser;
+      return appUser;
     } catch (error) {
       console.error('Registration error:', error);
+
       let message = error.message || 'Registration failed.';
+
       if (error.code === 'auth/email-already-in-use') {
-        message = 'This email is already registered. Please log in instead.';
+        message = 'This email is already registered.';
       } else if (error.code === 'auth/weak-password') {
-        message = 'Password is too weak. Please use at least 8 characters.';
+        message = 'Use a stronger password with at least 8 characters.';
       }
+
       setAuthError(message);
       throw new Error(message);
     }
   };
 
-  // Logout
+  // Logout through Firebase.
   const logout = async () => {
     try {
-      try {
-        await FirebaseService.signOut();
-      } catch (err) {
-        // Fallback for demo session without Firebase
-      }
+      await FirebaseService.signOut();
+
       setCurrentUser(null);
       setTokenClaims(null);
-
-      localStorage.removeItem('biotrajectory-demo-user');
-      localStorage.removeItem('biotrajectory-auth-user');
-      localStorage.removeItem('biotrajectory-doctor-user');
+      setAuthError(null);
 
       return true;
     } catch (error) {
+      console.error('Logout error:', error);
       setAuthError(error.message || 'Logout failed.');
       return false;
     }
   };
 
-  // Quick login helper for demo accounts
-  const loginDemoUser = async (roleOrEmail) => {
-    const clean = String(roleOrEmail).trim().toLowerCase();
-    const target = DEMO_USERS.find(
-      (u) =>
-        u.role.toLowerCase() === clean ||
-        u.email.toLowerCase() === clean ||
-        (u.aliasEmail && u.aliasEmail.toLowerCase() === clean)
-    );
-    if (target) {
-      return await login(target.email, target.password, true);
-    }
-    return null;
-  };
-
-  // Refresh token and custom claims.
+  // Refresh trusted custom claims from Firebase.
   const refreshToken = async () => {
-    const currentAuthUser = auth.currentUser;
+    const firebaseUser = auth.currentUser;
 
-    if (!currentAuthUser) return null;
+    if (!firebaseUser) {
+      setCurrentUser(null);
+      setTokenClaims(null);
+      return null;
+    }
 
     try {
-      const tokenResult = await FirebaseService.getIdTokenResult(
-        currentAuthUser,
-        true
-      );
+      const tokenResult =
+        await FirebaseService.getIdTokenResult(firebaseUser, true);
 
       const claims = tokenResult?.claims || {};
-
-      const updatedUser = {
-        ...currentUser,
-        uid: currentAuthUser.uid,
-        id: currentAuthUser.uid,
-        claims,
-        role: claims.role || USER_ROLES.USER,
-        token: tokenResult?.token || null
-      };
+      const updatedUser = buildAppUser(firebaseUser, claims);
 
       setCurrentUser(updatedUser);
       setTokenClaims(claims);
@@ -471,14 +305,25 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // Update local application profile.
+  // Profile updates cannot modify identity, role or custom claims.
   const updateProfile = (updates) => {
+    const {
+      role,
+      uid,
+      id,
+      email,
+      claims,
+      token,
+      emailVerified,
+      ...safeUpdates
+    } = updates || {};
+
     setCurrentUser((previous) =>
-      previous ? { ...previous, ...updates } : previous
+      previous ? { ...previous, ...safeUpdates } : previous
     );
   };
 
-  // Existing local health-profile storage.
+  // Existing health profile functionality.
   const updateHealthProfile = (updates) => {
     const saved = trajectoryStorage.saveHealthProfile(updates);
 
@@ -500,7 +345,7 @@ export function AuthProvider({ children }) {
     await logout();
   };
 
-  // Do not use this to grant privileged roles.
+  // Never grant roles from the frontend.
   const setUserRole = () => {
     throw new Error(
       'Roles must be assigned by a trusted backend.'
@@ -515,6 +360,8 @@ export function AuthProvider({ children }) {
     isAuthLoading,
     authError,
 
+    tokenClaims,
+
     role: currentUser?.role || USER_ROLES.UNKNOWN,
 
     isUser: currentUser?.role === USER_ROLES.USER,
@@ -528,8 +375,6 @@ export function AuthProvider({ children }) {
       currentUser?.role === USER_ROLES.UNKNOWN,
 
     login,
-    loginDemoUser,
-    DEMO_USERS,
     register,
     logout,
     refreshToken,

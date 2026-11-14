@@ -149,25 +149,19 @@ def initialize_firebase_admin() -> bool:
 # Role extraction
 # --------------------------------------------------
 
+
 def extract_role_from_claims(
     claims: Dict[str, Any]
 ) -> Optional[str]:
     """
-    Extract a role from verified Firebase custom claims.
-
-    Roles must be assigned through a trusted backend.
-    Client-provided roles are never accepted here.
+    Extract a role only from verified, top-level Firebase custom claims.
+    Roles must be assigned by a trusted backend.
     """
 
     if not isinstance(claims, dict):
         return None
 
     role = claims.get("role")
-
-    if role is None:
-        firebase_claims = claims.get("firebase", {})
-        if isinstance(firebase_claims, dict):
-            role = firebase_claims.get("role")
 
     if not isinstance(role, str):
         return None

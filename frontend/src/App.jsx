@@ -1,5 +1,11 @@
+
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate
+} from 'react-router-dom';
 
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
@@ -12,19 +18,25 @@ import UserDashboardLayout from './components/layout/UserDashboardLayout';
 import DoctorDashboardLayout from './components/layout/DoctorDashboardLayout';
 import AdminDashboardLayout from './components/layout/AdminDashboardLayout';
 
-// Eager load primary landing page for zero-delay first contentful paint
 import HomePage from './pages/Home/HomePage';
 
-// Lazy load secondary route bundles to minimize initial JavaScript payload
+// --------------------------------------------------
+// Public pages
+// --------------------------------------------------
+
 const ExplorePage = lazy(() => import('./pages/Explore/ExplorePage'));
 const DiseaseDetailPage = lazy(() => import('./pages/Explore/DiseaseDetailPage'));
 const AboutPage = lazy(() => import('./pages/About/AboutPage'));
+
 const LoginPage = lazy(() => import('./pages/Auth/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/Auth/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('./pages/Auth/ForgotPasswordPage'));
 const AccountSetupPage = lazy(() => import('./pages/Auth/AccountSetupPage'));
 
-// User Dashboard
+// --------------------------------------------------
+// User dashboard
+// --------------------------------------------------
+
 const OverviewPage = lazy(() => import('./pages/UserDashboard/OverviewPage'));
 const DailyReportsPage = lazy(() => import('./pages/UserDashboard/DailyReportsPage'));
 const HealthAnalyticsPage = lazy(() => import('./pages/UserDashboard/HealthAnalyticsPage'));
@@ -35,12 +47,17 @@ const QrProfilePage = lazy(() => import('./pages/UserDashboard/QrProfilePage'));
 const SettingsPage = lazy(() => import('./pages/UserDashboard/SettingsPage'));
 const ConnectedDevicesPage = lazy(() => import('./pages/UserDashboard/ConnectedDevicesPage'));
 
-// Doctor Portal
+// --------------------------------------------------
+// Doctor portal
+// --------------------------------------------------
+
 const DoctorLoginPage = lazy(() => import('./pages/DoctorPortal/DoctorLoginPage'));
 const DoctorRegisterPage = lazy(() => import('./pages/DoctorPortal/DoctorRegisterPage'));
 const DoctorForgotPasswordPage = lazy(() => import('./pages/DoctorPortal/DoctorForgotPasswordPage'));
+
 const DoctorPendingPage = lazy(() => import('./pages/DoctorPortal/DoctorPendingPage'));
 const DoctorSuspendedPage = lazy(() => import('./pages/DoctorPortal/DoctorSuspendedPage'));
+
 const DoctorOverviewPage = lazy(() => import('./pages/DoctorPortal/DoctorOverviewPage'));
 const DoctorPatientsPage = lazy(() => import('./pages/DoctorPortal/DoctorPatientsPage'));
 const DoctorPatientDetailPage = lazy(() => import('./pages/DoctorPortal/DoctorPatientDetailPage'));
@@ -56,7 +73,10 @@ const DoctorExplorePage = lazy(() => import('./pages/DoctorPortal/DoctorExploreP
 const DoctorProfilePage = lazy(() => import('./pages/DoctorPortal/DoctorProfilePage'));
 const DoctorScanQrPage = lazy(() => import('./pages/DoctorPortal/DoctorScanQrPage'));
 
-// Admin Portal
+// --------------------------------------------------
+// Admin portal
+// --------------------------------------------------
+
 const AdminOverviewPage = lazy(() => import('./pages/AdminDashboard/AdminOverviewPage'));
 const AdminUsersPage = lazy(() => import('./pages/AdminDashboard/AdminUsersPage'));
 const AdminRolesPage = lazy(() => import('./pages/AdminDashboard/AdminRolesPage'));
@@ -71,17 +91,30 @@ const AdminSettingsPage = lazy(() => import('./pages/AdminDashboard/AdminSetting
 
 import './App.css';
 
+// --------------------------------------------------
+// Loading screen
+// --------------------------------------------------
+
 const PageFallbackLoader = () => (
   <div className="min-h-[55vh] flex flex-col items-center justify-center space-y-3">
     <div className="w-9 h-9 rounded-full border-2 border-cyan-500/20 border-t-cyan-500 animate-spin" />
-    <span className="text-[12px] font-semibold text-slate-400 tracking-wider">Loading...</span>
+    <span className="text-[12px] font-semibold text-slate-400 tracking-wider">
+      Loading...
+    </span>
   </div>
 );
+
+// --------------------------------------------------
+// Application routes
+// --------------------------------------------------
 
 function AppRoutes() {
   return (
     <Suspense fallback={<PageFallbackLoader />}>
       <Routes>
+
+        {/* Public landing pages */}
+
         <Route
           path="/"
           element={
@@ -91,6 +124,7 @@ function AppRoutes() {
             </>
           }
         />
+
         <Route
           path="/home"
           element={
@@ -100,6 +134,7 @@ function AppRoutes() {
             </>
           }
         />
+
         <Route
           path="/explore"
           element={
@@ -109,6 +144,7 @@ function AppRoutes() {
             </>
           }
         />
+
         <Route
           path="/explore/:id"
           element={
@@ -118,6 +154,7 @@ function AppRoutes() {
             </>
           }
         />
+
         <Route
           path="/about"
           element={
@@ -128,14 +165,23 @@ function AppRoutes() {
           }
         />
 
+        {/* Authentication */}
+
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/account-setup" element={<AccountSetupPage />} />
 
+        {/* Doctor authentication */}
+
         <Route path="/doctor/login" element={<DoctorLoginPage />} />
         <Route path="/doctor/register" element={<DoctorRegisterPage />} />
-        <Route path="/doctor/forgot-password" element={<DoctorForgotPasswordPage />} />
+        <Route
+          path="/doctor/forgot-password"
+          element={<DoctorForgotPasswordPage />}
+        />
+
+        {/* Normal user dashboard */}
 
         <Route
           path="/dashboard"
@@ -156,6 +202,8 @@ function AppRoutes() {
           <Route path="settings" element={<SettingsPage />} />
         </Route>
 
+        {/* Pending doctor: application status only */}
+
         <Route
           path="/doctor/pending"
           element={
@@ -164,6 +212,8 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
+
+        {/* Suspended doctor: suspension information only */}
 
         <Route
           path="/doctor/suspended"
@@ -174,30 +224,45 @@ function AppRoutes() {
           }
         />
 
+        {/* Verified doctor dashboard only */}
+
         <Route
           path="/doctor"
           element={
-            <ProtectedRoute allowedRoles={['DOCTOR', 'DOCTOR_PENDING', 'DOCTOR_SUSPENDED']}>
+            <ProtectedRoute allowedRoles={['DOCTOR']}>
               <DoctorDashboardLayout />
             </ProtectedRoute>
           }
         >
+          <Route
+            index
+            element={<Navigate to="/doctor/dashboard" replace />}
+          />
+
           <Route path="dashboard" element={<DoctorOverviewPage />} />
           <Route path="scan-qr" element={<DoctorScanQrPage />} />
           <Route path="patients" element={<DoctorPatientsPage />} />
           <Route path="patients/:id" element={<DoctorPatientDetailPage />} />
           <Route path="appointments" element={<DoctorAppointmentsPage />} />
-          <Route path="video-consultation" element={<DoctorVideoConsultationPage />} />
+          <Route
+            path="video-consultation"
+            element={<DoctorVideoConsultationPage />}
+          />
           <Route path="reports" element={<DoctorReportsPage />} />
           <Route path="reports/new" element={<DoctorNewReportPage />} />
           <Route path="medical-records" element={<DoctorMedicalRecordsPage />} />
           <Route path="records" element={<DoctorMedicalRecordsPage />} />
           <Route path="prescriptions" element={<DoctorPrescriptionsPage />} />
-          <Route path="prescriptions/new" element={<DoctorNewPrescriptionPage />} />
+          <Route
+            path="prescriptions/new"
+            element={<DoctorNewPrescriptionPage />}
+          />
           <Route path="explore" element={<DoctorExplorePage />} />
           <Route path="profile" element={<DoctorProfilePage />} />
           <Route path="settings" element={<DoctorSettingsPage />} />
         </Route>
+
+        {/* Admin dashboard: ADMIN role only */}
 
         <Route
           path="/admin"
@@ -207,13 +272,27 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         >
+          <Route
+            index
+            element={<Navigate to="/admin/dashboard" replace />}
+          />
+
           <Route path="dashboard" element={<AdminOverviewPage />} />
           <Route path="users" element={<AdminUsersPage />} />
           <Route path="roles" element={<AdminRolesPage />} />
           <Route path="patients" element={<AdminPatientManagementPage />} />
-          <Route path="patient-management" element={<AdminPatientManagementPage />} />
-          <Route path="verification" element={<AdminDoctorVerificationPage />} />
-          <Route path="doctor-verification" element={<AdminDoctorVerificationPage />} />
+          <Route
+            path="patient-management"
+            element={<AdminPatientManagementPage />}
+          />
+          <Route
+            path="verification"
+            element={<AdminDoctorVerificationPage />}
+          />
+          <Route
+            path="doctor-verification"
+            element={<AdminDoctorVerificationPage />}
+          />
           <Route path="diseases" element={<AdminDiseasesPage />} />
           <Route path="content" element={<AdminContentPage />} />
           <Route path="reports" element={<AdminReportsPage />} />
@@ -222,11 +301,18 @@ function AppRoutes() {
           <Route path="settings" element={<AdminSettingsPage />} />
         </Route>
 
+        {/* Unknown routes */}
+
         <Route path="*" element={<Navigate to="/" replace />} />
+
       </Routes>
     </Suspense>
   );
 }
+
+// --------------------------------------------------
+// Root application
+// --------------------------------------------------
 
 export default function App() {
   return (

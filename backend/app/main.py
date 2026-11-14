@@ -9,7 +9,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
-
+from app.api.doctor_auth import router as doctor_auth_router
 from app.core.config import settings
 from app.core.security import initialize_firebase_admin, rate_limit_middleware
 from app.api.health import router as health_router
@@ -98,3 +98,4 @@ async def generic_exception_handler(request: Request, exc: Exception):
 app.include_router(health_router)
 app.include_router(chat_router)
 app.include_router(history_router)
+app.include_router(doctor_auth_router)

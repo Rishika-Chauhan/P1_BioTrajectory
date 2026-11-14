@@ -1,63 +1,133 @@
-import React from 'react';
-import { Navigate, useLocation, Outlet } from 'react-router-dom';
-import { useAuth, USER_ROLES, getDashboardPath } from '../../context/AuthContext';
 
-/**
- * ProtectedRoute Guard
- * 
- * Enforces:
- * 1. Authentication requirement.
- * 2. Trusted custom claims role matching (USER, DOCTOR, ADMIN).
- * 3. Automatic redirects for DOCTOR_PENDING and DOCTOR_SUSPENDED states.
- * 4. Cross-role boundary defense (Users cannot access Admin or Doctor portals).
- */
-export default function ProtectedRoute({ allowedRoles, children }) {
-  const { isAuthenticated, currentUser, isAuthLoading } = useAuth();
+import React from 'react';
+
+import {
+  Navigate,
+  useLocation,
+  Outlet
+} from 'react-router-dom';
+
+import {
+  useAuth,
+  USER_ROLES,
+  getDashboardPath
+} from '../../context/AuthContext';
+
+// --------------------------------------------------
+// Only backend-supported application roles
+// --------------------------------------------------
+
+const VALID_ROLES = new Set([
+  'USER',
+  'DOCTOR_PENDING',
+  'DOCTOR',
+  'DOCTOR_SUSPENDED',
+  'ADMIN'
+]);
+
+// --------------------------------------------------
+// Loading screen
+// --------------------------------------------------
+
+function AuthLoadingScreen() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#F5F8FC] dark:bg-[#070B14]">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-9 h-9 rounded-full border-2 border-cyan-500/20 border-t-cyan-500 animate-spin" />
+
+        <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+          Verifying your account...
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// --------------------------------------------------
+// Protected route
+// --------------------------------------------------
+
+export default function ProtectedRoute({
+  allowedRoles = [],
+  children
+}) {
+  const {
+    isAuthenticated,
+    currentUser,
+    isAuthLoading
+  } = useAuth();
+
   const location = useLocation();
 
-  // Do not redirect while auth state is still resolving. This avoids false
-  // landing-page redirects during initial app hydration or refresh.
+  // 1. Wait for Firebase authentication to resolve.
   if (isAuthLoading) {
+    return <AuthLoadingScreen />;
+  }
+
+  // 2. Require authentication.
+  if (!isAuthenticated || !currentUser) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F5F8FC] dark:bg-[#070B14] text-slate-500 dark:text-slate-400 text-sm font-medium">
-        Loading your workspace…
-      </div>
+      <Navigate
+        to="/login"
+        state={{ from: location }}
+        replace
+      />
     );
   }
 
-  // 1. Not Authenticated -> Redirect to unified /login
-  if (!isAuthenticated || !currentUser) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  // 3. Read the role supplied by the authenticated context.
+  const userRole = currentUser.role;
+
+  // 4. Unknown or unsupported role.
+  if (!VALID_ROLES.has(userRole)) {
+    return (
+      <Navigate
+        to="/account-setup"
+        replace
+      />
+    );
   }
 
-  const userRole = currentUser.role || USER_ROLES.UNKNOWN;
-
-  // 2. Pending Doctor State Check
-  if (userRole === USER_ROLES.DOCTOR_PENDING && location.pathname !== '/doctor/pending') {
-    return <Navigate to="/doctor/pending" replace />;
-  }
-
-  // 3. Suspended Doctor State Check
-  if (userRole === USER_ROLES.DOCTOR_SUSPENDED && location.pathname !== '/doctor/suspended') {
-    return <Navigate to="/doctor/suspended" replace />;
-  }
-
-  // 4. Unknown Role Check
-  if (userRole === USER_ROLES.UNKNOWN && location.pathname !== '/account-setup') {
-    return <Navigate to="/account-setup" replace />;
-  }
-
-  // 5. Role Authorization Check
-  if (allowedRoles && allowedRoles.length > 0) {
-    const isAuthorized = allowedRoles.includes(userRole) ||
-      (allowedRoles.includes('DOCTOR') && (userRole === 'DOCTOR' || userRole === 'DOCTOR_VERIFIED'));
-
-    if (!isAuthorized) {
-      // Divert to the user's authentic authorized workspace
-      const authorizedDashboard = getDashboardPath(userRole);
-      return <Navigate to={authorizedDashboard} replace />;
+  // 5. Pending doctors can only access their application status.
+  if (userRole === USER_ROLES.DOCTOR_PENDING) {
+    if (location.pathname !== '/doctor/pending') {
+      return (
+        <Navigate
+          to="/doctor/pending"
+          replace
+        />
+      );
     }
   }
 
-  return children ? children : <Outlet />;
+  // 6. Suspended doctors can only access their suspension page.
+  if (userRole === USER_ROLES.DOCTOR_SUSPENDED) {
+    if (location.pathname !== '/doctor/suspended') {
+      return (
+        <Navigate
+          to="/doctor/suspended"
+          replace
+        />
+      );
+    }
+  }
+
+  // 7. Verify access to the requested workspace.
+  if (
+    Array.isArray(allowedRoles) &&
+    allowedRoles.length > 0 &&
+    !allowedRoles.includes(userRole)
+  ) {
+    const dashboard = getDashboardPath(userRole);
+
+    return (
+      <Navigate
+        to={dashboard || '/account-setup'}
+        replace
+      />
+    );
+  }
+
+  // 8. Render the authorized route.
+  return children || <Outlet />;
 }

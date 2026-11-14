@@ -1,3 +1,4 @@
+
 """
 BioTrajectory Backend Configuration
 Core settings and environment variable management.
@@ -19,22 +20,63 @@ class Settings:
     # Project Info
     PROJECT_NAME: str = "BioTrajectory Health Assistant Backend"
     VERSION: str = "1.0.0"
-    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development").lower()
+
+    # Default to production so verification bypass is never enabled accidentally.
+    ENVIRONMENT: str = os.getenv(
+        "ENVIRONMENT", "production"
+    ).strip().lower()
+
+    # Development-only doctor email verification bypass
+    SKIP_DOCTOR_EMAIL_VERIFICATION: bool = (
+        os.getenv(
+            "SKIP_DOCTOR_EMAIL_VERIFICATION", "false"
+        ).strip().lower() == "true"
+    )
 
     # Server Bindings
     HOST: str = os.getenv("HOST", "0.0.0.0")
     PORT: int = int(os.getenv("PORT", "8000"))
 
     # Groq API Configuration
-    # Verify the configured model against the live Groq account before using it.
-    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", os.getenv("GEMINI_API_KEY", "")).strip()
-    GROQ_MODEL: str = os.getenv("GROQ_MODEL", os.getenv("GEMINI_MODEL", "qwen/qwen3.8-27b")).strip()
-    GROQ_TIMEOUT_SECONDS: float = float(os.getenv("GROQ_TIMEOUT_SECONDS", os.getenv("GEMINI_TIMEOUT_SECONDS", "120.0")))
-    GROQ_MAX_RETRIES: int = int(os.getenv("GROQ_MAX_RETRIES", os.getenv("GEMINI_MAX_RETRIES", "2")))
-    GROQ_RETRY_INITIAL_DELAY: float = float(os.getenv("GROQ_RETRY_INITIAL_DELAY", os.getenv("GEMINI_RETRY_INITIAL_DELAY", "1.0")))
-    GROQ_RETRY_EXP_BASE: float = float(os.getenv("GROQ_RETRY_EXP_BASE", os.getenv("GEMINI_RETRY_EXP_BASE", "2.0")))
+    GROQ_API_KEY: str = os.getenv(
+        "GROQ_API_KEY",
+        os.getenv("GEMINI_API_KEY", "")
+    ).strip()
 
-    # Backward compatibility aliases retained while the app still references legacy Gemini names.
+    GROQ_MODEL: str = os.getenv(
+        "GROQ_MODEL",
+        os.getenv("GEMINI_MODEL", "qwen/qwen3.8-27b")
+    ).strip()
+
+    GROQ_TIMEOUT_SECONDS: float = float(
+        os.getenv(
+            "GROQ_TIMEOUT_SECONDS",
+            os.getenv("GEMINI_TIMEOUT_SECONDS", "120.0")
+        )
+    )
+
+    GROQ_MAX_RETRIES: int = int(
+        os.getenv(
+            "GROQ_MAX_RETRIES",
+            os.getenv("GEMINI_MAX_RETRIES", "2")
+        )
+    )
+
+    GROQ_RETRY_INITIAL_DELAY: float = float(
+        os.getenv(
+            "GROQ_RETRY_INITIAL_DELAY",
+            os.getenv("GEMINI_RETRY_INITIAL_DELAY", "1.0")
+        )
+    )
+
+    GROQ_RETRY_EXP_BASE: float = float(
+        os.getenv(
+            "GROQ_RETRY_EXP_BASE",
+            os.getenv("GEMINI_RETRY_EXP_BASE", "2.0")
+        )
+    )
+
+    # Backward compatibility aliases
     GEMINI_API_KEY: str = GROQ_API_KEY
     GEMINI_MODEL: str = GROQ_MODEL
     GEMINI_TIMEOUT_SECONDS: float = GROQ_TIMEOUT_SECONDS
@@ -43,52 +85,100 @@ class Settings:
     GEMINI_RETRY_EXP_BASE: float = GROQ_RETRY_EXP_BASE
 
     # Security & CORS
-    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
+    FRONTEND_URL: str = os.getenv(
+        "FRONTEND_URL",
+        "http://localhost:5174"
+    ).rstrip("/")
+
     ALLOWED_ORIGINS: List[str] = [
         FRONTEND_URL,
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:3000",
-        "http://127.0.0.1:3000"
+        "http://127.0.0.1:3000",
     ]
-    
+
     # Rate Limiting & Request Limits
-    RATE_LIMIT_PER_MINUTE: int = int(os.getenv("RATE_LIMIT_PER_MINUTE", "60"))
-    MAX_REQUEST_SIZE_BYTES: int = int(os.getenv("MAX_REQUEST_SIZE_BYTES", str(1 * 1024 * 1024))) # 1 MB
-    MAX_MESSAGE_LENGTH: int = int(os.getenv("MAX_MESSAGE_LENGTH", "4000"))
-    MAX_CONVERSATION_HISTORY_TURNS: int = int(os.getenv("MAX_CONVERSATION_HISTORY_TURNS", "20"))
+    RATE_LIMIT_PER_MINUTE: int = int(
+        os.getenv("RATE_LIMIT_PER_MINUTE", "60")
+    )
+
+    MAX_REQUEST_SIZE_BYTES: int = int(
+        os.getenv(
+            "MAX_REQUEST_SIZE_BYTES",
+            str(1 * 1024 * 1024)
+        )
+    )
+
+    MAX_MESSAGE_LENGTH: int = int(
+        os.getenv("MAX_MESSAGE_LENGTH", "4000")
+    )
+
+    MAX_CONVERSATION_HISTORY_TURNS: int = int(
+        os.getenv("MAX_CONVERSATION_HISTORY_TURNS", "20")
+    )
 
     # Firebase Authentication
-    FIREBASE_PROJECT_ID: str = os.getenv("FIREBASE_PROJECT_ID", "biotrack-e4344").strip()
-    FIREBASE_CREDENTIALS_PATH: str = os.getenv("FIREBASE_CREDENTIALS_PATH", "secrets/firebase-service-account.json").strip()
+    FIREBASE_PROJECT_ID: str = os.getenv(
+        "FIREBASE_PROJECT_ID",
+        "biotrack-e4344"
+    ).strip()
+
+    FIREBASE_CREDENTIALS_PATH: str = os.getenv(
+        "FIREBASE_CREDENTIALS_PATH",
+        "secrets/firebase-service-account.json"
+    ).strip()
 
     @property
     def firebase_credentials_file(self) -> Optional[Path]:
-        """Resolve Firebase credentials path relative to the backend directory."""
+        """Resolve Firebase credentials path relative to backend directory."""
+
         if not self.FIREBASE_CREDENTIALS_PATH:
             return None
 
-        credentials_path = Path(self.FIREBASE_CREDENTIALS_PATH)
+        credentials_path = Path(
+            self.FIREBASE_CREDENTIALS_PATH
+        )
+
         if not credentials_path.is_absolute():
-            credentials_path = (BASE_DIR / credentials_path).resolve()
+            credentials_path = (
+                BASE_DIR / credentials_path
+            ).resolve()
+
         return credentials_path
 
     @property
     def is_groq_configured(self) -> bool:
-        """Check if a non-placeholder Groq API key is configured."""
-        return bool(self.GROQ_API_KEY and self.GROQ_API_KEY not in {"YOUR_API_KEY", "YOUR_GROQ_API_KEY", ""})
+        """Check whether a non-placeholder Groq API key is configured."""
+
+        return bool(
+            self.GROQ_API_KEY
+            and self.GROQ_API_KEY not in {
+                "YOUR_API_KEY",
+                "YOUR_GROQ_API_KEY",
+                ""
+            }
+        )
 
     @property
     def is_gemini_configured(self) -> bool:
         """Backward-compatible alias for Groq configuration."""
+
         return self.is_groq_configured
 
     @property
     def is_production_firebase_configured(self) -> bool:
-        """Check if production Firebase Admin credentials are provided."""
+        """Check whether Firebase Admin credentials are available."""
+
         credentials_file = self.firebase_credentials_file
-        return bool(self.FIREBASE_PROJECT_ID and credentials_file and credentials_file.exists())
+
+        return bool(
+            self.FIREBASE_PROJECT_ID
+            and credentials_file
+            and credentials_file.exists()
+        )
 
 
 settings = Settings()
-
