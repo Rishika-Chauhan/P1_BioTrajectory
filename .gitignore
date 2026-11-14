@@ -8,24 +8,34 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Dependencies & Build Outputs
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+dist-ssr/
+frontend/dist-ssr/
 *.local
 
 # Environment variables
 .env
 .env.*
 !.env.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
 backend/.env
 backend/.env.*
+!backend/.env.example
 backend/secrets/
 **/*service-account*.json
 
 # Python
 venv/
+.venv/
 backend/venv/
-__pycache__/
+backend/.venv/
+**/__pycache__/
 *.py[cod]
 *$py.class
 .pytest_cache/
