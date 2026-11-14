@@ -169,9 +169,25 @@ export default function MedicalSphere3D() {
     // Animation Loop
     let animationFrameId;
     const startTime = performance.now();
+    let isVisible = true;
+
+    // Pause WebGL rendering loop when scrolled offscreen to conserve CPU & GPU
+    let observer = null;
+    if (typeof IntersectionObserver !== 'undefined') {
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          isVisible = entry.isIntersecting;
+        },
+        { threshold: 0.05 }
+      );
+      observer.observe(container);
+    }
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
+
+      // Skip render calculations when canvas is off-screen
+      if (!isVisible) return;
 
       const time = (performance.now() - startTime) * 0.001;
       const delta = prefersReducedMotion ? 0.005 : time;
@@ -205,6 +221,9 @@ export default function MedicalSphere3D() {
     animate();
 
     return () => {
+      if (observer) {
+        observer.disconnect();
+      }
       window.removeEventListener('mousemove', handleMouseMove);
       container.removeEventListener('mouseleave', handleMouseLeave);
       window.removeEventListener('resize', handleResize);

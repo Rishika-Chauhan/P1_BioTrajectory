@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import { ThemeProvider } from './context/ThemeContext';
@@ -12,62 +12,75 @@ import UserDashboardLayout from './components/layout/UserDashboardLayout';
 import DoctorDashboardLayout from './components/layout/DoctorDashboardLayout';
 import AdminDashboardLayout from './components/layout/AdminDashboardLayout';
 
+// Eager load primary landing page for zero-delay first contentful paint
 import HomePage from './pages/Home/HomePage';
-import ExplorePage from './pages/Explore/ExplorePage';
-import DiseaseDetailPage from './pages/Explore/DiseaseDetailPage';
-import AboutPage from './pages/About/AboutPage';
-import LoginPage from './pages/Auth/LoginPage';
-import RegisterPage from './pages/Auth/RegisterPage';
-import ForgotPasswordPage from './pages/Auth/ForgotPasswordPage';
-import AccountSetupPage from './pages/Auth/AccountSetupPage';
 
-import OverviewPage from './pages/UserDashboard/OverviewPage';
-import DailyReportsPage from './pages/UserDashboard/DailyReportsPage';
-import HealthAnalyticsPage from './pages/UserDashboard/HealthAnalyticsPage';
-import MedicalHistoryPage from './pages/UserDashboard/MedicalHistoryPage';
-import AiAssistantPage from './pages/UserDashboard/AiAssistantPage';
-import DoctorConsultationPage from './pages/UserDashboard/DoctorConsultationPage';
-import QrProfilePage from './pages/UserDashboard/QrProfilePage';
-import SettingsPage from './pages/UserDashboard/SettingsPage';
-import ConnectedDevicesPage from './pages/UserDashboard/ConnectedDevicesPage';
+// Lazy load secondary route bundles to minimize initial JavaScript payload
+const ExplorePage = lazy(() => import('./pages/Explore/ExplorePage'));
+const DiseaseDetailPage = lazy(() => import('./pages/Explore/DiseaseDetailPage'));
+const AboutPage = lazy(() => import('./pages/About/AboutPage'));
+const LoginPage = lazy(() => import('./pages/Auth/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/Auth/RegisterPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/Auth/ForgotPasswordPage'));
+const AccountSetupPage = lazy(() => import('./pages/Auth/AccountSetupPage'));
 
-import DoctorLoginPage from './pages/DoctorPortal/DoctorLoginPage';
-import DoctorRegisterPage from './pages/DoctorPortal/DoctorRegisterPage';
-import DoctorForgotPasswordPage from './pages/DoctorPortal/DoctorForgotPasswordPage';
-import DoctorPendingPage from './pages/DoctorPortal/DoctorPendingPage';
-import DoctorSuspendedPage from './pages/DoctorPortal/DoctorSuspendedPage';
-import DoctorOverviewPage from './pages/DoctorPortal/DoctorOverviewPage';
-import DoctorPatientsPage from './pages/DoctorPortal/DoctorPatientsPage';
-import DoctorPatientDetailPage from './pages/DoctorPortal/DoctorPatientDetailPage';
-import DoctorAppointmentsPage from './pages/DoctorPortal/DoctorAppointmentsPage';
-import DoctorVideoConsultationPage from './pages/DoctorPortal/DoctorVideoConsultationPage';
-import DoctorReportsPage from './pages/DoctorPortal/DoctorReportsPage';
-import DoctorNewReportPage from './pages/DoctorPortal/DoctorNewReportPage';
-import DoctorMedicalRecordsPage from './pages/DoctorPortal/DoctorMedicalRecordsPage';
-import DoctorSettingsPage from './pages/DoctorPortal/DoctorSettingsPage';
-import DoctorPrescriptionsPage from './pages/DoctorPortal/DoctorPrescriptionsPage';
-import DoctorNewPrescriptionPage from './pages/DoctorPortal/DoctorNewPrescriptionPage';
-import DoctorExplorePage from './pages/DoctorPortal/DoctorExplorePage';
-import DoctorProfilePage from './pages/DoctorPortal/DoctorProfilePage';
-import DoctorScanQrPage from './pages/DoctorPortal/DoctorScanQrPage';
+// User Dashboard
+const OverviewPage = lazy(() => import('./pages/UserDashboard/OverviewPage'));
+const DailyReportsPage = lazy(() => import('./pages/UserDashboard/DailyReportsPage'));
+const HealthAnalyticsPage = lazy(() => import('./pages/UserDashboard/HealthAnalyticsPage'));
+const MedicalHistoryPage = lazy(() => import('./pages/UserDashboard/MedicalHistoryPage'));
+const AiAssistantPage = lazy(() => import('./pages/UserDashboard/AiAssistantPage'));
+const DoctorConsultationPage = lazy(() => import('./pages/UserDashboard/DoctorConsultationPage'));
+const QrProfilePage = lazy(() => import('./pages/UserDashboard/QrProfilePage'));
+const SettingsPage = lazy(() => import('./pages/UserDashboard/SettingsPage'));
+const ConnectedDevicesPage = lazy(() => import('./pages/UserDashboard/ConnectedDevicesPage'));
 
-import AdminOverviewPage from './pages/AdminDashboard/AdminOverviewPage';
-import AdminUsersPage from './pages/AdminDashboard/AdminUsersPage';
-import AdminRolesPage from './pages/AdminDashboard/AdminRolesPage';
-import AdminPatientManagementPage from './pages/AdminDashboard/AdminPatientManagementPage';
-import AdminDoctorVerificationPage from './pages/AdminDashboard/AdminDoctorVerificationPage';
-import AdminDiseasesPage from './pages/AdminDashboard/AdminDiseasesPage';
-import AdminContentPage from './pages/AdminDashboard/AdminContentPage';
-import AdminReportsPage from './pages/AdminDashboard/AdminReportsPage';
-import AdminPopulationAnalyticsPage from './pages/AdminDashboard/AdminPopulationAnalyticsPage';
-import AdminFeedbackPage from './pages/AdminDashboard/AdminFeedbackPage';
-import AdminSettingsPage from './pages/AdminDashboard/AdminSettingsPage';
+// Doctor Portal
+const DoctorLoginPage = lazy(() => import('./pages/DoctorPortal/DoctorLoginPage'));
+const DoctorRegisterPage = lazy(() => import('./pages/DoctorPortal/DoctorRegisterPage'));
+const DoctorForgotPasswordPage = lazy(() => import('./pages/DoctorPortal/DoctorForgotPasswordPage'));
+const DoctorPendingPage = lazy(() => import('./pages/DoctorPortal/DoctorPendingPage'));
+const DoctorSuspendedPage = lazy(() => import('./pages/DoctorPortal/DoctorSuspendedPage'));
+const DoctorOverviewPage = lazy(() => import('./pages/DoctorPortal/DoctorOverviewPage'));
+const DoctorPatientsPage = lazy(() => import('./pages/DoctorPortal/DoctorPatientsPage'));
+const DoctorPatientDetailPage = lazy(() => import('./pages/DoctorPortal/DoctorPatientDetailPage'));
+const DoctorAppointmentsPage = lazy(() => import('./pages/DoctorPortal/DoctorAppointmentsPage'));
+const DoctorVideoConsultationPage = lazy(() => import('./pages/DoctorPortal/DoctorVideoConsultationPage'));
+const DoctorReportsPage = lazy(() => import('./pages/DoctorPortal/DoctorReportsPage'));
+const DoctorNewReportPage = lazy(() => import('./pages/DoctorPortal/DoctorNewReportPage'));
+const DoctorMedicalRecordsPage = lazy(() => import('./pages/DoctorPortal/DoctorMedicalRecordsPage'));
+const DoctorSettingsPage = lazy(() => import('./pages/DoctorPortal/DoctorSettingsPage'));
+const DoctorPrescriptionsPage = lazy(() => import('./pages/DoctorPortal/DoctorPrescriptionsPage'));
+const DoctorNewPrescriptionPage = lazy(() => import('./pages/DoctorPortal/DoctorNewPrescriptionPage'));
+const DoctorExplorePage = lazy(() => import('./pages/DoctorPortal/DoctorExplorePage'));
+const DoctorProfilePage = lazy(() => import('./pages/DoctorPortal/DoctorProfilePage'));
+const DoctorScanQrPage = lazy(() => import('./pages/DoctorPortal/DoctorScanQrPage'));
+
+// Admin Portal
+const AdminOverviewPage = lazy(() => import('./pages/AdminDashboard/AdminOverviewPage'));
+const AdminUsersPage = lazy(() => import('./pages/AdminDashboard/AdminUsersPage'));
+const AdminRolesPage = lazy(() => import('./pages/AdminDashboard/AdminRolesPage'));
+const AdminPatientManagementPage = lazy(() => import('./pages/AdminDashboard/AdminPatientManagementPage'));
+const AdminDoctorVerificationPage = lazy(() => import('./pages/AdminDashboard/AdminDoctorVerificationPage'));
+const AdminDiseasesPage = lazy(() => import('./pages/AdminDashboard/AdminDiseasesPage'));
+const AdminContentPage = lazy(() => import('./pages/AdminDashboard/AdminContentPage'));
+const AdminReportsPage = lazy(() => import('./pages/AdminDashboard/AdminReportsPage'));
+const AdminPopulationAnalyticsPage = lazy(() => import('./pages/AdminDashboard/AdminPopulationAnalyticsPage'));
+const AdminFeedbackPage = lazy(() => import('./pages/AdminDashboard/AdminFeedbackPage'));
+const AdminSettingsPage = lazy(() => import('./pages/AdminDashboard/AdminSettingsPage'));
 
 import './App.css';
 
+const PageFallbackLoader = () => (
+  <div className="min-h-[55vh] flex flex-col items-center justify-center space-y-3">
+    <div className="w-9 h-9 rounded-full border-2 border-cyan-500/20 border-t-cyan-500 animate-spin" />
+    <span className="text-[12px] font-semibold text-slate-400 tracking-wider">Loading...</span>
+  </div>
+);
+
 function AppRoutes() {
   return (
-    <>
+    <Suspense fallback={<PageFallbackLoader />}>
       <Routes>
         <Route
           path="/"
@@ -211,7 +224,7 @@ function AppRoutes() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </>
+    </Suspense>
   );
 }
 
