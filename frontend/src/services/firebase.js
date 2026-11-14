@@ -48,7 +48,6 @@ export const firebaseConfig = {
   messagingSenderId: getEnv('VITE_FIREBASE_MESSAGING_SENDER_ID', '987654321098'),
   appId: getEnv('VITE_FIREBASE_APP_ID', '1:987654321098:web:7739c81bb6c12345')
 };
-};
 
 export const ROLES = {
   USER: 'USER',
