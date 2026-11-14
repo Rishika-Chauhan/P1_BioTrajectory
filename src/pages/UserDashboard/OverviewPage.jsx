@@ -57,6 +57,11 @@ export default function OverviewPage() {
     };
   }, []);
 
+  const handleToggleUrineDevice = (newMode) => {
+    setIsUrineDeviceEnabled(newMode);
+    BluetoothService.setUrineDeviceEnabled(newMode);
+  };
+
   const handleQuickSync = async () => {
     setIsSyncing(true);
     setSyncStatus('Reading BLE...');
@@ -320,7 +325,7 @@ export default function OverviewPage() {
         </motion.div>
       </div>
 
-      {/* 3. Urine Diagnostic Telemetry Section - Controlled by Urine Device Switch in Settings Mode */}
+      {/* 3. Urine Diagnostic Telemetry Section - Showing Last Latest Recorded Readings */}
       {isUrineDeviceEnabled ? (
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -334,34 +339,53 @@ export default function OverviewPage() {
                 <Droplet className="w-6 h-6 text-cyan-500" />
               </div>
               <div>
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-wrap items-center gap-2.5">
                   <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
                     Urine Diagnostic Telemetry
                   </h2>
                   <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/30 flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    Optical 10SG Active
+                    Last Latest Recorded Readings
+                  </span>
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-semibold border border-cyan-500/20">
+                    Recorded: Today 08:30 AM
                   </span>
                 </div>
-                <p className="text-[15px] text-slate-500 dark:text-slate-400 mt-0.5">
-                  Live spectral biomarker readings from your paired BioTrajectory Urine Device (Switched ON in Settings)
+                <p className="text-[14px] text-slate-500 dark:text-slate-400 mt-1">
+                  Last recorded spectral biomarker readings from your paired 10SG Optical Urine Analyzer.
                 </p>
               </div>
             </div>
 
-            <Link
-              to="/dashboard/settings"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 bg-slate-100 dark:bg-slate-800/80 px-3.5 py-2 rounded-xl transition-colors shrink-0"
-            >
-              <SettingsIcon className="w-3.5 h-3.5" />
-              <span>Device Setting Mode</span>
-            </Link>
+            <div className="flex items-center gap-3 shrink-0">
+              {/* Quick inline toggle to switch OFF & hide readings */}
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Readings ON</span>
+                <button
+                  type="button"
+                  onClick={() => handleToggleUrineDevice(false)}
+                  className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-emerald-500"
+                  title="Switch OFF to hide readings"
+                >
+                  <span className="translate-x-5 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out" />
+                </button>
+              </div>
+
+              <Link
+                to="/dashboard/settings"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 bg-slate-100 dark:bg-slate-800/80 px-3 py-2 rounded-xl transition-colors shrink-0"
+                title="Open Settings"
+              >
+                <SettingsIcon className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Settings</span>
+              </Link>
+            </div>
           </div>
 
           {/* 4 Dedicated Biomarker Cards: Protein, pH Level, Glucose, Nitrite Level */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {/* 1. Protein Reading */}
-            <div className="p-5 rounded-2xl bg-slate-50/90 dark:bg-[#070B14]/90 border border-slate-200 dark:border-slate-800 space-y-3 hover:border-cyan-500/30 transition-all">
+            <div className="p-5 rounded-2xl bg-slate-50/90 dark:bg-[#070B14]/90 border border-slate-200 dark:border-slate-800 space-y-3 hover:border-cyan-500/30 transition-all shadow-xs">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Protein (Albumin)
@@ -378,13 +402,14 @@ export default function OverviewPage() {
                   Glomerular barrier intact
                 </p>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
-                Corridor: &lt;15 mg/dL basal normal
-              </p>
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                <span>Last Recorded:</span>
+                <span className="font-semibold text-slate-700 dark:text-slate-300">Negative (&lt;15 mg/dL)</span>
+              </div>
             </div>
 
             {/* 2. pH Level Reading */}
-            <div className="p-5 rounded-2xl bg-slate-50/90 dark:bg-[#070B14]/90 border border-slate-200 dark:border-slate-800 space-y-3 hover:border-cyan-500/30 transition-all">
+            <div className="p-5 rounded-2xl bg-slate-50/90 dark:bg-[#070B14]/90 border border-slate-200 dark:border-slate-800 space-y-3 hover:border-cyan-500/30 transition-all shadow-xs">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   pH Level
@@ -401,13 +426,14 @@ export default function OverviewPage() {
                   Balanced healthy corridor
                 </p>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
-                Target corridor: 6.0 – 7.0 pH
-              </p>
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                <span>Last Recorded:</span>
+                <span className="font-semibold text-cyan-600 dark:text-cyan-400">6.5 pH</span>
+              </div>
             </div>
 
             {/* 3. Glucose Reading */}
-            <div className="p-5 rounded-2xl bg-slate-50/90 dark:bg-[#070B14]/90 border border-slate-200 dark:border-slate-800 space-y-3 hover:border-cyan-500/30 transition-all">
+            <div className="p-5 rounded-2xl bg-slate-50/90 dark:bg-[#070B14]/90 border border-slate-200 dark:border-slate-800 space-y-3 hover:border-cyan-500/30 transition-all shadow-xs">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Glucose Level
@@ -424,13 +450,14 @@ export default function OverviewPage() {
                   Zero renal spillage detected
                 </p>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
-                Renal threshold: ~180 mg/dL
-              </p>
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                <span>Last Recorded:</span>
+                <span className="font-semibold text-slate-700 dark:text-slate-300">0 mg/dL (Negative)</span>
+              </div>
             </div>
 
             {/* 4. Nitrite Level Reading */}
-            <div className="p-5 rounded-2xl bg-slate-50/90 dark:bg-[#070B14]/90 border border-slate-200 dark:border-slate-800 space-y-3 hover:border-cyan-500/30 transition-all">
+            <div className="p-5 rounded-2xl bg-slate-50/90 dark:bg-[#070B14]/90 border border-slate-200 dark:border-slate-800 space-y-3 hover:border-cyan-500/30 transition-all shadow-xs">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Nitrite Level
@@ -447,36 +474,73 @@ export default function OverviewPage() {
                   Zero bacterial nitrites detected
                 </p>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
-                Microbiome tract surveillance: Clean
-              </p>
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                <span>Last Recorded:</span>
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400">Negative (0 presence)</span>
+              </div>
             </div>
           </div>
         </motion.div>
       ) : (
-        /* When Urine Device is Switched OFF in Settings */
-        <div className="p-6 rounded-3xl bg-slate-50/80 dark:bg-[#070B14]/80 border border-dashed border-slate-300 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-400 flex items-center justify-center shrink-0">
-              <Droplet className="w-5 h-5" />
+        /* When Urine Device is Switched OFF: Readings are hidden with an option to toggle them back on */
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+          className="p-6 sm:p-7 rounded-3xl bg-slate-50/90 dark:bg-[#070B14]/90 border border-dashed border-slate-300 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-5 shadow-xs"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-slate-200/80 dark:bg-slate-800/80 text-slate-400 dark:text-slate-500 flex items-center justify-center shrink-0">
+              <Droplet className="w-6 h-6" />
             </div>
-            <div>
-              <p className="font-bold text-slate-700 dark:text-slate-300 text-sm">
-                Urine Diagnostic Device Mode is Switched OFF
-              </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Switch ON in Settings mode to stream live Protein, pH Level, Glucose, and Nitrite readings on your Dashboard.
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="font-bold text-slate-800 dark:text-slate-200 text-[16px]">
+                  Urine Diagnostic Readings (Switched OFF)
+                </h3>
+                <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-semibold">
+                  Readings Hidden
+                </span>
+              </div>
+              <p className="text-[13px] text-slate-500 dark:text-slate-400">
+                Last recorded readings for <strong>Protein</strong>, <strong>pH Level</strong>, <strong>Glucose</strong>, and <strong>Nitrite Level</strong> are hidden.
               </p>
             </div>
           </div>
-          <Link
-            to="/dashboard/settings"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-[#00685f] text-white hover:bg-[#00524b] transition-all shrink-0 cursor-pointer"
-          >
-            <SettingsIcon className="w-3.5 h-3.5" />
-            <span>Turn ON in Settings</span>
-          </Link>
-        </div>
+
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
+            {/* Direct Interactive Toggle Switch to turn readings back ON */}
+            <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 shadow-xs">
+              <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Toggle ON:</span>
+              <button
+                type="button"
+                onClick={() => handleToggleUrineDevice(true)}
+                className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 dark:hover:bg-slate-600"
+                title="Toggle Urine Device ON to show readings"
+              >
+                <span className="translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out" />
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleToggleUrineDevice(true)}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 hover:from-cyan-300 hover:to-blue-400 transition-all shadow-sm active:scale-95 cursor-pointer"
+            >
+              <Droplet className="w-3.5 h-3.5 text-slate-950" />
+              <span>Show Latest Readings</span>
+            </button>
+
+            <Link
+              to="/dashboard/settings"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+              title="Open Settings"
+            >
+              <SettingsIcon className="w-3.5 h-3.5" />
+              <span>Settings</span>
+            </Link>
+          </div>
+        </motion.div>
       )}
 
       {/* 4. Helpful Health Summary & Quick Actions Grid */}
