@@ -15,12 +15,13 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { useDoctorAuth } from '../../context/DoctorAuthContext';
+import { formatDoctorTitle, stripDoctorTitle } from '../../services/doctorService';
 
 export default function DoctorProfilePage() {
   const { doctor, updateDoctorProfile, isVerified } = useDoctorAuth();
 
   const [formData, setFormData] = useState({
-    fullName: doctor?.fullName || 'Vikram Malhotra',
+    fullName: stripDoctorTitle(doctor?.fullName || 'Vikram Malhotra'),
     email: doctor?.email || 'dr.vikram@biotrajectory.com',
     phone: doctor?.phone || '+91 98765 43210',
     regNumber: doctor?.regNumber || 'MCI-84729-A',
@@ -240,7 +241,7 @@ export default function DoctorProfilePage() {
               Digital Signature Stamp
             </span>
             <div className="font-serif italic text-lg text-slate-800 dark:text-slate-200">
-              Dr. {formData.fullName}
+              {formatDoctorTitle(formData.fullName)}
             </div>
             <p className="text-[10px] text-slate-400 font-mono">
               Medical Reg: {formData.regNumber} • BioTrajectory Public Key Encrypted

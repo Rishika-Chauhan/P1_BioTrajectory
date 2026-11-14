@@ -15,7 +15,7 @@ import {
   Info
 } from 'lucide-react';
 import { useDoctorAuth } from '../../context/DoctorAuthContext';
-import { DoctorService } from '../../services/doctorService';
+import { DoctorService, formatDoctorTitle } from '../../services/doctorService';
 
 export default function DoctorNewReportPage() {
   const [searchParams] = useSearchParams();
@@ -81,7 +81,7 @@ export default function DoctorNewReportPage() {
       patientId: formData.patientId,
       patientName: formData.patientName,
       doctorUid: doctor?.uid || 'doc_mock_1',
-      doctorName: doctor?.fullName || 'Practitioner',
+      doctorName: formatDoctorTitle(doctor?.fullName || doctor?.name),
       doctorRegNumber: doctor?.regNumber || 'MCI-84729-A',
       clinicName: doctor?.clinicName || 'BioTrajectory Specialty Center',
       createdAt: formData.date,
@@ -451,7 +451,7 @@ export default function DoctorNewReportPage() {
                 Practitioner Digital Seal & Verification Stamp
               </h4>
               <p className="text-[11px] text-slate-500">
-                Dr. {doctor?.fullName || 'Practitioner'} • Registration No: {doctor?.regNumber || 'MCI-84729-A'}
+                {formatDoctorTitle(doctor?.fullName || doctor?.name)} • Registration No: {doctor?.regNumber || 'MCI-84729-A'}
               </p>
             </div>
           </div>

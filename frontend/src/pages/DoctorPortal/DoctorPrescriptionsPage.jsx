@@ -14,7 +14,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { useDoctorAuth } from '../../context/DoctorAuthContext';
-import { DoctorService } from '../../services/doctorService';
+import { DoctorService, formatDoctorTitle } from '../../services/doctorService';
 
 export default function DoctorPrescriptionsPage() {
   const { doctor } = useDoctorAuth();
@@ -129,7 +129,7 @@ export default function DoctorPrescriptionsPage() {
               </button>
 
               <span className="text-[11px] text-slate-400">
-                Dr. {rx.doctorName || doctor?.fullName || 'Practitioner'}
+                {formatDoctorTitle(rx.doctorName || doctor?.fullName || doctor?.name)}
               </span>
             </div>
           </div>
@@ -170,7 +170,7 @@ export default function DoctorPrescriptionsPage() {
             {/* Doctor & Patient Information Header */}
             <div className="grid grid-cols-2 gap-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 text-xs">
               <div>
-                <p className="font-bold text-slate-900 dark:text-white">Dr. {selectedRx.doctorName || doctor?.fullName || 'Practitioner'}</p>
+                <p className="font-bold text-slate-900 dark:text-white">{formatDoctorTitle(selectedRx.doctorName || doctor?.fullName || doctor?.name)}</p>
                 <p className="text-slate-500">Reg: {doctor?.regNumber || 'MCI-84729-A'}</p>
                 <p className="text-slate-500">{doctor?.clinicName || 'BioTrajectory Specialty Center'}</p>
               </div>
@@ -233,7 +233,7 @@ export default function DoctorPrescriptionsPage() {
               </p>
               <div className="text-right">
                 <span className="font-bold font-mono text-slate-900 dark:text-white">
-                  Dr. {selectedRx.doctorName || doctor?.fullName || 'Practitioner'}
+                  {formatDoctorTitle(selectedRx.doctorName || doctor?.fullName || doctor?.name)}
                 </span>
                 <p className="text-[10px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 justify-end">
                   <ShieldCheck className="w-3.5 h-3.5" /> Digitally Signed

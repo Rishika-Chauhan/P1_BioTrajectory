@@ -20,7 +20,7 @@ import {
   BellRing
 } from 'lucide-react';
 import { useDoctorAuth } from '../../context/DoctorAuthContext';
-import { DoctorService } from '../../services/doctorService';
+import { DoctorService, formatDoctorTitle } from '../../services/doctorService';
 
 export default function DoctorOverviewPage() {
   const { doctor, isVerified, doctorRole } = useDoctorAuth();
@@ -75,7 +75,7 @@ export default function DoctorOverviewPage() {
               )}
             </div>
             <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
-              Welcome back, Dr. {doctor?.fullName || 'Practitioner'}
+              Welcome back, {formatDoctorTitle(doctor?.fullName || doctor?.name)}
             </h1>
             <p className="text-slate-600 dark:text-slate-300 text-sm md:text-base mt-1">
               {doctor?.specialization || 'General Physician'} • {doctor?.clinicName || 'BioTrajectory Health Network'}
@@ -233,11 +233,10 @@ export default function DoctorOverviewPage() {
                         <h3 className="font-semibold text-slate-900 dark:text-white text-sm">
                           {apt.patientName}
                         </h3>
-                        <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
-                          apt.type === 'video'
+                        <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${apt.type === 'video'
                             ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
                             : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
-                        }`}>
+                          }`}>
                           {apt.type === 'video' ? 'Video Call' : 'In-Person'}
                         </span>
                       </div>
@@ -341,21 +340,21 @@ export default function DoctorOverviewPage() {
                             {status}
                           </span>
                         </td>
-                      <td className="py-3 text-right">
-                        <div className="inline-flex items-center gap-2">
-                          <Link
-                            to={`/doctor/patients/${p.id}`}
-                            className="p-1 rounded-md text-slate-500 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                            title="Patient File"
-                          >
-                            <ChevronRight className="w-4 h-4" />
-                          </Link>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
+                        <td className="py-3 text-right">
+                          <div className="inline-flex items-center gap-2">
+                            <Link
+                              to={`/doctor/patients/${p.id}`}
+                              className="p-1 rounded-md text-slate-500 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                              title="Patient File"
+                            >
+                              <ChevronRight className="w-4 h-4" />
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
               </table>
             </div>
           </div>

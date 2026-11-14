@@ -35,22 +35,18 @@ function buildDoctorFromUser(user, application = null) {
   }
 
   const details = application?.application || application || {};
+  const rawFullName = details.full_name || user.name || user.displayName || '';
+  const cleanDoctorName = rawFullName ? String(rawFullName).replace(/^(?:(Dr\.?|Doctor)\s*)+/gi, '').trim() : '';
 
   return {
     id: user.uid || user.id,
     uid: user.uid || user.id,
 
     name:
-      details.full_name ||
-      user.name ||
-      user.displayName ||
-      '',
+      cleanDoctorName ? `Dr. ${cleanDoctorName}` : 'Dr. Practitioner',
 
     fullName:
-      details.full_name ||
-      user.name ||
-      user.displayName ||
-      '',
+      cleanDoctorName || 'Practitioner',
 
     email: user.email || '',
 
@@ -341,12 +337,12 @@ export function DoctorAuthProvider({ children }) {
 
     doctor: currentDoctor
       ? {
-          ...currentDoctor,
-          fullName: currentDoctor.name,
-          regNumber: currentDoctor.registrationNumber,
-          clinicName: currentDoctor.clinic,
-          uid: currentDoctor.id
-        }
+        ...currentDoctor,
+        fullName: currentDoctor.name,
+        regNumber: currentDoctor.registrationNumber,
+        clinicName: currentDoctor.clinic,
+        uid: currentDoctor.id
+      }
       : null,
 
     loadingDoctor,

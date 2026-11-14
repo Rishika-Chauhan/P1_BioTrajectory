@@ -23,6 +23,7 @@ import {
   Settings
 } from 'lucide-react';
 import { useDoctorAuth } from '../../context/DoctorAuthContext';
+import { formatDoctorTitle } from '../../services/doctorService';
 import ThemeToggle from '../common/ThemeToggle';
 import BrandLogo from '../common/BrandLogo';
 
@@ -67,12 +68,11 @@ export default function DoctorDashboardLayout() {
 
   return (
     <div className="flex h-screen w-full bg-[#F5F8FC] dark:bg-[#070B14] text-slate-900 dark:text-slate-100 overflow-hidden font-sans">
-      
+
       {/* 1. DOCTOR SIDEBAR */}
       <aside
-        className={`hidden md:flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-[#090E18] transition-all duration-300 z-30 shrink-0 ${
-          collapsed ? 'w-20' : 'w-72'
-        }`}
+        className={`hidden md:flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-[#090E18] transition-all duration-300 z-30 shrink-0 ${collapsed ? 'w-20' : 'w-72'
+          }`}
       >
         {/* Doctor Header */}
         <div className="flex items-center justify-between h-20 px-5 border-b border-slate-200 dark:border-slate-800">
@@ -113,11 +113,10 @@ export default function DoctorDashboardLayout() {
                 key={item.path}
                 to={item.path}
                 title={collapsed ? item.label : undefined}
-                className={`flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[16px] font-semibold transition-all ${
-                  active
+                className={`flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[16px] font-semibold transition-all ${active
                     ? 'bg-cyan-500/15 border border-cyan-500/30 text-cyan-700 dark:text-cyan-300 shadow-sm font-bold'
                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white'
-                }`}
+                  }`}
               >
                 <Icon className={`w-5 h-5 shrink-0 ${active ? 'text-cyan-600 dark:text-cyan-400' : 'text-slate-400'}`} />
                 {!collapsed && <span>{item.label}</span>}
@@ -138,7 +137,7 @@ export default function DoctorDashboardLayout() {
                 />
                 <div className="overflow-hidden">
                   <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
-                    {currentDoctor?.name || 'Dr. Aris Thorne'}
+                    {formatDoctorTitle(currentDoctor?.name || 'Aris Thorne')}
                   </p>
                   <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                     {currentDoctor?.specialization?.split('&')[0] || 'Cardiology'}
@@ -193,7 +192,7 @@ export default function DoctorDashboardLayout() {
 
       {/* 2. DOCTOR MAIN VIEWPORT */}
       <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
-        
+
         {/* Doctor Header */}
         <header className="h-20 px-6 sm:px-8 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#090E18]/80 backdrop-blur-xl flex items-center justify-between shrink-0 z-20">
           <div className="flex items-center gap-4">
@@ -208,7 +207,7 @@ export default function DoctorDashboardLayout() {
               <span className="text-[17px] font-bold text-slate-900 dark:text-white">
                 Clinical Workspace
               </span>
-              
+
               {isVerifiedDoctor && (
                 <span className="text-xs font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 px-3 py-1 rounded-full border border-emerald-500/30 flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5" />
@@ -282,9 +281,8 @@ export default function DoctorDashboardLayout() {
                   key={item.path}
                   to={item.path}
                   onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[16px] font-semibold ${
-                    active ? 'bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 font-bold' : 'text-slate-600 dark:text-slate-400'
-                  }`}
+                  className={`flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[16px] font-semibold ${active ? 'bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 font-bold' : 'text-slate-600 dark:text-slate-400'
+                    }`}
                 >
                   <Icon className="w-5 h-5" />
                   <span>{item.label}</span>

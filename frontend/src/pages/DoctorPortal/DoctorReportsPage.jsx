@@ -15,7 +15,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useDoctorAuth } from '../../context/DoctorAuthContext';
-import { DoctorService } from '../../services/doctorService';
+import { DoctorService, formatDoctorTitle } from '../../services/doctorService';
 
 export default function DoctorReportsPage() {
   const { doctor, isVerified } = useDoctorAuth();
@@ -90,11 +90,10 @@ export default function DoctorReportsPage() {
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors ${
-                statusFilter === st
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors ${statusFilter === st
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'bg-white dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
-              }`}
+                }`}
             >
               {st === 'all' ? 'All Reports' : st}
             </button>
@@ -124,11 +123,10 @@ export default function DoctorReportsPage() {
                 </div>
 
                 <span
-                  className={`text-[11px] font-medium px-2 py-0.5 rounded-full capitalize ${
-                    rep.status === 'signed'
+                  className={`text-[11px] font-medium px-2 py-0.5 rounded-full capitalize ${rep.status === 'signed'
                       ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400'
                       : 'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400'
-                  }`}
+                    }`}
                 >
                   {rep.status}
                 </span>
@@ -216,7 +214,7 @@ export default function DoctorReportsPage() {
               <div className="grid grid-cols-2 gap-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40">
                 <div>
                   <span className="text-[10px] text-slate-400 uppercase font-semibold">Attending Doctor</span>
-                  <p className="font-bold text-slate-900 dark:text-white">Dr. {selectedReport.doctorName || doctor?.fullName || 'Practitioner'}</p>
+                  <p className="font-bold text-slate-900 dark:text-white">{formatDoctorTitle(selectedReport.doctorName || doctor?.fullName || doctor?.name)}</p>
                   <p className="text-[11px] text-slate-500">Reg: {doctor?.regNumber || 'MCI-84729-A'}</p>
                   <p className="text-[11px] text-slate-500">{doctor?.clinicName || 'BioTrajectory Specialty Center'}</p>
                 </div>
@@ -291,7 +289,7 @@ export default function DoctorReportsPage() {
                 </div>
                 <div className="text-right">
                   <p className="font-mono text-xs font-bold text-slate-900 dark:text-white">
-                    Dr. {selectedReport.doctorName || doctor?.fullName || 'Practitioner'}
+                    {formatDoctorTitle(selectedReport.doctorName || doctor?.fullName || doctor?.name)}
                   </p>
                   <p className="text-[10px] text-slate-400">Verified Medical Seal</p>
                 </div>

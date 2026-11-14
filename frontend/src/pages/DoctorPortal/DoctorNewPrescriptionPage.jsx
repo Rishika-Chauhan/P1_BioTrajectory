@@ -14,7 +14,7 @@ import {
   Printer
 } from 'lucide-react';
 import { useDoctorAuth } from '../../context/DoctorAuthContext';
-import { DoctorService } from '../../services/doctorService';
+import { DoctorService, formatDoctorTitle } from '../../services/doctorService';
 
 export default function DoctorNewPrescriptionPage() {
   const [searchParams] = useSearchParams();
@@ -97,7 +97,7 @@ export default function DoctorNewPrescriptionPage() {
       patientId,
       patientName,
       doctorUid: doctor?.uid || 'doc_mock_1',
-      doctorName: doctor?.fullName || 'Practitioner',
+      doctorName: formatDoctorTitle(doctor?.fullName || doctor?.name),
       doctorRegNumber: doctor?.regNumber || 'MCI-84729-A',
       clinicName: doctor?.clinicName || 'BioTrajectory Specialty Center',
       createdAt: new Date().toISOString().split('T')[0],
@@ -346,7 +346,7 @@ export default function DoctorNewPrescriptionPage() {
                 Authorized Electronic Signature
               </h4>
               <p className="text-[11px] text-slate-500">
-                Dr. {doctor?.fullName || 'Practitioner'} • Medical Council Reg: {doctor?.regNumber || 'MCI-84729-A'}
+                {formatDoctorTitle(doctor?.fullName || doctor?.name)} • Medical Council Reg: {doctor?.regNumber || 'MCI-84729-A'}
               </p>
             </div>
           </div>

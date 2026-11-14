@@ -88,7 +88,16 @@ const fallbackAuth = {
   get currentUser() {
     try {
       const stored = localStorage.getItem('biotrajectory_demo_user');
-      return stored ? JSON.parse(stored) : null;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && parsed.role === ROLES.DOCTOR && parsed.name) {
+          // Clean legacy "Dr." prefix from stored doctor object so titles never double up
+          parsed.name = parsed.name.replace(/^(?:(Dr\.?|Doctor)\s*)+/gi, '').trim();
+          parsed.displayName = parsed.name;
+        }
+        return parsed;
+      }
+      return null;
     } catch {
       return null;
     }
@@ -112,7 +121,7 @@ function createDemoUser(cleanEmail, displayName = null, role = null) {
     (cleanEmail.startsWith('priyanshu')
       ? 'Priyanshu'
       : inferredRole === ROLES.DOCTOR
-        ? 'Dr. Verified Specialist'
+        ? 'Verified Specialist'
         : inferredRole === ROLES.ADMIN
           ? 'System Administrator'
           : cleanEmail.toLowerCase().startsWith('patient')

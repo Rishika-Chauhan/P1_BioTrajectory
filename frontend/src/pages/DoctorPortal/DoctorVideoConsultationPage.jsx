@@ -21,7 +21,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { useDoctorAuth } from '../../context/DoctorAuthContext';
-import { DoctorService } from '../../services/doctorService';
+import { DoctorService, formatDoctorTitle } from '../../services/doctorService';
 
 export default function DoctorVideoConsultationPage() {
   const [searchParams] = useSearchParams();
@@ -44,7 +44,7 @@ export default function DoctorVideoConsultationPage() {
     'Patient reports mild headaches in the morning. BP home logs show 138/88. Denies chest pain or shortness of breath.'
   );
   const [chatMessages, setChatMessages] = useState([
-    { sender: 'patient', text: 'Good morning Dr. ' + (doctor?.fullName || 'Doctor') + ', I can hear you clearly.', time: '10:30 AM' },
+    { sender: 'patient', text: `Good morning ${formatDoctorTitle(doctor?.fullName || doctor?.name)}, I can hear you clearly.`, time: '10:30 AM' },
     { sender: 'doctor', text: 'Good morning Rahul. Let us review your blood pressure logs today.', time: '10:31 AM' },
   ]);
   const [newMessage, setNewMessage] = useState('');
@@ -161,7 +161,7 @@ export default function DoctorVideoConsultationPage() {
                       <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">
                         Dr
                       </div>
-                      <span className="text-[10px] text-white/90 font-medium mt-1">You (Dr. {doctor?.fullName || 'Practitioner'})</span>
+                      <span className="text-[10px] text-white/90 font-medium mt-1">You ({formatDoctorTitle(doctor?.fullName || doctor?.name)})</span>
                     </div>
                   ) : (
                     <div className="text-slate-500 text-[10px] flex flex-col items-center">
@@ -205,11 +205,10 @@ export default function DoctorVideoConsultationPage() {
               <button
                 type="button"
                 onClick={() => setIsMicOn(!isMicOn)}
-                className={`p-3 rounded-xl transition-all ${
-                  isMicOn
+                className={`p-3 rounded-xl transition-all ${isMicOn
                     ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
                     : 'bg-rose-500 text-white'
-                }`}
+                  }`}
                 title={isMicOn ? 'Mute Microphone' : 'Unmute Microphone'}
               >
                 {isMicOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
@@ -218,11 +217,10 @@ export default function DoctorVideoConsultationPage() {
               <button
                 type="button"
                 onClick={() => setIsVideoOn(!isVideoOn)}
-                className={`p-3 rounded-xl transition-all ${
-                  isVideoOn
+                className={`p-3 rounded-xl transition-all ${isVideoOn
                     ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
                     : 'bg-rose-500 text-white'
-                }`}
+                  }`}
                 title={isVideoOn ? 'Turn Off Camera' : 'Turn On Camera'}
               >
                 {isVideoOn ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
@@ -231,11 +229,10 @@ export default function DoctorVideoConsultationPage() {
               <button
                 type="button"
                 onClick={() => setIsScreenSharing(!isScreenSharing)}
-                className={`p-3 rounded-xl transition-all ${
-                  isScreenSharing
+                className={`p-3 rounded-xl transition-all ${isScreenSharing
                     ? 'bg-blue-600 text-white'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
-                }`}
+                  }`}
                 title="Share Screen"
               >
                 <Share2 className="w-5 h-5" />
@@ -261,31 +258,28 @@ export default function DoctorVideoConsultationPage() {
           <div className="flex border-b border-slate-200 dark:border-slate-800 text-xs font-semibold">
             <button
               onClick={() => setActiveSidePanel('notes')}
-              className={`flex-1 py-3 text-center border-b-2 transition-colors ${
-                activeSidePanel === 'notes'
+              className={`flex-1 py-3 text-center border-b-2 transition-colors ${activeSidePanel === 'notes'
                   ? 'border-blue-600 text-blue-600 dark:text-blue-400 bg-blue-50/20'
                   : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-              }`}
+                }`}
             >
               Live Clinical Notes
             </button>
             <button
               onClick={() => setActiveSidePanel('summary')}
-              className={`flex-1 py-3 text-center border-b-2 transition-colors ${
-                activeSidePanel === 'summary'
+              className={`flex-1 py-3 text-center border-b-2 transition-colors ${activeSidePanel === 'summary'
                   ? 'border-blue-600 text-blue-600 dark:text-blue-400 bg-blue-50/20'
                   : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-              }`}
+                }`}
             >
               Patient Vitals
             </button>
             <button
               onClick={() => setActiveSidePanel('chat')}
-              className={`flex-1 py-3 text-center border-b-2 transition-colors ${
-                activeSidePanel === 'chat'
+              className={`flex-1 py-3 text-center border-b-2 transition-colors ${activeSidePanel === 'chat'
                   ? 'border-blue-600 text-blue-600 dark:text-blue-400 bg-blue-50/20'
                   : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-              }`}
+                }`}
             >
               In-Call Chat
             </button>
@@ -358,11 +352,10 @@ export default function DoctorVideoConsultationPage() {
                       className={`flex flex-col ${msg.sender === 'doctor' ? 'items-end' : 'items-start'}`}
                     >
                       <div
-                        className={`max-w-[85%] p-2.5 rounded-xl text-xs ${
-                          msg.sender === 'doctor'
+                        className={`max-w-[85%] p-2.5 rounded-xl text-xs ${msg.sender === 'doctor'
                             ? 'bg-blue-600 text-white rounded-br-none'
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-bl-none'
-                        }`}
+                          }`}
                       >
                         {msg.text}
                       </div>

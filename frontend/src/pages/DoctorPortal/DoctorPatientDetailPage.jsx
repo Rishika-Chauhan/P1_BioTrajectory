@@ -18,7 +18,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useDoctorAuth } from '../../context/DoctorAuthContext';
-import { DoctorService } from '../../services/doctorService';
+import { DoctorService, formatDoctorTitle } from '../../services/doctorService';
 
 export default function DoctorPatientDetailPage() {
   const { id } = useParams();
@@ -38,13 +38,13 @@ export default function DoctorPatientDetailPage() {
         {
           id: 'n1',
           date: 'Nov 02, 2026',
-          author: 'Dr. ' + (doctor?.fullName || 'Practitioner'),
+          author: formatDoctorTitle(doctor?.fullName || doctor?.name),
           text: 'Patient responding well to Telmisartan. Advised continuous home BP monitoring twice weekly in morning.',
         },
         {
           id: 'n2',
           date: 'Oct 18, 2026',
-          author: 'Dr. ' + (doctor?.fullName || 'Practitioner'),
+          author: formatDoctorTitle(doctor?.fullName || doctor?.name),
           text: 'Initial presentation with recurring afternoon headaches. Fasting blood sugar normal. Started low sodium diet.',
         },
       ]);
@@ -72,7 +72,7 @@ export default function DoctorPatientDetailPage() {
     const newNote = {
       id: 'n_' + Date.now(),
       date: 'Today, ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      author: 'Dr. ' + (doctor?.fullName || 'Practitioner'),
+      author: formatDoctorTitle(doctor?.fullName || doctor?.name),
       text: notes.trim(),
     };
     setNoteList([newNote, ...noteList]);
@@ -213,31 +213,28 @@ export default function DoctorPatientDetailPage() {
       <div className="flex border-b border-slate-200 dark:border-slate-800 space-x-6 text-sm">
         <button
           onClick={() => setActiveTab('overview')}
-          className={`pb-3 font-semibold transition-colors relative ${
-            activeTab === 'overview'
+          className={`pb-3 font-semibold transition-colors relative ${activeTab === 'overview'
               ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600'
               : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-          }`}
+            }`}
         >
           Clinical Notes & Timeline
         </button>
         <button
           onClick={() => setActiveTab('reports')}
-          className={`pb-3 font-semibold transition-colors relative ${
-            activeTab === 'reports'
+          className={`pb-3 font-semibold transition-colors relative ${activeTab === 'reports'
               ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600'
               : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-          }`}
+            }`}
         >
           Past Reports & Summaries
         </button>
         <button
           onClick={() => setActiveTab('prescriptions')}
-          className={`pb-3 font-semibold transition-colors relative ${
-            activeTab === 'prescriptions'
+          className={`pb-3 font-semibold transition-colors relative ${activeTab === 'prescriptions'
               ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600'
               : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-          }`}
+            }`}
         >
           Medications & Prescriptions
         </button>

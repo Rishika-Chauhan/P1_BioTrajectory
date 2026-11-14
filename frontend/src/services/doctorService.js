@@ -426,7 +426,7 @@ export class DoctorService {
     const warningSigns = report.warningSigns || 'Seek emergency medical attention if severe chest pain, shortness of breath, or acute symptoms develop.';
 
     return {
-      title: `Your Visit Summary with ${report.doctorName || report.signedBy || 'Your Doctor'}`,
+      title: `Your Visit Summary with ${formatDoctorTitle(report.doctorName || report.signedBy)}`,
       date: report.date || new Date().toLocaleDateString(),
       diagnosis: diagnosis.includes('Hypertension') ? `${diagnosis} (High Blood Pressure)` : diagnosis,
       carePlan,
@@ -440,6 +440,20 @@ export class DoctorService {
       warningSignsNotice: warningSigns
     };
   }
+}
+
+/**
+ * Universal utility to ensure doctor titles never duplicate (e.g. preventing "Dr. Dr. ...")
+ */
+export function formatDoctorTitle(rawName) {
+  if (!rawName) return 'Dr. Practitioner';
+  const clean = String(rawName).replace(/^(?:(Dr\.?|Doctor)\s*)+/gi, '').trim();
+  return `Dr. ${clean || 'Practitioner'}`;
+}
+
+export function stripDoctorTitle(rawName) {
+  if (!rawName) return 'Practitioner';
+  return String(rawName).replace(/^(?:(Dr\.?|Doctor)\s*)+/gi, '').trim() || 'Practitioner';
 }
 
 export default DoctorService;
