@@ -24,9 +24,17 @@ import { useAuth } from '../../context/AuthContext';
 import { healthReadingService } from '../../services/healthReadingService';
 import DisclaimerBanner from '../../components/common/DisclaimerBanner';
 
+const getLocalDateString = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+};
+
 const EMPTY_FORM = {
   type: 'blood_pressure',
-  date: new Date().toLocaleDateString('en-CA'),
+  date: getLocalDateString(),
   systolic: '',
   diastolic: '',
   pulse: '',
@@ -65,11 +73,7 @@ const formatDateInput = (timestamp) => {
 
   if (Number.isNaN(date.getTime())) return '';
 
-  return [
-    date.getFullYear(),
-    String(date.getMonth() + 1).padStart(2, '0'),
-    String(date.getDate()).padStart(2, '0')
-  ].join('-');
+  return getLocalDateString(date);
 };
 
 const displayValue = (value, unit = '') => {
@@ -80,14 +84,51 @@ const displayValue = (value, unit = '') => {
   return `${value}${unit ? ` ${unit}` : ''}`;
 };
 
+function createMeasurementDate(dateString) {
+  if (!dateString || !/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    throw new Error('Select a valid measurement date.');
+  }
+
+  const [year, month, day] = dateString.split('-').map(Number);
+
+  const selectedDate = new Date(year, month - 1, day);
+  const today = new Date();
+
+  // Reject invalid calendar dates such as February 31.
+  if (
+    selectedDate.getFullYear() !== year ||
+    selectedDate.getMonth() !== month - 1 ||
+    selectedDate.getDate() !== day
+  ) {
+    throw new Error('Select a valid measurement date.');
+  }
+
+  // Compare calendar dates using the user's local timezone.
+  const todayString = getLocalDateString(today);
+
+  if (dateString > todayString) {
+    throw new Error('Measurement date cannot be in the future.');
+  }
+
+  // For today's readings, use the actual current local time.
+  if (dateString === todayString) {
+    return new Date();
+  }
+
+  // Historical readings use noon as a date-only placeholder.
+  return new Date(year, month - 1, day, 12, 0, 0, 0);
+}
+
 export default function DailyReportsPage() {
   const { currentUser } = useAuth();
   const uid = currentUser?.uid;
 
   const [records, setRecords] = useState([]);
+
   const [selectedDate, setSelectedDate] = useState(
-    new Date().toLocaleDateString('en-CA')
+    getLocalDateString()
   );
+
   const [viewMode, setViewMode] = useState('daily');
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -95,6 +136,7 @@ export default function DailyReportsPage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
   const [errorMessage, setErrorMessage] = useState('');
   const [toastMessage, setToastMessage] = useState('');
 
@@ -131,6 +173,7 @@ export default function DailyReportsPage() {
       setRecords(sortedResult);
     } catch (error) {
       console.error('Could not load health readings:', error);
+
       setErrorMessage(
         error.message || 'Could not load your health readings.'
       );
@@ -228,13 +271,7 @@ export default function DailyReportsPage() {
         throw new Error('Select the measurement date.');
       }
 
-      const measuredAt = new Date(
-        `${newReading.date}T12:00:00`
-      );
-
-      if (Number.isNaN(measuredAt.getTime())) {
-        throw new Error('Select a valid measurement date.');
-      }
+      const measuredAt = createMeasurementDate(newReading.date);
 
       const values = buildMeasurement();
 
@@ -247,13 +284,19 @@ export default function DailyReportsPage() {
       });
 
       setModalOpen(false);
-      setNewReading({ ...EMPTY_FORM });
+      setNewReading({
+        ...EMPTY_FORM,
+        date: getLocalDateString()
+      });
+
+      setSelectedDate(getLocalDateString());
 
       await loadReadings();
 
       showToast('Your reading was saved to your account.');
     } catch (error) {
       console.error('Reading save failed:', error);
+
       setErrorMessage(
         error.message || 'Could not save your reading.'
       );
@@ -271,21 +314,32 @@ export default function DailyReportsPage() {
       );
     }
 
-    const anchorDate = new Date(`${selectedDate}T00:00:00`);
+    const [year, month, day] = selectedDate.split('-').map(Number);
+    const anchorDate = new Date(year, month - 1, day);
 
     if (Number.isNaN(anchorDate.getTime())) return [];
 
     if (viewMode === 'weekly') {
       const startDate = new Date(anchorDate);
       const daysSinceMonday = (startDate.getDay() + 6) % 7;
+
       startDate.setDate(startDate.getDate() - daysSinceMonday);
 
       const endDate = new Date(startDate);
       endDate.setDate(startDate.getDate() + 7);
 
       return records.filter((record) => {
+        const recordDateString = formatDateInput(record.measuredAt);
+
+        if (!recordDateString) return false;
+
+        const [recordYear, recordMonth, recordDay] =
+          recordDateString.split('-').map(Number);
+
         const recordDate = new Date(
-          `${formatDateInput(record.measuredAt)}T00:00:00`
+          recordYear,
+          recordMonth - 1,
+          recordDay
         );
 
         return recordDate >= startDate && recordDate < endDate;
@@ -359,6 +413,7 @@ export default function DailyReportsPage() {
     link.click();
 
     URL.revokeObjectURL(url);
+
     showToast('Your CSV export has been generated.');
   };
 
@@ -393,6 +448,7 @@ export default function DailyReportsPage() {
         className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
       >
         <option value="">Not recorded</option>
+
         {options.map((option) => (
           <option key={option} value={option}>
             {option}
@@ -433,8 +489,15 @@ export default function DailyReportsPage() {
       case 'activity':
         return (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {renderField('Steps', 'steps', { min: 0, step: 1 })}
-            {renderField('Distance (km)', 'distanceKm', { min: 0 })}
+            {renderField('Steps', 'steps', {
+              min: 0,
+              step: 1
+            })}
+
+            {renderField('Distance (km)', 'distanceKm', {
+              min: 0
+            })}
+
             {renderField('Exercise (minutes)', 'exerciseMinutes', {
               min: 0
             })}
@@ -505,6 +568,7 @@ export default function DailyReportsPage() {
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
             My Day
           </h1>
+
           <p className="text-[17px] text-slate-600 dark:text-slate-400 mt-1">
             Your recorded health measurements and activity history
           </p>
@@ -514,7 +578,10 @@ export default function DailyReportsPage() {
           <button
             onClick={() => {
               setErrorMessage('');
-              setNewReading({ ...EMPTY_FORM });
+              setNewReading({
+                ...EMPTY_FORM,
+                date: getLocalDateString()
+              });
               setModalOpen(true);
             }}
             className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl text-[17px] font-bold bg-cyan-400 text-slate-950 hover:bg-cyan-300 shadow-md"
@@ -537,7 +604,9 @@ export default function DailyReportsPage() {
             className="p-3 rounded-xl bg-white dark:bg-[#101827] border border-slate-300 dark:border-slate-800"
             title="Refresh readings"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`}
+            />
           </button>
         </div>
       </div>
@@ -568,6 +637,7 @@ export default function DailyReportsPage() {
 
         <div className="flex items-center gap-3">
           <Calendar className="w-5 h-5 text-cyan-500" />
+
           <label className="text-slate-600 dark:text-slate-400">
             Select day:
           </label>
@@ -575,6 +645,7 @@ export default function DailyReportsPage() {
           <input
             type="date"
             value={selectedDate}
+            max={getLocalDateString()}
             onChange={(event) => setSelectedDate(event.target.value)}
             className="p-2 rounded-xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700"
           />
@@ -588,6 +659,7 @@ export default function DailyReportsPage() {
             <span className="font-bold text-slate-500 dark:text-slate-400">
               Blood Pressure
             </span>
+
             <Heart className="w-5 h-5 text-rose-500" />
           </div>
 
@@ -595,6 +667,7 @@ export default function DailyReportsPage() {
             {latestBP
               ? `${latestBP.systolic} / ${latestBP.diastolic}`
               : '—'}
+
             <span className="text-sm text-slate-400 ml-1">mmHg</span>
           </p>
 
@@ -608,6 +681,7 @@ export default function DailyReportsPage() {
             <span className="font-bold text-slate-500 dark:text-slate-400">
               Daily Activity
             </span>
+
             <Footprints className="w-5 h-5 text-emerald-500" />
           </div>
 
@@ -625,6 +699,7 @@ export default function DailyReportsPage() {
             <span className="font-bold text-slate-500 dark:text-slate-400">
               Heart Rate
             </span>
+
             <Clock className="w-5 h-5 text-cyan-500" />
           </div>
 
@@ -645,6 +720,7 @@ export default function DailyReportsPage() {
             <span className="font-bold text-slate-500 dark:text-slate-400">
               Urine Test
             </span>
+
             <Droplet className="w-5 h-5 text-blue-500" />
           </div>
 
@@ -664,13 +740,17 @@ export default function DailyReportsPage() {
         </h2>
 
         {loading ? (
-          <p className="text-slate-500">Loading your Firestore records...</p>
+          <p className="text-slate-500">
+            Loading your Firestore records...
+          </p>
         ) : selectedRecords.length === 0 ? (
           <div className="py-12 text-center">
             <Activity className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+
             <h3 className="text-lg font-bold text-slate-800 dark:text-white">
               No readings for this date
             </h3>
+
             <p className="text-slate-500 mt-2">
               Your actual measurements will appear here after you save them.
             </p>
@@ -694,17 +774,21 @@ export default function DailyReportsPage() {
                     <td className="py-4 px-3">
                       {formatDate(record.measuredAt)}
                     </td>
+
                     <td className="py-4 px-3 font-semibold">
                       {record.type.replaceAll('_', ' ')}
                     </td>
+
                     <td className="py-4 px-3">
                       {Object.entries(record.values)
                         .map(([key, value]) => `${key}: ${value}`)
                         .join(' | ')}
                     </td>
+
                     <td className="py-4 px-3 capitalize">
                       {record.source}
                     </td>
+
                     <td className="py-4 px-3">
                       {record.notes || '—'}
                     </td>
@@ -772,7 +856,7 @@ export default function DailyReportsPage() {
                 <input
                   type="date"
                   value={newReading.date}
-                  max={new Date().toLocaleDateString('en-CA')}
+                  max={getLocalDateString()}
                   onChange={(event) => updateField('date', event.target.value)}
                   required
                   className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
@@ -797,7 +881,9 @@ export default function DailyReportsPage() {
               </div>
 
               {errorMessage && (
-                <p className="text-sm text-red-500">{errorMessage}</p>
+                <p className="text-sm text-red-500">
+                  {errorMessage}
+                </p>
               )}
 
               <div className="pt-3 flex justify-end gap-3">
