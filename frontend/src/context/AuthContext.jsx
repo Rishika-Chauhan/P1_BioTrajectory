@@ -1,4 +1,3 @@
-
 import React, {
   createContext,
   useContext,
@@ -12,7 +11,13 @@ import {
   auth
 } from '../services/firebase';
 
-import { trajectoryStorage } from '../services/trajectoryStorage';
+import {
+  trajectoryStorage,
+  DEFAULT_HEALTH_PROFILE
+} from '../services/trajectoryStorage';
+
+import { userProfileService } from '../services/userProfileService';
+import { patientHealthService } from '../services/patientHealthService';
 
 const AuthContext = createContext(null);
 
@@ -24,19 +29,14 @@ export const getDashboardPath = (role) => {
   switch (role) {
     case USER_ROLES.ADMIN:
       return '/admin/dashboard';
-
     case USER_ROLES.DOCTOR:
       return '/doctor/dashboard';
-
     case USER_ROLES.DOCTOR_PENDING:
       return '/doctor/pending';
-
     case USER_ROLES.DOCTOR_SUSPENDED:
       return '/doctor/suspended';
-
     case USER_ROLES.UNKNOWN:
       return '/account-setup';
-
     case USER_ROLES.USER:
     default:
       return '/dashboard';
@@ -51,38 +51,37 @@ function getTrustedRole(claims) {
     : USER_ROLES.USER;
 }
 
-function buildAppUser(firebaseUser, claims = {}) {
-  const profile = trajectoryStorage.getHealthProfile();
-  const profileName = profile?.name?.trim();
-
-  let resolvedName = firebaseUser.displayName?.trim();
-  if (!resolvedName || resolvedName.toLowerCase() === 'patient' || resolvedName.toLowerCase() === 'user') {
-    resolvedName =
-      profileName ||
-      (firebaseUser.email && !firebaseUser.email.toLowerCase().startsWith('patient@')
-        ? firebaseUser.email.split('@')[0]
-        : null) ||
-      'Pranjal Sharma';
-  }
+function buildAppUser(firebaseUser, claims = {}, profile = null) {
+  const profileName =
+    profile?.name ||
+    profile?.fullName ||
+    firebaseUser.displayName ||
+    firebaseUser.email?.split('@')[0] ||
+    'User';
 
   return {
     uid: firebaseUser.uid,
     id: firebaseUser.uid,
     email: firebaseUser.email,
-    name: resolvedName,
-    displayName: resolvedName,
-    photoURL: firebaseUser.photoURL,
+    name: profileName,
+    displayName: firebaseUser.displayName || profileName,
+    photoURL: firebaseUser.photoURL || null,
     avatar: firebaseUser.photoURL || null,
     emailVerified: firebaseUser.emailVerified,
     role: getTrustedRole(claims),
     claims,
     joinedDate: firebaseUser.metadata?.creationTime
       ? new Date(firebaseUser.metadata.creationTime)
-        .toISOString()
-        .split('T')[0]
+          .toISOString()
+          .split('T')[0]
       : new Date().toISOString().split('T')[0]
   };
 }
+
+const getEmptyHealthProfile = () => ({
+  ...DEFAULT_HEALTH_PROFILE,
+  onboardingCompleted: false
+});
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
@@ -91,13 +90,29 @@ export function AuthProvider({ children }) {
   const [tokenClaims, setTokenClaims] = useState(null);
 
   const [healthProfile, setHealthProfile] = useState(
-    () => trajectoryStorage.getHealthProfile()
+    getEmptyHealthProfile
   );
 
-  // Only Firebase Authentication can establish a session.
+  const loadUserProfiles = async (firebaseUser) => {
+    const basicProfile =
+      await userProfileService.createIfMissing(firebaseUser);
+
+    const remoteHealthProfile =
+      await patientHealthService.get(firebaseUser.uid);
+
+    if (remoteHealthProfile) {
+      setHealthProfile(remoteHealthProfile);
+      trajectoryStorage.saveHealthProfile(remoteHealthProfile);
+    } else {
+      setHealthProfile(getEmptyHealthProfile());
+    }
+
+    return basicProfile;
+  };
+
   useEffect(() => {
     let active = true;
-    let unsubscribe = () => { };
+    let unsubscribe = () => {};
 
     try {
       unsubscribe = FirebaseService.onAuthStateChanged(
@@ -107,6 +122,7 @@ export function AuthProvider({ children }) {
           if (!firebaseUser) {
             setCurrentUser(null);
             setTokenClaims(null);
+            setHealthProfile(getEmptyHealthProfile());
             setIsAuthLoading(false);
             return;
           }
@@ -118,18 +134,32 @@ export function AuthProvider({ children }) {
             if (!active) return;
 
             const claims = tokenResult?.claims || {};
-            const appUser = buildAppUser(firebaseUser, claims);
+            const basicProfile = await loadUserProfiles(firebaseUser);
+
+            if (!active) return;
+
+            const appUser = buildAppUser(
+              firebaseUser,
+              claims,
+              basicProfile
+            );
 
             setCurrentUser(appUser);
             setTokenClaims(claims);
             setAuthError(null);
           } catch (error) {
-            console.error('Firebase authentication error:', error);
+            console.error(
+              'Firebase authentication/profile initialization error:',
+              error
+            );
 
             if (active) {
               setCurrentUser(null);
               setTokenClaims(null);
-              setAuthError(error.message);
+              setHealthProfile(getEmptyHealthProfile());
+              setAuthError(
+                error.message || 'Unable to initialize your account.'
+              );
             }
           } finally {
             if (active) {
@@ -138,8 +168,9 @@ export function AuthProvider({ children }) {
           }
         }
       );
-    } catch (e) {
-      console.warn('Failed to start auth listener:', e);
+    } catch (error) {
+      console.error('Failed to start Firebase auth listener:', error);
+      setAuthError(error.message || 'Authentication is unavailable.');
       setIsAuthLoading(false);
     }
 
@@ -151,13 +182,10 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  // Synchronize the existing health profile.
   useEffect(() => {
     const handleProfileUpdate = (event) => {
       if (event.detail?.profile) {
         setHealthProfile(event.detail.profile);
-      } else {
-        setHealthProfile(trajectoryStorage.getHealthProfile());
       }
     };
 
@@ -174,7 +202,6 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  // Real Firebase login only.
   const login = async (email, password, rememberMe = true) => {
     setAuthError(null);
 
@@ -197,7 +224,13 @@ export function AuthProvider({ children }) {
         await FirebaseService.getIdTokenResult(firebaseUser, true);
 
       const claims = tokenResult?.claims || {};
-      const appUser = buildAppUser(firebaseUser, claims);
+      const basicProfile = await loadUserProfiles(firebaseUser);
+
+      const appUser = buildAppUser(
+        firebaseUser,
+        claims,
+        basicProfile
+      );
 
       setCurrentUser(appUser);
       setTokenClaims(claims);
@@ -224,8 +257,6 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // Public registration can create USER accounts only.
-  // The role argument is intentionally not accepted.
   const register = async ({
     fullName,
     email,
@@ -257,10 +288,19 @@ export function AuthProvider({ children }) {
         await FirebaseService.getIdTokenResult(firebaseUser, true);
 
       const claims = tokenResult?.claims || {};
-      const appUser = buildAppUser(firebaseUser, claims);
+
+      const basicProfile =
+        await userProfileService.createIfMissing(firebaseUser);
+
+      const appUser = buildAppUser(
+        firebaseUser,
+        claims,
+        basicProfile
+      );
 
       setCurrentUser(appUser);
       setTokenClaims(claims);
+      setHealthProfile(getEmptyHealthProfile());
 
       return appUser;
     } catch (error) {
@@ -279,13 +319,13 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // Logout through Firebase.
   const logout = async () => {
     try {
       await FirebaseService.signOut();
 
       setCurrentUser(null);
       setTokenClaims(null);
+      setHealthProfile(getEmptyHealthProfile());
       setAuthError(null);
 
       return true;
@@ -296,9 +336,8 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // Refresh trusted custom claims from Firebase.
   const refreshToken = async () => {
-    const firebaseUser = auth.currentUser;
+    const firebaseUser = auth?.currentUser;
 
     if (!firebaseUser) {
       setCurrentUser(null);
@@ -323,8 +362,7 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // Profile updates cannot modify identity, role or custom claims.
-  const updateProfile = (updates) => {
+  const updateProfile = (updates = {}) => {
     const {
       role,
       uid,
@@ -334,28 +372,43 @@ export function AuthProvider({ children }) {
       token,
       emailVerified,
       ...safeUpdates
-    } = updates || {};
+    } = updates;
 
     setCurrentUser((previous) =>
       previous ? { ...previous, ...safeUpdates } : previous
     );
   };
 
-  // Existing health profile functionality.
-  const updateHealthProfile = (updates) => {
-    const saved = trajectoryStorage.saveHealthProfile(updates);
+  const updateHealthProfile = async (updates) => {
+    const firebaseUser = auth?.currentUser;
 
-    if (saved) {
-      setHealthProfile(saved);
-
-      if (saved.name) {
-        setCurrentUser((previous) =>
-          previous ? { ...previous, name: saved.name } : previous
-        );
-      }
+    if (!firebaseUser) {
+      throw new Error('Please sign in first.');
     }
 
-    return saved;
+    if (
+      updates?.consent?.storeAndProcessHealthData !== true
+    ) {
+      throw new Error('Consent is required to save health information.');
+    }
+
+    const savedProfile = await patientHealthService.save(
+      firebaseUser.uid,
+      updates
+    );
+
+    trajectoryStorage.saveHealthProfile(savedProfile);
+    setHealthProfile(savedProfile);
+
+    if (savedProfile?.name) {
+      setCurrentUser((previous) =>
+        previous
+          ? { ...previous, name: savedProfile.name }
+          : previous
+      );
+    }
+
+    return savedProfile;
   };
 
   const deleteAccountData = async () => {
@@ -363,7 +416,6 @@ export function AuthProvider({ children }) {
     await logout();
   };
 
-  // Never grant roles from the frontend.
   const setUserRole = () => {
     throw new Error(
       'Roles must be assigned by a trusted backend.'
@@ -377,7 +429,6 @@ export function AuthProvider({ children }) {
     isAuthenticated: Boolean(currentUser),
     isAuthLoading,
     authError,
-
     tokenClaims,
 
     role: currentUser?.role || USER_ROLES.UNKNOWN,

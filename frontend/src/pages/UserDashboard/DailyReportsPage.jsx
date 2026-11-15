@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react';
+
 import {
   Calendar,
   Plus,
-  Download,
   Heart,
   Footprints,
   Clock,
@@ -10,523 +15,806 @@ import {
   CheckCircle2,
   FileSpreadsheet,
   X,
-  Bluetooth,
-  RefreshCw
+  Activity,
+  RefreshCw,
+  AlertCircle
 } from 'lucide-react';
-import { SAMPLE_DAILY_VITALS_7D } from '../../data/vitalsData';
-import { BluetoothService } from '../../services/bluetoothService';
+
+import { useAuth } from '../../context/AuthContext';
+import { healthReadingService } from '../../services/healthReadingService';
 import DisclaimerBanner from '../../components/common/DisclaimerBanner';
-import DeviceThumbnail from '../../components/common/DeviceThumbnail';
+
+const EMPTY_FORM = {
+  type: 'blood_pressure',
+  date: new Date().toLocaleDateString('en-CA'),
+  systolic: '',
+  diastolic: '',
+  pulse: '',
+  bpm: '',
+  spo2: '',
+  steps: '',
+  distanceKm: '',
+  exerciseMinutes: '',
+  protein: '',
+  proteinMgDl: '',
+  ph: '',
+  glucose: '',
+  nitrites: '',
+  specificGravity: '',
+  notes: ''
+};
+
+const formatDate = (timestamp) => {
+  if (!timestamp) return 'Unknown date';
+
+  const date = timestamp.toDate
+    ? timestamp.toDate()
+    : new Date(timestamp);
+
+  return Number.isNaN(date.getTime())
+    ? 'Unknown date'
+    : date.toLocaleDateString();
+};
+
+const formatDateInput = (timestamp) => {
+  if (!timestamp) return '';
+
+  const date = timestamp.toDate
+    ? timestamp.toDate()
+    : new Date(timestamp);
+
+  if (Number.isNaN(date.getTime())) return '';
+
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0')
+  ].join('-');
+};
+
+const displayValue = (value, unit = '') => {
+  if (value === null || value === undefined || value === '') {
+    return '—';
+  }
+
+  return `${value}${unit ? ` ${unit}` : ''}`;
+};
 
 export default function DailyReportsPage() {
+  const { currentUser } = useAuth();
+  const uid = currentUser?.uid;
+
+  const [records, setRecords] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toLocaleDateString('en-CA')
+  );
   const [viewMode, setViewMode] = useState('daily');
-  const [selectedDate, setSelectedDate] = useState('2026-11-07');
-  const [records, setRecords] = useState(SAMPLE_DAILY_VITALS_7D);
+
   const [modalOpen, setModalOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState(null);
-  const [isImportingBLE, setIsImportingBLE] = useState(false);
+  const [newReading, setNewReading] = useState({ ...EMPTY_FORM });
 
-  // New reading form state with simple terms
-  const [newReading, setNewReading] = useState({
-    date: new Date().toISOString().split('T')[0],
-    systolic: '120',
-    diastolic: '80',
-    pulse: '70',
-    steps: '8500',
-    distance: '5.9',
-    exerciseMins: '30',
-    urineProteinMg: '0',
-    urineSG: '1.018',
-    urinePH: '6.5',
-    notes: 'Routine evening check'
-  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [toastMessage, setToastMessage] = useState('');
 
-  const showToast = (msg) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
+  const showToast = (message) => {
+    setToastMessage(message);
+    window.setTimeout(() => setToastMessage(''), 3500);
   };
 
-  const handleImportFromBluetooth = async () => {
-    setIsImportingBLE(true);
+  const loadReadings = useCallback(async () => {
+    if (!uid) {
+      setRecords([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setErrorMessage('');
+
     try {
-      await BluetoothService.syncAllConnectedDevices();
-      const vitals = BluetoothService.getLatestVitals();
-      setNewReading(prev => ({
-        ...prev,
-        systolic: String(vitals.systolic || prev.systolic),
-        diastolic: String(vitals.diastolic || prev.diastolic),
-        pulse: String(vitals.pulse || prev.pulse),
-        steps: String(vitals.steps || prev.steps),
-        distance: String(vitals.distance || prev.distance),
-        exerciseMins: String(vitals.exerciseMins || prev.exerciseMins),
-        urineProteinMg: String(vitals.urineProteinMg ?? prev.urineProteinMg),
-        urineSG: String(vitals.urineSG || prev.urineSG),
-        urinePH: String(vitals.urinePH || prev.urinePH),
-        notes: `Imported via Bluetooth (${vitals.urineSource || 'Omron Cuff + Watch + Optical Analyzer'})`
-      }));
-      showToast('Imported readings from connected Bluetooth devices!');
-    } catch {
-      const vitals = BluetoothService.getLatestVitals();
-      setNewReading(prev => ({
-        ...prev,
-        systolic: String(vitals.systolic || prev.systolic),
-        diastolic: String(vitals.diastolic || prev.diastolic),
-        pulse: String(vitals.pulse || prev.pulse),
-        steps: String(vitals.steps || prev.steps),
-        distance: String(vitals.distance || prev.distance),
-        exerciseMins: String(vitals.exerciseMins || prev.exerciseMins),
-        urineProteinMg: String(vitals.urineProteinMg ?? prev.urineProteinMg),
-        urineSG: String(vitals.urineSG || prev.urineSG),
-        urinePH: String(vitals.urinePH || prev.urinePH),
-        notes: 'Imported from Bluetooth cached telemetry'
-      }));
-      showToast('Loaded latest cached Bluetooth telemetry!');
+      const result = await healthReadingService.list(uid, 100);
+
+      const sortedResult = [...(result || [])].sort((a, b) => {
+        const dateA = a.measuredAt?.toDate
+          ? a.measuredAt.toDate().getTime()
+          : new Date(a.measuredAt).getTime();
+
+        const dateB = b.measuredAt?.toDate
+          ? b.measuredAt.toDate().getTime()
+          : new Date(b.measuredAt).getTime();
+
+        return (dateB || 0) - (dateA || 0);
+      });
+
+      setRecords(sortedResult);
+    } catch (error) {
+      console.error('Could not load health readings:', error);
+      setErrorMessage(
+        error.message || 'Could not load your health readings.'
+      );
     } finally {
-      setIsImportingBLE(false);
+      setLoading(false);
+    }
+  }, [uid]);
+
+  useEffect(() => {
+    loadReadings();
+  }, [loadReadings]);
+
+  const updateField = (field, value) => {
+    setNewReading((previous) => ({
+      ...previous,
+      [field]: value
+    }));
+  };
+
+  const toNumber = (value) => {
+    if (value.trim() === '') return null;
+
+    const number = Number(value);
+
+    if (!Number.isFinite(number)) {
+      throw new Error('Enter valid numeric measurements.');
+    }
+
+    return number;
+  };
+
+  const buildMeasurement = () => {
+    const values = {};
+
+    switch (newReading.type) {
+      case 'blood_pressure':
+        values.systolic = toNumber(newReading.systolic);
+        values.diastolic = toNumber(newReading.diastolic);
+        values.pulse = toNumber(newReading.pulse);
+        break;
+
+      case 'heart_rate':
+        values.bpm = toNumber(newReading.bpm);
+        break;
+
+      case 'oxygen_saturation':
+        values.spo2 = toNumber(newReading.spo2);
+        break;
+
+      case 'activity':
+        values.steps = toNumber(newReading.steps);
+        values.distanceKm = toNumber(newReading.distanceKm);
+        values.exerciseMinutes = toNumber(newReading.exerciseMinutes);
+        break;
+
+      case 'urine_test':
+        values.protein = newReading.protein.trim() || null;
+        values.proteinMgDl = toNumber(newReading.proteinMgDl);
+        values.ph = toNumber(newReading.ph);
+        values.glucose = newReading.glucose.trim() || null;
+        values.nitrites = newReading.nitrites.trim() || null;
+        values.specificGravity = toNumber(newReading.specificGravity);
+        break;
+
+      default:
+        throw new Error('Select a valid measurement type.');
+    }
+
+    const cleanedValues = Object.fromEntries(
+      Object.entries(values).filter(
+        ([, value]) => value !== null && value !== undefined
+      )
+    );
+
+    if (Object.keys(cleanedValues).length === 0) {
+      throw new Error('Enter at least one measurement before saving.');
+    }
+
+    return cleanedValues;
+  };
+
+  const handleAddReading = async (event) => {
+    event.preventDefault();
+
+    if (!uid) {
+      setErrorMessage('Please sign in before saving a measurement.');
+      return;
+    }
+
+    setSaving(true);
+    setErrorMessage('');
+
+    try {
+      if (!newReading.date) {
+        throw new Error('Select the measurement date.');
+      }
+
+      const measuredAt = new Date(
+        `${newReading.date}T12:00:00`
+      );
+
+      if (Number.isNaN(measuredAt.getTime())) {
+        throw new Error('Select a valid measurement date.');
+      }
+
+      const values = buildMeasurement();
+
+      await healthReadingService.add(uid, {
+        type: newReading.type,
+        values,
+        source: 'manual',
+        measuredAt,
+        notes: newReading.notes
+      });
+
+      setModalOpen(false);
+      setNewReading({ ...EMPTY_FORM });
+
+      await loadReadings();
+
+      showToast('Your reading was saved to your account.');
+    } catch (error) {
+      console.error('Reading save failed:', error);
+      setErrorMessage(
+        error.message || 'Could not save your reading.'
+      );
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleAddReading = (e) => {
-    e.preventDefault();
-    const entry = {
-      date: newReading.date,
-      dayName: 'Today',
-      systolic: Number(newReading.systolic),
-      diastolic: Number(newReading.diastolic),
-      pulse: Number(newReading.pulse),
-      steps: Number(newReading.steps),
-      distance: Number(newReading.distance),
-      exerciseMins: Number(newReading.exerciseMins),
-      urineProteinMg: Number(newReading.urineProteinMg),
-      urineSG: Number(newReading.urineSG),
-      urinePH: Number(newReading.urinePH),
-      notes: newReading.notes
-    };
+  const selectedRecords = useMemo(() => {
+    if (!selectedDate) return [];
 
-    setRecords([entry, ...records]);
-    setModalOpen(false);
-    showToast('Your health reading was saved successfully!');
+    if (viewMode === 'daily') {
+      return records.filter(
+        (record) => formatDateInput(record.measuredAt) === selectedDate
+      );
+    }
+
+    const anchorDate = new Date(`${selectedDate}T00:00:00`);
+
+    if (Number.isNaN(anchorDate.getTime())) return [];
+
+    if (viewMode === 'weekly') {
+      const startDate = new Date(anchorDate);
+      const daysSinceMonday = (startDate.getDay() + 6) % 7;
+      startDate.setDate(startDate.getDate() - daysSinceMonday);
+
+      const endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 7);
+
+      return records.filter((record) => {
+        const recordDate = new Date(
+          `${formatDateInput(record.measuredAt)}T00:00:00`
+        );
+
+        return recordDate >= startDate && recordDate < endDate;
+      });
+    }
+
+    const selectedMonth =
+      `${anchorDate.getFullYear()}-${String(
+        anchorDate.getMonth() + 1
+      ).padStart(2, '0')}`;
+
+    return records.filter((record) =>
+      formatDateInput(record.measuredAt).startsWith(selectedMonth)
+    );
+  }, [records, selectedDate, viewMode]);
+
+  const latestByType = useMemo(() => {
+    const result = {};
+
+    for (const record of records) {
+      if (!result[record.type]) {
+        result[record.type] = record;
+      }
+    }
+
+    return result;
+  }, [records]);
+
+  const latestBP = latestByType.blood_pressure?.values;
+  const latestActivity = latestByType.activity?.values;
+  const latestHeartRate = latestByType.heart_rate?.values;
+  const latestUrine = latestByType.urine_test?.values;
+
+  const exportCSV = () => {
+    if (records.length === 0) {
+      showToast('There are no readings to export.');
+      return;
+    }
+
+    const rows = [
+      ['Date', 'Type', 'Values', 'Source', 'Notes']
+    ];
+
+    records.forEach((record) => {
+      rows.push([
+        formatDate(record.measuredAt),
+        record.type,
+        JSON.stringify(record.values),
+        record.source,
+        record.notes || ''
+      ]);
+    });
+
+    const csv = rows
+      .map((row) =>
+        row.map((value) =>
+          `"${String(value).replace(/"/g, '""')}"`
+        ).join(',')
+      )
+      .join('\n');
+
+    const blob = new Blob([csv], {
+      type: 'text/csv;charset=utf-8;'
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+
+    link.href = url;
+    link.download = 'biotrajectory-health-readings.csv';
+    link.click();
+
+    URL.revokeObjectURL(url);
+    showToast('Your CSV export has been generated.');
   };
 
-  const handleExportPDF = () => {
-    showToast('Preparing your simple PDF health summary...');
-  };
+  const renderField = (label, field, options = {}) => (
+    <div className="space-y-1.5" key={field}>
+      <label className="font-semibold text-slate-700 dark:text-slate-300">
+        {label}
+      </label>
 
-  const handleExportCSV = () => {
-    showToast('Downloaded health data CSV spreadsheet.');
-  };
+      <input
+        type={options.type || 'number'}
+        step={options.step || 'any'}
+        min={options.min}
+        max={options.max}
+        value={newReading[field]}
+        onChange={(event) => updateField(field, event.target.value)}
+        placeholder={options.placeholder || ''}
+        className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
+      />
+    </div>
+  );
 
-  const currentRecord = records.find(r => r.date === selectedDate) || records[0];
+  const renderSelect = (label, field, options) => (
+    <div className="space-y-1.5" key={field}>
+      <label className="font-semibold text-slate-700 dark:text-slate-300">
+        {label}
+      </label>
+
+      <select
+        value={newReading[field]}
+        onChange={(event) => updateField(field, event.target.value)}
+        className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
+      >
+        <option value="">Not recorded</option>
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+
+  const renderMeasurementForm = () => {
+    switch (newReading.type) {
+      case 'blood_pressure':
+        return (
+          <div className="grid grid-cols-2 gap-4">
+            {renderField('Systolic (mmHg)', 'systolic')}
+            {renderField('Diastolic (mmHg)', 'diastolic')}
+            {renderField('Pulse (BPM, optional)', 'pulse')}
+          </div>
+        );
+
+      case 'heart_rate':
+        return (
+          <div className="grid grid-cols-2 gap-4">
+            {renderField('Heart rate (BPM)', 'bpm')}
+          </div>
+        );
+
+      case 'oxygen_saturation':
+        return (
+          <div className="grid grid-cols-2 gap-4">
+            {renderField('SpO₂ (%)', 'spo2', {
+              min: 0,
+              max: 100
+            })}
+          </div>
+        );
+
+      case 'activity':
+        return (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {renderField('Steps', 'steps', { min: 0, step: 1 })}
+            {renderField('Distance (km)', 'distanceKm', { min: 0 })}
+            {renderField('Exercise (minutes)', 'exerciseMinutes', {
+              min: 0
+            })}
+          </div>
+        );
+
+      case 'urine_test':
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {renderSelect('Protein result', 'protein', [
+                'Negative',
+                'Trace',
+                '+',
+                '++',
+                '+++'
+              ])}
+
+              {renderField('Protein (mg/dL)', 'proteinMgDl', {
+                min: 0
+              })}
+
+              {renderField('Specific gravity', 'specificGravity', {
+                min: 1,
+                max: 1.1,
+                step: '0.001'
+              })}
+
+              {renderField('pH', 'ph', {
+                min: 0,
+                max: 14,
+                step: '0.1'
+              })}
+
+              {renderSelect('Glucose', 'glucose', [
+                'Negative',
+                'Trace',
+                '+',
+                '++',
+                '+++'
+              ])}
+
+              {renderSelect('Nitrites', 'nitrites', [
+                'Negative',
+                'Positive'
+              ])}
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="space-y-10 max-w-7xl mx-auto">
 
-      {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-cyan-500 text-slate-950 font-bold text-[16px] shadow-2xl animate-fade-in">
-          <CheckCircle2 className="w-5 h-5 shrink-0" />
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-cyan-500 text-slate-950 font-bold shadow-2xl">
+          <CheckCircle2 className="w-5 h-5" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Header and Controls - Perfectly Leveled Horizontal Row */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-1">
-        <div className="space-y-1 min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
             My Day
           </h1>
-          <p className="text-[14px] sm:text-[15px] text-slate-500 dark:text-slate-400">
-            Keep track of your blood pressure, daily steps, and simple home tests
+          <p className="text-[17px] text-slate-600 dark:text-slate-400 mt-1">
+            Your recorded health measurements and activity history
           </p>
         </div>
 
-        {/* Action Controls - Single Horizontal Leveled Group */}
-        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap shrink-0">
+        <div className="flex flex-wrap items-center gap-3">
           <button
-            onClick={() => setModalOpen(true)}
-            className="inline-flex items-center gap-1.5 h-10 px-4 rounded-xl text-[13px] font-bold bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 hover:from-cyan-300 hover:to-blue-400 transition-all shadow-sm shadow-cyan-500/20 active:scale-95 cursor-pointer shrink-0"
+            onClick={() => {
+              setErrorMessage('');
+              setNewReading({ ...EMPTY_FORM });
+              setModalOpen(true);
+            }}
+            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl text-[17px] font-bold bg-cyan-400 text-slate-950 hover:bg-cyan-300 shadow-md"
           >
-            <Plus className="w-4 h-4" />
-            <span>Add Today's Reading</span>
+            <Plus className="w-5 h-5" />
+            Add Today's Reading
           </button>
 
-          <div className="flex items-center h-10 p-1 rounded-xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-xs shrink-0">
-            <button
-              onClick={handleExportPDF}
-              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>PDF Report</span>
-            </button>
-            <div className="w-px h-4 bg-slate-200 dark:border-slate-800 mx-0.5" />
-            <button
-              onClick={handleExportCSV}
-              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-            >
-              <FileSpreadsheet className="w-3.5 h-3.5" />
-              <span>Spreadsheet</span>
-            </button>
-          </div>
+          <button
+            onClick={exportCSV}
+            className="px-4 py-3 rounded-xl text-sm font-semibold bg-white dark:bg-[#101827] border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 flex items-center gap-2"
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            Export CSV
+          </button>
+
+          <button
+            onClick={loadReadings}
+            disabled={loading}
+            className="p-3 rounded-xl bg-white dark:bg-[#101827] border border-slate-300 dark:border-slate-800"
+            title="Refresh readings"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
         </div>
       </div>
 
-      {/* View Mode & Date Selector */}
+      {errorMessage && (
+        <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 shrink-0" />
+          <p>{errorMessage}</p>
+        </div>
+      )}
+
       <div className="p-5 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4 shadow-sm">
-        {/* Toggle Mode */}
-        <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-100 dark:bg-[#070B14] border border-slate-200 dark:border-slate-800 text-[16px] font-semibold">
-          <button
-            onClick={() => setViewMode('daily')}
-            className={`px-5 py-2 rounded-xl transition-all cursor-pointer ${viewMode === 'daily'
-                ? 'bg-cyan-500 text-slate-950 font-bold shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+        <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-100 dark:bg-[#070B14] border border-slate-200 dark:border-slate-800">
+          {['daily', 'weekly', 'monthly'].map((mode) => (
+            <button
+              key={mode}
+              onClick={() => setViewMode(mode)}
+              className={`px-5 py-2 rounded-xl capitalize ${
+                viewMode === mode
+                  ? 'bg-cyan-500 text-slate-950 font-bold'
+                  : 'text-slate-600 dark:text-slate-400'
               }`}
-          >
-            Daily View
-          </button>
-          <button
-            onClick={() => setViewMode('weekly')}
-            className={`px-5 py-2 rounded-xl transition-all cursor-pointer ${viewMode === 'weekly'
-                ? 'bg-cyan-500 text-slate-950 font-bold shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-          >
-            Weekly View
-          </button>
-          <button
-            onClick={() => setViewMode('monthly')}
-            className={`px-5 py-2 rounded-xl transition-all cursor-pointer ${viewMode === 'monthly'
-                ? 'bg-cyan-500 text-slate-950 font-bold shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-          >
-            Monthly View
-          </button>
+            >
+              {mode} View
+            </button>
+          ))}
         </div>
 
-        {/* Date Selector */}
-        <div className="flex items-center gap-3 text-[16px]">
-          <span className="text-slate-600 dark:text-slate-400 flex items-center gap-1.5 font-medium">
-            <Calendar className="w-5 h-5 text-cyan-500" /> Select Day:
-          </span>
-          <select
+        <div className="flex items-center gap-3">
+          <Calendar className="w-5 h-5 text-cyan-500" />
+          <label className="text-slate-600 dark:text-slate-400">
+            Select day:
+          </label>
+
+          <input
+            type="date"
             value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="px-4 py-2 rounded-xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-[16px] font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-400 cursor-pointer"
-          >
-            {records.map((r, i) => (
-              <option key={i} value={r.date}>
-                {r.date} ({r.dayName})
-              </option>
-            ))}
-          </select>
+            onChange={(event) => setSelectedDate(event.target.value)}
+            className="p-2 rounded-xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700"
+          />
         </div>
       </div>
 
-      {/* Selected Day Primary Breakdown */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
-        {/* Blood Pressure Detail */}
         <div className="p-7 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-[16px] font-bold text-slate-500 dark:text-slate-400">Blood Pressure</span>
+          <div className="flex justify-between">
+            <span className="font-bold text-slate-500 dark:text-slate-400">
+              Blood Pressure
+            </span>
             <Heart className="w-5 h-5 text-rose-500" />
           </div>
-          <p className="text-4xl font-extrabold text-slate-900 dark:text-white font-mono">
-            {currentRecord.systolic} / {currentRecord.diastolic}
-            <span className="text-[16px] text-slate-400 font-sans ml-1.5 font-normal">mmHg</span>
+
+          <p className="text-3xl font-extrabold text-slate-900 dark:text-white font-mono">
+            {latestBP
+              ? `${latestBP.systolic} / ${latestBP.diastolic}`
+              : '—'}
+            <span className="text-sm text-slate-400 ml-1">mmHg</span>
           </p>
-          <div className="text-[15px] text-slate-600 dark:text-slate-400 space-y-1 pt-1">
-            <p>Heart Rate: <strong className="text-slate-800 dark:text-slate-200 font-mono">{currentRecord.pulse} BPM</strong></p>
-            <p className="text-emerald-500 font-semibold">Standard target: Under 120/80</p>
-          </div>
+
+          <p className="text-sm text-slate-500">
+            Pulse: {displayValue(latestBP?.pulse, 'BPM')}
+          </p>
         </div>
 
-        {/* Steps & Distance */}
         <div className="p-7 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-[16px] font-bold text-slate-500 dark:text-slate-400">Daily Walk</span>
+          <div className="flex justify-between">
+            <span className="font-bold text-slate-500 dark:text-slate-400">
+              Daily Activity
+            </span>
             <Footprints className="w-5 h-5 text-emerald-500" />
           </div>
-          <p className="text-4xl font-extrabold text-slate-900 dark:text-white font-mono">
-            {currentRecord.steps.toLocaleString()}
-            <span className="text-[16px] text-slate-400 font-sans ml-1.5 font-normal">steps</span>
+
+          <p className="text-3xl font-extrabold text-slate-900 dark:text-white font-mono">
+            {displayValue(latestActivity?.steps)}
           </p>
-          <div className="text-[15px] text-slate-600 dark:text-slate-400 space-y-1 pt-1">
-            <p>Distance Walked: <strong className="text-slate-800 dark:text-slate-200 font-mono">{currentRecord.distance} km</strong></p>
-            <p className="text-cyan-500 font-semibold">Daily goal: 8,000 steps</p>
-          </div>
+
+          <p className="text-sm text-slate-500">
+            Distance: {displayValue(latestActivity?.distanceKm, 'km')}
+          </p>
         </div>
 
-        {/* Physical Exercise */}
         <div className="p-7 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-[16px] font-bold text-slate-500 dark:text-slate-400">Exercise Time</span>
+          <div className="flex justify-between">
+            <span className="font-bold text-slate-500 dark:text-slate-400">
+              Heart Rate
+            </span>
             <Clock className="w-5 h-5 text-cyan-500" />
           </div>
-          <p className="text-4xl font-extrabold text-slate-900 dark:text-white font-mono">
-            {currentRecord.exerciseMins}
-            <span className="text-[16px] text-slate-400 font-sans ml-1.5 font-normal">minutes</span>
+
+          <p className="text-3xl font-extrabold text-slate-900 dark:text-white font-mono">
+            {displayValue(
+              latestHeartRate?.bpm ?? latestBP?.pulse,
+              'BPM'
+            )}
           </p>
-          <div className="text-[15px] text-slate-600 dark:text-slate-400 space-y-1 pt-1">
-            <p>Intensity: <strong className="text-slate-800 dark:text-slate-200">Moderate / Aerobic</strong></p>
-            <p className="text-emerald-500 font-semibold">Goal: At least 30 mins</p>
-          </div>
+
+          <p className="text-sm text-slate-500">
+            Latest recorded measurement
+          </p>
         </div>
 
-        {/* Kidney Filter & Hydration */}
         <div className="p-7 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-[16px] font-bold text-slate-500 dark:text-slate-400">Kidney Test Strip</span>
+          <div className="flex justify-between">
+            <span className="font-bold text-slate-500 dark:text-slate-400">
+              Urine Test
+            </span>
             <Droplet className="w-5 h-5 text-blue-500" />
           </div>
-          <p className="text-3xl font-extrabold text-emerald-500 font-mono">
-            {currentRecord.urineProteinMg === 0 ? 'Clean (0 mg)' : `Trace (${currentRecord.urineProteinMg} mg)`}
+
+          <p className="text-3xl font-extrabold text-slate-900 dark:text-white">
+            {latestUrine?.protein || '—'}
           </p>
-          <div className="text-[15px] text-slate-600 dark:text-slate-400 space-y-1 pt-1">
-            <p>Hydration Balance: <strong className="text-emerald-500">Healthy</strong></p>
-            <p>Clean kidney filter check</p>
+
+          <p className="text-sm text-slate-500">
+            Specific gravity: {displayValue(latestUrine?.specificGravity)}
+          </p>
+        </div>
+      </div>
+
+      <div className="p-7 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-sm">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-5">
+          Recorded Measurements
+        </h2>
+
+        {loading ? (
+          <p className="text-slate-500">Loading your Firestore records...</p>
+        ) : selectedRecords.length === 0 ? (
+          <div className="py-12 text-center">
+            <Activity className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+            <h3 className="text-lg font-bold text-slate-800 dark:text-white">
+              No readings for this date
+            </h3>
+            <p className="text-slate-500 mt-2">
+              Your actual measurements will appear here after you save them.
+            </p>
           </div>
-        </div>
-      </div>
-
-      {/* Historical Records Table with Large Readable Font */}
-      <div className="p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Your Past Daily Logs</h2>
-          <span className="text-[15px] text-slate-500 dark:text-slate-400 font-medium">{records.length} Saved Days</span>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-[16px]">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 font-bold">
-                <th className="py-4 px-4">Date</th>
-                <th className="py-4 px-4">Blood Pressure</th>
-                <th className="py-4 px-4">Heart Rate</th>
-                <th className="py-4 px-4">Steps Walked</th>
-                <th className="py-4 px-4">Distance</th>
-                <th className="py-4 px-4">Exercise Time</th>
-                <th className="py-4 px-4">Urine Protein</th>
-                <th className="py-4 px-4">Overall Look</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
-              {records.map((row, idx) => (
-                <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                  <td className="py-4 px-4 font-bold text-slate-900 dark:text-white">
-                    {row.date}
-                  </td>
-                  <td className="py-4 px-4 text-cyan-600 dark:text-cyan-400 font-bold font-mono">
-                    {row.systolic} / {row.diastolic} mmHg
-                  </td>
-                  <td className="py-4 px-4 font-mono text-slate-700 dark:text-slate-300">
-                    {row.pulse} BPM
-                  </td>
-                  <td className="py-4 px-4 text-emerald-600 dark:text-emerald-400 font-bold font-mono">
-                    {row.steps.toLocaleString()}
-                  </td>
-                  <td className="py-4 px-4 text-slate-700 dark:text-slate-300 font-mono">
-                    {row.distance} km
-                  </td>
-                  <td className="py-4 px-4 text-slate-700 dark:text-slate-300 font-mono">
-                    {row.exerciseMins} mins
-                  </td>
-                  <td className="py-4 px-4 text-slate-700 dark:text-slate-300">
-                    {row.urineProteinMg === 0 ? 'Clean (0)' : `Trace (${row.urineProteinMg})`}
-                  </td>
-                  <td className="py-4 px-4">
-                    <span className="text-[14px] font-bold px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/25">
-                      Healthy
-                    </span>
-                  </td>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500">
+                  <th className="py-3 px-3">Date</th>
+                  <th className="py-3 px-3">Measurement</th>
+                  <th className="py-3 px-3">Values</th>
+                  <th className="py-3 px-3">Source</th>
+                  <th className="py-3 px-3">Notes</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {selectedRecords.map((record) => (
+                  <tr key={record.id}>
+                    <td className="py-4 px-3">
+                      {formatDate(record.measuredAt)}
+                    </td>
+                    <td className="py-4 px-3 font-semibold">
+                      {record.type.replaceAll('_', ' ')}
+                    </td>
+                    <td className="py-4 px-3">
+                      {Object.entries(record.values)
+                        .map(([key, value]) => `${key}: ${value}`)
+                        .join(' | ')}
+                    </td>
+                    <td className="py-4 px-3 capitalize">
+                      {record.source}
+                    </td>
+                    <td className="py-4 px-3">
+                      {record.notes || '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
-      {/* Add New Reading Modal with Simple Labels */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm">
           <div className="w-full max-w-xl p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Record Today's Health Numbers</h3>
-              <button onClick={() => setModalOpen(false)} className="p-2 rounded-xl text-slate-400 hover:text-white cursor-pointer">
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
+                Add Health Measurement
+              </h3>
+
+              <button
+                onClick={() => setModalOpen(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-red-500"
+              >
                 <X className="w-6 h-6" />
               </button>
             </div>
 
-            {/* Quick Bluetooth Import Banner with Small Device Pictures */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-cyan-50/95 via-sky-50/90 to-blue-50/95 dark:from-[#09152C] dark:via-[#0B1A35] dark:to-[#081329] border border-cyan-200/90 dark:border-cyan-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center -space-x-2">
-                  <DeviceThumbnail deviceId="omron-bp-evolv" type="bp" size="xs" className="ring-2 ring-white dark:ring-slate-900" />
-                  <DeviceThumbnail deviceId="apple-watch-ultra" type="watch" size="xs" className="ring-2 ring-white dark:ring-slate-900" />
-                  <DeviceThumbnail deviceId="biotrajectory-optical-10sg" type="urine" size="xs" className="ring-2 ring-white dark:ring-slate-900" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-slate-900 dark:text-white text-[15px]">Smart Device Quick-Import</h4>
-                  <p className="text-[13px] text-slate-600 dark:text-slate-300 font-normal">Auto-populate from connected BP Cuff, Smartwatch & Urine Analyzer</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={handleImportFromBluetooth}
-                disabled={isImportingBLE}
-                className="px-4 py-2 rounded-xl text-[14px] font-bold bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0 shadow-xs active:scale-95"
-              >
-                <RefreshCw className={`w-4 h-4 ${isImportingBLE ? 'animate-spin' : ''}`} />
-                <span>{isImportingBLE ? 'Syncing...' : 'Import from BLE'}</span>
-              </button>
-            </div>
+            <p className="text-sm text-slate-500">
+              Enter measurements from an actual test or device. Blank fields
+              will not be saved.
+            </p>
 
-            <form onSubmit={handleAddReading} className="space-y-5 text-[16px]">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="font-semibold text-slate-700 dark:text-slate-300">Date</label>
-                  <input
-                    type="date"
-                    value={newReading.date}
-                    onChange={e => setNewReading({ ...newReading, date: e.target.value })}
-                    className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="font-semibold text-slate-700 dark:text-slate-300">Heart Rate (Pulse BPM)</label>
-                  <input
-                    type="number"
-                    value={newReading.pulse}
-                    onChange={e => setNewReading({ ...newReading, pulse: e.target.value })}
-                    className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
-                  />
-                </div>
-              </div>
+            <form onSubmit={handleAddReading} className="space-y-5">
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="font-semibold text-slate-700 dark:text-slate-300">Top Number (Systolic)</label>
-                  <input
-                    type="number"
-                    value={newReading.systolic}
-                    onChange={e => setNewReading({ ...newReading, systolic: e.target.value })}
-                    className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="font-semibold text-slate-700 dark:text-slate-300">Bottom Number (Diastolic)</label>
-                  <input
-                    type="number"
-                    value={newReading.diastolic}
-                    onChange={e => setNewReading({ ...newReading, diastolic: e.target.value })}
-                    className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono"
-                  />
-                </div>
-              </div>
+              <div className="space-y-1.5">
+                <label className="font-semibold text-slate-700 dark:text-slate-300">
+                  Measurement type
+                </label>
 
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-1.5">
-                  <label className="font-semibold text-slate-700 dark:text-slate-300">Steps Walked</label>
-                  <input
-                    type="number"
-                    value={newReading.steps}
-                    onChange={e => setNewReading({ ...newReading, steps: e.target.value })}
-                    className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="font-semibold text-slate-700 dark:text-slate-300">Distance (km)</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={newReading.distance}
-                    onChange={e => setNewReading({ ...newReading, distance: e.target.value })}
-                    className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="font-semibold text-slate-700 dark:text-slate-300">Exercise (mins)</label>
-                  <input
-                    type="number"
-                    value={newReading.exerciseMins}
-                    onChange={e => setNewReading({ ...newReading, exerciseMins: e.target.value })}
-                    className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono"
-                  />
-                </div>
-              </div>
-
-              {/* Urine Diagnostic Analyzer Inputs */}
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-800 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-[15px]">
-                    <Droplet className="w-4 h-4 text-blue-500" />
-                    <span>Urine Analyzer Diagnostic</span>
-                  </span>
-                  <span className="text-[12px] px-2 py-0.5 rounded bg-blue-500/10 text-blue-500 dark:text-blue-400 font-mono">
-                    Spectrophotometer / Strip
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Protein (mg/dL)</label>
-                    <input
-                      type="number"
-                      value={newReading.urineProteinMg}
-                      onChange={e => setNewReading({ ...newReading, urineProteinMg: e.target.value })}
-                      placeholder="0"
-                      className="w-full p-2.5 rounded-xl bg-white dark:bg-[#101827] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono text-sm"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Specific Gravity</label>
-                    <input
-                      type="text"
-                      value={newReading.urineSG}
-                      onChange={e => setNewReading({ ...newReading, urineSG: e.target.value })}
-                      placeholder="1.018"
-                      className="w-full p-2.5 rounded-xl bg-white dark:bg-[#101827] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono text-sm"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">pH Level</label>
-                    <input
-                      type="text"
-                      value={newReading.urinePH}
-                      onChange={e => setNewReading({ ...newReading, urinePH: e.target.value })}
-                      placeholder="6.5"
-                      className="w-full p-2.5 rounded-xl bg-white dark:bg-[#101827] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono text-sm"
-                    />
-                  </div>
-                </div>
-                <p className="text-[12px] text-slate-500 dark:text-slate-400">
-                  Target baseline: 0 mg/dL (negative), SG 1.010 - 1.025, pH 5.5 - 7.5.
-                </p>
+                <select
+                  value={newReading.type}
+                  onChange={(event) =>
+                    setNewReading({
+                      ...EMPTY_FORM,
+                      type: event.target.value,
+                      date: newReading.date
+                    })
+                  }
+                  className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
+                >
+                  <option value="blood_pressure">Blood pressure</option>
+                  <option value="heart_rate">Heart rate</option>
+                  <option value="oxygen_saturation">Blood oxygen (SpO₂)</option>
+                  <option value="activity">Activity</option>
+                  <option value="urine_test">Urine test</option>
+                </select>
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-semibold text-slate-700 dark:text-slate-300">Personal Note (optional)</label>
+                <label className="font-semibold text-slate-700 dark:text-slate-300">
+                  Measurement date
+                </label>
+
                 <input
-                  type="text"
-                  value={newReading.notes}
-                  onChange={e => setNewReading({ ...newReading, notes: e.target.value })}
-                  placeholder="e.g. Drank plenty of water, took a nice morning walk"
+                  type="date"
+                  value={newReading.date}
+                  max={new Date().toLocaleDateString('en-CA')}
+                  onChange={(event) => updateField('date', event.target.value)}
+                  required
                   className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
                 />
               </div>
+
+              {renderMeasurementForm()}
+
+              <div className="space-y-1.5">
+                <label className="font-semibold text-slate-700 dark:text-slate-300">
+                  Notes (optional)
+                </label>
+
+                <textarea
+                  value={newReading.notes}
+                  onChange={(event) => updateField('notes', event.target.value)}
+                  maxLength={1000}
+                  rows={3}
+                  className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
+                  placeholder="Add context about this measurement"
+                />
+              </div>
+
+              {errorMessage && (
+                <p className="text-sm text-red-500">{errorMessage}</p>
+              )}
 
               <div className="pt-3 flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-6 py-3 rounded-2xl text-[16px] font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+                  className="px-6 py-3 rounded-2xl text-slate-600 dark:text-slate-400"
                 >
                   Cancel
                 </button>
+
                 <button
                   type="submit"
-                  className="px-7 py-3 rounded-2xl text-[17px] font-bold bg-cyan-400 text-slate-950 hover:bg-cyan-300 shadow-md cursor-pointer"
+                  disabled={saving}
+                  className="px-7 py-3 rounded-2xl font-bold bg-cyan-400 text-slate-950 hover:bg-cyan-300 disabled:opacity-50"
                 >
-                  Save My Reading
+                  {saving ? 'Saving...' : 'Save Reading'}
                 </button>
               </div>
             </form>
@@ -534,8 +822,7 @@ export default function DailyReportsPage() {
         </div>
       )}
 
-      {/* Safety Notice */}
-      <DisclaimerBanner text="Notice: BioTrajectory is for personal tracking and wellness. It does not replace talking to a doctor or getting a personal medical diagnosis." />
+      <DisclaimerBanner text="BioTrajectory is for personal health tracking and wellness. It does not provide a medical diagnosis or replace professional medical advice." />
     </div>
   );
 }

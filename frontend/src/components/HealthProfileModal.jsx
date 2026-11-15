@@ -181,33 +181,36 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
     }
   };
 
-  const handleFinalSave = () => {
-    const updatedProfile = {
-      name: name.trim() || 'Pranjal Sharma',
-      ageRange,
-      gender,
-      units,
-      height: height ? parseFloat(height) : null,
-      weight: weight ? parseFloat(weight) : null,
-      lifestyle: {
-        activityLevel,
-        hydrationHabit,
-        testingSchedule
-      },
-      goals: selectedGoals,
-      customGoal: customGoal.trim(),
-      consent: {
-        storeAndProcessHealthData: consentStore,
-        shareWithClinician: consentDoctor,
-        aiAssistantAnalysis: consentAI,
-        nonDiagnosticScopeAcknowledged: scopeAcknowledged,
-        acceptedAt: new Date().toISOString()
-      },
-      onboardingCompleted: true,
-      updatedAt: new Date().toISOString()
-    };
+  const handleFinalSave = async () => {
+  setErrorMessage('');
 
-    updateHealthProfile(updatedProfile);
+  const updatedProfile = {
+    name: name.trim(),
+    ageRange,
+    gender,
+    units,
+    height: height ? parseFloat(height) : null,
+    weight: weight ? parseFloat(weight) : null,
+    lifestyle: {
+      activityLevel,
+      hydrationHabit,
+      testingSchedule
+    },
+    goals: selectedGoals,
+    customGoal: customGoal.trim(),
+    consent: {
+      storeAndProcessHealthData: consentStore,
+      shareWithClinician: consentDoctor,
+      aiAssistantAnalysis: consentAI,
+      nonDiagnosticScopeAcknowledged: scopeAcknowledged,
+      acceptedAt: new Date().toISOString()
+    },
+    onboardingCompleted: true,
+    updatedAt: new Date().toISOString()
+  };
+
+  try {
+    await updateHealthProfile(updatedProfile);
 
     try {
       confetti({
@@ -216,10 +219,19 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
         origin: { y: 0.6 },
         colors: ['#3F0D12', '#A71D31', '#D5BF86', '#8D775F']
       });
-    } catch (e) { }
+    } catch (error) {
+      console.warn('Confetti animation unavailable:', error);
+    }
 
     if (onClose) onClose();
-  };
+  } catch (error) {
+    console.error('Health profile save failed:', error);
+    setErrorMessage(error.message || 'Could not save your health profile.');
+  }
+};
+
+
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-black/80 backdrop-blur-md animate-fadeIn">
