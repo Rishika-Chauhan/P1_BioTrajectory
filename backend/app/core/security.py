@@ -13,6 +13,8 @@ Responsibilities:
 import logging
 import threading
 import time
+import os
+import json
 
 from collections import defaultdict
 from pathlib import Path
@@ -96,23 +98,42 @@ def initialize_firebase_admin() -> bool:
             except ValueError:
                 pass
 
-            credentials_path = Path(
-                settings.FIREBASE_CREDENTIALS_PATH
-            ).expanduser()
-
             if not settings.FIREBASE_PROJECT_ID:
                 logger.error("Firebase project ID is missing.")
                 return False
 
-            if not credentials_path.is_file():
-                logger.warning(
-                    "Firebase service account file not found."
-                )
-                return False
+            firebase_credentials = None
 
-            firebase_credentials = credentials.Certificate(
-                str(credentials_path)
-            )
+            # 1. Check if raw JSON string is provided in env var (convenient for Render / Cloud deployments)
+            raw_credentials_json = os.getenv("FIREBASE_CREDENTIALS_JSON") or os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON")
+            if raw_credentials_json and raw_credentials_json.strip():
+                try:
+                    cred_dict = json.loads(raw_credentials_json.strip())
+                    firebase_credentials = credentials.Certificate(cred_dict)
+                    logger.info("Loaded Firebase credentials from environment variable.")
+                except Exception as json_err:
+                    logger.error("Failed to parse FIREBASE_CREDENTIALS_JSON: %s", json_err)
+
+            # 2. Check file paths if not provided via env var
+            if not firebase_credentials:
+                possible_paths = [
+                    Path(settings.FIREBASE_CREDENTIALS_PATH).expanduser(),
+                    settings.firebase_credentials_file,
+                    Path("/etc/secrets/firebase-service-account.json"),
+                    Path("secrets/firebase-service-account.json"),
+                    Path("backend/secrets/firebase-service-account.json"),
+                ]
+                found_path = next((p for p in possible_paths if p and p.is_file()), None)
+
+                if not found_path:
+                    logger.warning(
+                        "Firebase service account file not found (checked %s and env FIREBASE_CREDENTIALS_JSON).",
+                        settings.FIREBASE_CREDENTIALS_PATH
+                    )
+                    return False
+
+                firebase_credentials = credentials.Certificate(str(found_path))
+                logger.info("Loaded Firebase credentials from file: %s", found_path)
 
             credential_project = firebase_credentials.project_id
 

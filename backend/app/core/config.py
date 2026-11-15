@@ -172,12 +172,19 @@ class Settings:
     def is_production_firebase_configured(self) -> bool:
         """Check whether Firebase Admin credentials are available."""
 
+        if os.getenv("FIREBASE_CREDENTIALS_JSON") or os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON"):
+            return bool(self.FIREBASE_PROJECT_ID)
+
         credentials_file = self.firebase_credentials_file
 
         return bool(
             self.FIREBASE_PROJECT_ID
-            and credentials_file
-            and credentials_file.exists()
+            and (
+                (credentials_file and credentials_file.exists())
+                or Path("/etc/secrets/firebase-service-account.json").exists()
+                or Path("secrets/firebase-service-account.json").exists()
+                or Path("backend/secrets/firebase-service-account.json").exists()
+            )
         )
 
 

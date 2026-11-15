@@ -1,4 +1,3 @@
- source /home/priyanshu/Desktop/Project/P1_BioTrajectory/.venv/bin/activate
 # Logs
 logs
 *.log
@@ -28,6 +27,7 @@ backend/.env
 backend/.env.*
 !backend/.env.example
 backend/secrets/
+secrets/
 **/*service-account*.json
 
 # Python
