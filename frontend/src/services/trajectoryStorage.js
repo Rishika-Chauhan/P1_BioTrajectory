@@ -9,8 +9,6 @@
  * 5. Full GDPR/HIPAA-compliant data export (JSON/CSV) and irreversible local purge.
  */
 
-import { PATIENT_PERSONAS, BIOMARKER_DEFINITIONS } from '../data/mockData.js';
-
 const STORAGE_KEYS = {
   PATIENTS: 'biotrajectory_v2_patients',
   ACTIVE_PATIENT: 'biotrajectory_v2_active_patient_id',
@@ -21,31 +19,28 @@ const STORAGE_KEYS = {
 };
 
 export const DEFAULT_HEALTH_PROFILE = {
-  name: 'Pranjal Sharma',
-  ageRange: '30–44',
+  name: 'User',
+  ageRange: 'Not set',
   gender: 'Prefer not to say',
-  timezone: 'UTC+05:30',
-  units: 'metric', // 'metric' or 'imperial'
-  height: 175,
-  weight: 70,
+  timezone: 'UTC',
+  units: 'metric',
+  height: null,
+  weight: null,
   lifestyle: {
-    activityLevel: 'Moderately Active',
-    hydrationHabit: 'Moderate (1.5–2.5 L/day)',
-    testingSchedule: 'Second Morning Void (Recommended)'
+    activityLevel: 'Not set',
+    hydrationHabit: 'Not set',
+    testingSchedule: 'Not set'
   },
-  goals: [
-    'Track kidney / microalbumin stability',
-    'Monitor metabolic & ketone trends'
-  ],
+  goals: [],
   customGoal: '',
   consent: {
     storeAndProcessHealthData: true,
-    shareWithClinician: true,
-    aiAssistantAnalysis: true,
+    shareWithClinician: false,
+    aiAssistantAnalysis: false,
     nonDiagnosticScopeAcknowledged: true,
     acceptedAt: new Date().toISOString()
   },
-  onboardingCompleted: true,
+  onboardingCompleted: false,
   updatedAt: new Date().toISOString()
 };
 
@@ -246,29 +241,11 @@ class TrajectoryStorageService {
     try {
       const stored = safeStorage.getItem(STORAGE_KEYS.PATIENTS);
       if (!stored) {
-        // Initialize with realistic personas and an empty live user profile
-        const initialPatients = [
-          ...PATIENT_PERSONAS,
-          {
-            id: 'my_user_profile',
-            name: 'Live User Profile',
-            age: 34,
-            profileType: 'Your Personal Live Stream',
-            condition: 'Home Health Monitoring',
-            baselineStatus: 'Active Personal Ledger',
-            clinicalStory: 'Your personal, non-diagnostic longitudinal monitoring history. Add real strips and wearable readings to build your own verifiable baseline.',
-            history: [
-              { day: 1, date: '2026-10-15', time: '07:15', protein: 5, specificGravity: 1.018, pH: 6.4, glucose: 0, ketones: 0, leukocytes: 0, nitrite: 0, blood: 0, confirmed: true, flagged: false, notes: 'Initial test session. Baseline calibration start.' },
-              { day: 2, date: '2026-10-18', time: '07:30', protein: 4, specificGravity: 1.016, pH: 6.5, glucose: 0, ketones: 0, leukocytes: 0, nitrite: 0, blood: 0, confirmed: true, flagged: false, notes: 'Morning check. Well hydrated.' },
-              { day: 3, date: '2026-10-21', time: '07:10', protein: 6, specificGravity: 1.019, pH: 6.3, glucose: 0, ketones: 0, leukocytes: 0, nitrite: 0, blood: 0, confirmed: true, flagged: false, notes: 'Routine reading. Normal diet.' }
-            ]
-          }
-        ];
-        safeStorage.setItem(STORAGE_KEYS.PATIENTS, JSON.stringify(initialPatients));
+        safeStorage.setItem(STORAGE_KEYS.PATIENTS, JSON.stringify([]));
       }
 
       if (!safeStorage.getItem(STORAGE_KEYS.ACTIVE_PATIENT)) {
-        safeStorage.setItem(STORAGE_KEYS.ACTIVE_PATIENT, 'arjun');
+        safeStorage.setItem(STORAGE_KEYS.ACTIVE_PATIENT, '');
       }
     } catch (e) {
       console.warn('Storage initialization fallback:', e);
@@ -278,17 +255,17 @@ class TrajectoryStorageService {
   getAllPatients() {
     try {
       const data = safeStorage.getItem(STORAGE_KEYS.PATIENTS);
-      return data ? JSON.parse(data) : PATIENT_PERSONAS;
+      return data ? JSON.parse(data) : [];
     } catch (e) {
-      return PATIENT_PERSONAS;
+      return [];
     }
   }
 
   getActivePatientId() {
     try {
-      return safeStorage.getItem(STORAGE_KEYS.ACTIVE_PATIENT) || 'arjun';
+      return safeStorage.getItem(STORAGE_KEYS.ACTIVE_PATIENT) || '';
     } catch (e) {
-      return 'arjun';
+      return '';
     }
   }
 
@@ -305,7 +282,7 @@ class TrajectoryStorageService {
   getActivePatient() {
     const all = this.getAllPatients();
     const activeId = this.getActivePatientId();
-    return all.find(p => p.id === activeId) || all[0] || PATIENT_PERSONAS[0];
+    return all.find((patient) => patient.id === activeId) || all[0] || null;
   }
 
   getPatient(patientId) {
@@ -316,39 +293,24 @@ class TrajectoryStorageService {
   addReading(patientId, reading) {
     try {
       const all = this.getAllPatients();
-      const patientIndex = all.findIndex(p => p.id === patientId);
+      const patientIndex = all.findIndex((patient) => patient.id === patientId);
       if (patientIndex === -1) return false;
 
       const patient = all[patientIndex];
-      const newDay = (patient.history.length > 0 ? Math.max(...patient.history.map(h => h.day || 0)) : 0) + 1;
-
       const newEntry = {
-        day: newDay,
-        date: reading.date || new Date().toISOString().split('T')[0],
-        time: reading.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        protein: Number(reading.protein ?? 5),
-        specificGravity: Number(reading.specificGravity ?? 1.018),
-        pH: Number(reading.pH ?? 6.4),
-        glucose: Number(reading.glucose ?? 0),
-        ketones: Number(reading.ketones ?? 0),
-        leukocytes: Number(reading.leukocytes ?? 0),
-        nitrite: Number(reading.nitrite ?? 0),
-        blood: Number(reading.blood ?? 0),
-        sampleType: reading.sampleType || 'First morning',
-        notes: reading.notes || 'User confirmed reading',
-        confirmed: true,
-        flagged: reading.protein > 20 || reading.glucose > 50,
-        createdAt: new Date().toISOString(),
-        id: `reading_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`
+        ...reading,
+        id: `reading_${Date.now()}`,
+        createdAt: new Date().toISOString()
       };
 
+      patient.history = patient.history || [];
       patient.history.push(newEntry);
       all[patientIndex] = patient;
       safeStorage.setItem(STORAGE_KEYS.PATIENTS, JSON.stringify(all));
 
-      // Dispatch global event for reactive UI updates
       dispatchEventSafe('biotrajectory_data_updated', {
-        patientId, newEntry
+        patientId,
+        newEntry
       });
 
       return newEntry;

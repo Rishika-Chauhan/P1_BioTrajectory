@@ -1,158 +1,199 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Users,
   Search,
-  Filter,
-  CheckCircle,
-  Ban,
-  Shield,
+  RefreshCw,
   Lock,
-  AlertCircle
-} from 'lucide-react';
-import { ADMIN_USER_ACCOUNTS } from '../../data/adminData';
+} from "lucide-react";
+import adminDashboardService from "../../services/adminDashboardService";
+
+const ROLE_LABELS = {
+  USER: "Patient",
+  DOCTOR: "Doctor",
+  DOCTOR_PENDING: "Doctor Pending",
+  DOCTOR_SUSPENDED: "Doctor Suspended",
+  ADMIN: "Administrator",
+  UNKNOWN: "Unknown",
+};
+
+function formatDate(value) {
+  if (!value) return "Not available";
+
+  const date = new Date(value);
+
+  return Number.isNaN(date.getTime())
+    ? "Not available"
+    : date.toLocaleDateString();
+}
 
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState(ADMIN_USER_ACCOUNTS);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [roleFilter, setRoleFilter] = useState('All');
+  const [users, setUsers] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState("ALL");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const toggleUserStatus = (id) => {
-    setUsers(users.map(u => {
-      if (u.id === id) {
-        return {
-          ...u,
-          status: u.status === 'Active' ? 'Suspended' : 'Active'
-        };
-      }
-      return u;
-    }));
-  };
+  async function loadUsers() {
+    try {
+      setLoading(true);
+      setError("");
 
-  const filteredUsers = users.filter(u => {
-    const matchesRole = roleFilter === 'All' || u.role === roleFilter;
-    const q = searchQuery.toLowerCase();
-    const matchesSearch = !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
-    return matchesRole && matchesSearch;
-  });
+      const response = await adminDashboardService.getUsers();
+      setUsers(response.users);
+    } catch (err) {
+      setError(err.message || "Unable to load user profiles.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const filteredUsers = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
+    return users.filter((user) => {
+      const matchesRole =
+        roleFilter === "ALL" || user.role === roleFilter;
+
+      const matchesSearch =
+        !query ||
+        user.name.toLowerCase().includes(query) ||
+        (user.email || "").toLowerCase().includes(query) ||
+        user.uid.toLowerCase().includes(query);
+
+      return matchesRole && matchesSearch;
+    });
+  }, [users, searchQuery, roleFilter]);
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-          Account Governance & User Management
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-400 mt-1">
-          Inspect user authentication status, role tiering, and security audit flags
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
+            User Management
+          </h1>
+          <p className="text-sm text-slate-400 mt-1">
+            Real Firebase user profiles and verified account roles.
+          </p>
+        </div>
+
+        <button
+          onClick={loadUsers}
+          disabled={loading}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 text-sm"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+          Refresh
+        </button>
+      </div>
+
+      <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/30 flex gap-3 text-xs text-purple-200">
+        <Lock className="w-5 h-5 shrink-0" />
+        <p>
+          This page displays account information only. Medical records,
+          health readings and private AI conversations are not exposed.
         </p>
       </div>
 
-      {/* Safety Notice */}
-      <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/30 flex items-center gap-3 text-xs text-purple-300">
-        <Lock className="w-5 h-5 text-purple-400 shrink-0" />
-        <span>
-          <strong>Audit Constraint:</strong> User records do NOT expose personal medical files, conditions, vitals logs, or private AI chats to administrative staff.
-        </span>
-      </div>
-
-      {/* Search & Filters */}
-      <div className="p-4 rounded-2xl bg-[#101827] border border-slate-800 flex flex-col md:flex-row gap-3 items-center justify-between">
-        <div className="relative w-full md:w-80">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+      <div className="rounded-2xl bg-[#101827] border border-slate-800 p-4 space-y-4">
+        <div className="relative w-full md:w-96">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
-            type="text"
             value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search accounts by name or email..."
-            className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#070B14] border border-slate-800 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-purple-400"
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Search by name, email or UID..."
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#070B14] border border-slate-800 text-sm text-white"
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          {['All', 'Patient', 'Doctor', 'Administrator'].map(role => (
+        <div className="flex flex-wrap gap-2">
+          {[
+            ["ALL", "All"],
+            ["USER", "Patients"],
+            ["DOCTOR", "Doctors"],
+            ["DOCTOR_PENDING", "Doctor Pending"],
+            ["DOCTOR_SUSPENDED", "Suspended Doctors"],
+            ["ADMIN", "Administrators"],
+            ["UNKNOWN", "Unknown"],
+          ].map(([value, label]) => (
             <button
-              key={role}
-              onClick={() => setRoleFilter(role)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                roleFilter === role
-                  ? 'bg-purple-500 text-white font-bold'
-                  : 'bg-[#070B14] text-slate-400 hover:text-white border border-slate-800'
+              key={value}
+              onClick={() => setRoleFilter(value)}
+              className={`px-3 py-2 rounded-xl text-xs font-semibold ${
+                roleFilter === value
+                  ? "bg-purple-500 text-white"
+                  : "bg-[#070B14] text-slate-400 border border-slate-800"
               }`}
             >
-              {role}
+              {label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* User Table */}
-      <div className="p-6 rounded-3xl bg-[#101827] border border-slate-800 shadow-sm space-y-4">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+      <div className="rounded-2xl bg-[#101827] border border-slate-800 overflow-x-auto">
+        {loading ? (
+          <p className="p-8 text-center text-slate-400">
+            Loading Firebase user profiles...
+          </p>
+        ) : error ? (
+          <p className="p-8 text-center text-red-400">{error}</p>
+        ) : filteredUsers.length === 0 ? (
+          <p className="p-8 text-center text-slate-400">
+            No matching user profiles found.
+          </p>
+        ) : (
+          <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-slate-800 text-slate-400 uppercase text-[10px]">
-                <th className="py-3 px-4">Account ID</th>
-                <th className="py-3 px-4">User</th>
-                <th className="py-3 px-4">Role</th>
-                <th className="py-3 px-4">Privacy Tier</th>
-                <th className="py-3 px-4">2FA Status</th>
-                <th className="py-3 px-4">Account Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+              <tr className="border-b border-slate-800 text-slate-400 uppercase text-xs">
+                <th className="p-4">User</th>
+                <th className="p-4">UID</th>
+                <th className="p-4">Role</th>
+                <th className="p-4">Registration date</th>
+                <th className="p-4">Account status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/80">
-              {filteredUsers.map(user => (
-                <tr key={user.id} className="hover:bg-slate-800/30 transition-colors">
-                  <td className="py-3 px-4 font-mono text-slate-400">{user.id}</td>
-                  <td className="py-3 px-4">
-                    <p className="font-bold text-white">{user.name}</p>
-                    <p className="text-[11px] text-slate-400">{user.email}</p>
+
+            <tbody className="divide-y divide-slate-800">
+              {filteredUsers.map((user) => (
+                <tr key={user.uid}>
+                  <td className="p-4">
+                    <p className="font-semibold text-white">{user.name}</p>
+                    <p className="text-xs text-slate-400">
+                      {user.email || "Email unavailable"}
+                    </p>
                   </td>
-                  <td className="py-3 px-4">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                      user.role === 'Administrator'
-                        ? 'bg-purple-500/10 text-purple-400 border-purple-500/20'
-                        : user.role === 'Doctor'
-                        ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20'
-                        : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                    }`}>
-                      {user.role}
-                    </span>
+
+                  <td className="p-4 font-mono text-xs text-slate-400">
+                    {user.uid}
                   </td>
-                  <td className="py-3 px-4 text-slate-300 font-mono text-[11px]">{user.privacyTier}</td>
-                  <td className="py-3 px-4">
-                    <span className={`text-[10px] font-bold ${user.twoFactorEnabled ? 'text-emerald-400' : 'text-amber-400'}`}>
-                      {user.twoFactorEnabled ? 'Enabled' : 'Disabled'}
-                    </span>
+
+                  <td className="p-4 text-slate-300">
+                    {ROLE_LABELS[user.role] || "Unknown"}
                   </td>
-                  <td className="py-3 px-4">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      user.status === 'Active'
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                        : 'bg-red-500/10 text-red-400 border border-red-500/20'
-                    }`}>
+
+                  <td className="p-4 text-slate-300">
+                    {formatDate(user.createdAt)}
+                  </td>
+
+                  <td className="p-4">
+                    <span className="text-xs font-semibold text-slate-300">
                       {user.status}
                     </span>
-                  </td>
-                  <td className="py-3 px-4 text-right">
-                    {user.role !== 'Administrator' && (
-                      <button
-                        onClick={() => toggleUserStatus(user.id)}
-                        className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
-                          user.status === 'Active'
-                            ? 'text-red-400 hover:bg-red-500/10 border border-red-500/20'
-                            : 'text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20'
-                        }`}
-                      >
-                        {user.status === 'Active' ? 'Suspend' : 'Activate'}
-                      </button>
-                    )}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
+        )}
       </div>
+
+      <p className="text-xs text-slate-500">
+        Showing {filteredUsers.length} of {users.length} profiles.
+      </p>
     </div>
   );
 }

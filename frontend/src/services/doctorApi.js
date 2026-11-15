@@ -53,10 +53,13 @@ export const doctorApi = {
     return authenticatedRequest(`/api/admin/doctor-applications${query}`);
   },
 
-  approveApplication(uid) {
+  approveApplication(uid, note = "Approved after administrator review.") {
     return authenticatedRequest(
       `/api/admin/doctor-applications/${encodeURIComponent(uid)}/approve`,
-      { method: "POST" }
+      {
+        method: "POST",
+        body: JSON.stringify({ note }),
+      }
     );
   },
 
@@ -65,7 +68,7 @@ export const doctorApi = {
       `/api/admin/doctor-applications/${encodeURIComponent(uid)}/reject`,
       {
         method: "POST",
-        body: JSON.stringify({ reason }),
+        body: JSON.stringify({ note: reason }),
       }
     );
   },

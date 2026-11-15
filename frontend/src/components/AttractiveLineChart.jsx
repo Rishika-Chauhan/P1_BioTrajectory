@@ -157,8 +157,11 @@ export default function AttractiveLineChart({
             </span>
           </div>
           <h3 className={`font-sans text-xl font-bold mt-1 ${isDark ? 'text-[#FAF9EB]' : 'text-[#3F0D12]'}`}>
-            Cross-Modal Urinalysis & Bluetooth Biometric Curves
+            Illustrative cross-modal preview
           </h3>
+          <p className={`text-[11px] mt-1 ${isDark ? 'text-[#D5BF86]' : 'text-[#8D775F]'}`}>
+            Demo-only visualization for product storytelling and UI prototyping. It is not patient data.
+          </p>
         </div>
 
         {/* Display Mode Selector */}

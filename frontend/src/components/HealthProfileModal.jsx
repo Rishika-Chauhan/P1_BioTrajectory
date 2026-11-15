@@ -111,7 +111,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
   // Populate from existing profile
   useEffect(() => {
     if (healthProfile) {
-      setName(healthProfile.name || currentUser?.name || 'Pranjal Sharma');
+      setName(healthProfile.name || currentUser?.name || 'User');
       setAgeRange(healthProfile.ageRange || '30–44');
       setGender(healthProfile.gender || 'Prefer not to say');
       setUnits(healthProfile.units || 'metric');
@@ -230,8 +230,8 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
   }
 };
 
-
-
+    
+ 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-black/80 backdrop-blur-md animate-fadeIn">
@@ -501,7 +501,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Pranjal Sharma"
+                  placeholder="e.g. Your full name"
                   className={`w-full p-3.5 rounded-xl border text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#A71D31] ${isDark ? 'bg-[#050814] border-[#D5BF86]/30 text-white' : 'bg-white border-[#D5BF86] text-[#3F0D12]'
                     }`}
                 />
@@ -901,7 +901,7 @@ export default function HealthProfileModal({ isOpen, onClose, initialStep = 1, i
                     {name ? name[0].toUpperCase() : 'P'}
                   </div>
                   <div>
-                    <h3 className="font-bold text-base text-[#3F0D12] dark:text-[#FAF9EB]">{name || 'Pranjal Sharma'}</h3>
+                    <h3 className="font-bold text-base text-[#3F0D12] dark:text-[#FAF9EB]">{name || 'User'}</h3>
                     <p className="text-xs text-[#8D775F]">
                       Age Bracket: {ageRange} • Units: {units.toUpperCase()}
                       {height && weight ? ` • ${height} ${units === 'metric' ? 'cm' : 'in'}, ${weight} ${units === 'metric' ? 'kg' : 'lbs'}` : ''}

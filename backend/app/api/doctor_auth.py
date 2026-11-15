@@ -2,8 +2,15 @@
 """
 Doctor applications and admin review endpoints.
 
-Doctor roles and application statuses are controlled by the backend.
-The frontend must never assign roles or approve applications.
+Roles and verification are controlled by the trusted backend.
+
+Collections:
+- doctor_applications/{uid}: private verification/application data
+- approved_doctors/{uid}: limited public doctor profile
+
+The approval/rejection workflow uses recoverable intermediate states
+because Firebase Auth custom claims and Firestore cannot share one
+atomic transaction.
 """
 
 from datetime import datetime, timezone
@@ -38,7 +45,7 @@ class DoctorApplicationIn(BaseModel):
     specialization: str = Field(min_length=2, max_length=120)
     clinic_name: Optional[str] = Field(
         default=None,
-        max_length=160
+        max_length=160,
     )
 
 
@@ -50,13 +57,11 @@ class ReviewIn(BaseModel):
 
     note: Optional[str] = Field(
         default=None,
-        max_length=1000
+        max_length=1000,
     )
 
 
 def get_firestore():
-    """Return Firestore client after Firebase Admin initialization."""
-
     if not initialize_firebase_admin():
         raise HTTPException(
             status_code=503,
@@ -66,8 +71,12 @@ def get_firestore():
     return firestore.client()
 
 
+def utc_now():
+    return datetime.now(timezone.utc).isoformat()
+
+
 def set_user_role(uid: str, role: str):
-    """Set trusted Firebase custom claims while preserving other claims."""
+    """Update Firebase custom claims without deleting other claims."""
 
     user = auth.get_user(uid)
 
@@ -77,21 +86,193 @@ def set_user_role(uid: str, role: str):
     auth.set_custom_user_claims(uid, claims)
 
 
-def utc_now():
-    return datetime.now(timezone.utc).isoformat()
-
-
 def is_email_verification_bypass_enabled() -> bool:
-    """
-    Allow skipping email verification only when both conditions are true:
-    1. Backend environment is explicitly development.
-    2. SKIP_DOCTOR_EMAIL_VERIFICATION is explicitly enabled.
-    """
-
     return (
         settings.ENVIRONMENT == "development"
         and settings.SKIP_DOCTOR_EMAIL_VERIFICATION
     )
+
+
+def get_application_refs(db, uid):
+    application_ref = (
+        db.collection("doctor_applications")
+        .document(uid)
+    )
+
+    public_profile_ref = (
+        db.collection("approved_doctors")
+        .document(uid)
+    )
+
+    return application_ref, public_profile_ref
+
+
+def begin_review(
+    application_ref,
+    intermediate_status,
+    final_status,
+    admin_uid,
+    note,
+):
+    """
+    Atomically claim a pending application for review.
+
+    APPROVING and REJECTING are recoverable states. A retry can
+    continue the same operation if Firebase Auth or Firestore fails.
+    """
+
+    transaction = application_ref._client.transaction()
+
+    @firestore.transactional
+    def update_review_state(transaction):
+        snapshot = application_ref.get(
+            transaction=transaction
+        )
+
+        if not snapshot.exists:
+            return "NOT_FOUND"
+
+        data = snapshot.to_dict() or {}
+        current_status = data.get("status")
+
+        if current_status == final_status:
+            return "ALREADY_FINAL"
+
+        if current_status == intermediate_status:
+            return "RESUME"
+
+        if current_status != "PENDING":
+            return "CONFLICT"
+
+        transaction.update(
+            application_ref,
+            {
+                "status": intermediate_status,
+                "reviewed_by": admin_uid,
+                "review_note": note,
+                "review_started_at": utc_now(),
+            },
+        )
+
+        return "STARTED"
+
+    return update_review_state(transaction)
+
+
+def finalize_approval(
+    application_ref,
+    public_profile_ref,
+):
+    """Publish the public profile and finalize approval atomically."""
+
+    transaction = application_ref._client.transaction()
+
+    @firestore.transactional
+    def finalize(transaction):
+        snapshot = application_ref.get(
+            transaction=transaction
+        )
+
+        if not snapshot.exists:
+            raise RuntimeError(
+                "Doctor application disappeared during approval."
+            )
+
+        application = snapshot.to_dict() or {}
+
+        if application.get("status") not in {
+            "APPROVING",
+            "APPROVED",
+        }:
+            raise RuntimeError(
+                "Application is not in an approvable state."
+            )
+
+        approved_at = (
+            application.get("reviewed_at")
+            or utc_now()
+        )
+
+        # Deliberately limited public fields.
+        # Never expose registration number, phone, email,
+        # issuing council or private verification information.
+        public_profile = {
+            "uid": application_ref.id,
+            "full_name": application.get("full_name", ""),
+            "specialization": application.get(
+                "specialization", ""
+            ),
+            "qualification": application.get(
+                "qualification", ""
+            ),
+            "clinic_name": application.get("clinic_name"),
+            "status": "APPROVED",
+            "approved_at": approved_at,
+        }
+
+        transaction.set(
+            public_profile_ref,
+            public_profile,
+        )
+
+        transaction.update(
+            application_ref,
+            {
+                "status": "APPROVED",
+                "reviewed_at": approved_at,
+            },
+        )
+
+        return public_profile
+
+    return finalize(transaction)
+
+
+def finalize_rejection(
+    application_ref,
+    public_profile_ref,
+):
+    """Finalize rejection and ensure no public profile remains."""
+
+    transaction = application_ref._client.transaction()
+
+    @firestore.transactional
+    def finalize(transaction):
+        snapshot = application_ref.get(
+            transaction=transaction
+        )
+
+        if not snapshot.exists:
+            raise RuntimeError(
+                "Doctor application disappeared during rejection."
+            )
+
+        application = snapshot.to_dict() or {}
+
+        if application.get("status") not in {
+            "REJECTING",
+            "REJECTED",
+        }:
+            raise RuntimeError(
+                "Application is not in a rejectable state."
+            )
+
+        reviewed_at = (
+            application.get("reviewed_at")
+            or utc_now()
+        )
+
+        transaction.delete(public_profile_ref)
+
+        transaction.update(
+            application_ref,
+            {
+                "status": "REJECTED",
+                "reviewed_at": reviewed_at,
+            },
+        )
+
+    finalize(transaction)
 
 
 @router.post(
@@ -102,9 +283,10 @@ async def submit_doctor_application(
     payload: DoctorApplicationIn,
     current_user: Dict[str, Any] = Depends(get_current_user),
 ):
-    """Submit a doctor application for manual admin review."""
-
-    email_verified = current_user.get("email_verified", False)
+    email_verified = current_user.get(
+        "email_verified",
+        False,
+    )
 
     if (
         not email_verified
@@ -126,9 +308,9 @@ async def submit_doctor_application(
 
     db = get_firestore()
 
-    application_ref = (
-        db.collection("doctor_applications")
-        .document(uid)
+    application_ref, _ = get_application_refs(
+        db,
+        uid,
     )
 
     existing = application_ref.get()
@@ -138,7 +320,9 @@ async def submit_doctor_application(
 
         if existing_data.get("status") in {
             "PENDING",
-            "APPROVED"
+            "APPROVING",
+            "APPROVED",
+            "REJECTING",
         }:
             raise HTTPException(
                 status_code=409,
@@ -180,8 +364,6 @@ async def submit_doctor_application(
 async def get_own_doctor_application(
     current_user: Dict[str, Any] = Depends(get_current_user),
 ):
-    """Return only the authenticated doctor's own application."""
-
     application_ref = (
         get_firestore()
         .collection("doctor_applications")
@@ -206,18 +388,19 @@ async def list_doctor_applications(
         require_user_role("ADMIN")
     ),
 ):
-    """List applications. Only ADMIN accounts can access this endpoint."""
-
-    query = get_firestore().collection("doctor_applications")
+    query = get_firestore().collection(
+        "doctor_applications"
+    )
 
     if status_filter:
         normalized = status_filter.strip().upper()
 
         allowed_statuses = {
             "PENDING",
+            "APPROVING",
             "APPROVED",
+            "REJECTING",
             "REJECTED",
-            "SUSPENDED",
         }
 
         if normalized not in allowed_statuses:
@@ -229,7 +412,7 @@ async def list_doctor_applications(
         query = query.where(
             "status",
             "==",
-            normalized
+            normalized,
         )
 
     applications = []
@@ -240,7 +423,7 @@ async def list_doctor_applications(
         applications.append(data)
 
     return {
-        "applications": applications
+        "applications": applications,
     }
 
 
@@ -254,50 +437,59 @@ async def approve_doctor_application(
         require_user_role("ADMIN")
     ),
 ):
-    """Approve a pending application and assign the DOCTOR role."""
-
     db = get_firestore()
 
-    application_ref = (
-        db.collection("doctor_applications")
-        .document(uid)
+    application_ref, public_profile_ref = (
+        get_application_refs(db, uid)
     )
 
-    snapshot = application_ref.get()
+    state = begin_review(
+        application_ref=application_ref,
+        intermediate_status="APPROVING",
+        final_status="APPROVED",
+        admin_uid=admin["uid"],
+        note=payload.note,
+    )
 
-    if not snapshot.exists:
+    if state == "NOT_FOUND":
         raise HTTPException(
             status_code=404,
             detail="Application not found.",
         )
 
-    application = snapshot.to_dict() or {}
-
-    if application.get("status") != "PENDING":
+    if state == "CONFLICT":
         raise HTTPException(
             status_code=409,
-            detail="Only pending applications can be approved.",
+            detail="This application is not pending approval.",
         )
 
     try:
+        # Safe to repeat: this sets the same trusted role.
         set_user_role(uid, "DOCTOR")
 
-        application_ref.update({
-            "status": "APPROVED",
-            "reviewed_at": utc_now(),
-            "reviewed_by": admin["uid"],
-            "review_note": payload.note,
-        })
+        profile = finalize_approval(
+            application_ref,
+            public_profile_ref,
+        )
 
-    except Exception:
+    except Exception as error:
+        print(
+            f"[DoctorApproval] Recovery required for {uid}: {error}"
+        )
+
         raise HTTPException(
             status_code=503,
-            detail="Approval could not be completed. Please retry.",
+            detail=(
+                "Approval is not fully completed. "
+                "The application is saved for recovery. "
+                "Retry the approval action."
+            ),
         )
 
     return {
         "status": "APPROVED",
         "uid": uid,
+        "public_profile_created": True,
     }
 
 
@@ -311,45 +503,52 @@ async def reject_doctor_application(
         require_user_role("ADMIN")
     ),
 ):
-    """Reject a pending application and restore the normal USER role."""
-
     db = get_firestore()
 
-    application_ref = (
-        db.collection("doctor_applications")
-        .document(uid)
+    application_ref, public_profile_ref = (
+        get_application_refs(db, uid)
     )
 
-    snapshot = application_ref.get()
+    state = begin_review(
+        application_ref=application_ref,
+        intermediate_status="REJECTING",
+        final_status="REJECTED",
+        admin_uid=admin["uid"],
+        note=payload.note,
+    )
 
-    if not snapshot.exists:
+    if state == "NOT_FOUND":
         raise HTTPException(
             status_code=404,
             detail="Application not found.",
         )
 
-    application = snapshot.to_dict() or {}
-
-    if application.get("status") != "PENDING":
+    if state == "CONFLICT":
         raise HTTPException(
             status_code=409,
-            detail="Only pending applications can be rejected.",
+            detail="This application is not pending rejection.",
         )
 
     try:
         set_user_role(uid, "USER")
 
-        application_ref.update({
-            "status": "REJECTED",
-            "reviewed_at": utc_now(),
-            "reviewed_by": admin["uid"],
-            "review_note": payload.note,
-        })
+        finalize_rejection(
+            application_ref,
+            public_profile_ref,
+        )
 
-    except Exception:
+    except Exception as error:
+        print(
+            f"[DoctorRejection] Recovery required for {uid}: {error}"
+        )
+
         raise HTTPException(
             status_code=503,
-            detail="Rejection could not be completed. Please retry.",
+            detail=(
+                "Rejection is not fully completed. "
+                "The application is saved for recovery. "
+                "Retry the rejection action."
+            ),
         )
 
     return {

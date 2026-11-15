@@ -18,82 +18,73 @@ export const DOCTOR_ROLES = {
   SUSPENDED: 'DOCTOR_SUSPENDED'
 };
 
-const VALID_DOCTOR_ROLES = new Set([
-  DOCTOR_ROLES.PENDING,
-  DOCTOR_ROLES.VERIFIED,
-  DOCTOR_ROLES.SUSPENDED
-]);
+const VALID_DOCTOR_ROLES = new Set(
+  Object.values(DOCTOR_ROLES)
+);
 
-// --------------------------------------------------
-// Normalize only real data returned by Firebase
-// or the trusted backend.
-// --------------------------------------------------
+function cleanDoctorName(value) {
+  return String(value || '')
+    .replace(/^(?:(Dr\.?|Doctor)\s*)+/gi, '')
+    .trim();
+}
 
 function buildDoctorFromUser(user, application = null) {
   if (!user || !VALID_DOCTOR_ROLES.has(user.role)) {
     return null;
   }
 
-  const details = application?.application || application || {};
-  const rawFullName = details.full_name || user.name || user.displayName || '';
-  const cleanDoctorName = rawFullName ? String(rawFullName).replace(/^(?:(Dr\.?|Doctor)\s*)+/gi, '').trim() : '';
+  const details =
+    application?.application ||
+    application ||
+    {};
+
+  const fullName = cleanDoctorName(
+    details.full_name ||
+    user.name ||
+    user.displayName ||
+    ''
+  );
 
   return {
-    id: user.uid || user.id,
-    uid: user.uid || user.id,
+    id: user.uid,
+    uid: user.uid,
 
-    name:
-      cleanDoctorName ? `Dr. ${cleanDoctorName}` : 'Dr. Practitioner',
+    name: fullName ? `Dr. ${fullName}` : '',
 
-    fullName:
-      cleanDoctorName || 'Practitioner',
+    fullName,
 
     email: user.email || '',
 
-    phone:
-      details.phone ||
-      user.phone ||
-      '',
+    phone: details.phone || '',
 
     registrationNumber:
-      details.registration_number ||
-      '',
+      details.registration_number || '',
 
     specialization:
-      details.specialization ||
-      '',
+      details.specialization || '',
 
     qualification:
-      details.qualification ||
-      '',
+      details.qualification || '',
 
     issuingCouncil:
-      details.issuing_council ||
-      '',
+      details.issuing_council || '',
 
-    clinic:
-      details.clinic_name ||
-      '',
+    clinic: details.clinic_name || '',
 
-    clinicName:
-      details.clinic_name ||
-      '',
+    clinicName: details.clinic_name || '',
 
     role: user.role,
 
-    avatar:
-      user.photoURL ||
-      user.avatar ||
-      '',
+    avatar: user.photoURL || null,
 
     joinedDate:
       details.created_at ||
+      details.submitted_at ||
       '',
 
-    bio: user.bio || '',
+    bio: '',
 
-    consultationFee:
-      user.consultationFee || '',
+    consultationFee: '',
 
     applicationStatus:
       details.status || '',
@@ -103,9 +94,12 @@ function buildDoctorFromUser(user, application = null) {
   };
 }
 
-// --------------------------------------------------
-// Provider
-// --------------------------------------------------
+function isNotFound(error) {
+  return (
+    error?.status === 404 ||
+    String(error?.message || '').includes('404')
+  );
+}
 
 export function DoctorAuthProvider({ children }) {
   const auth = useAuth();
@@ -114,68 +108,65 @@ export function DoctorAuthProvider({ children }) {
   const [authError, setAuthError] = useState(null);
   const [loadingDoctor, setLoadingDoctor] = useState(true);
 
-  // ------------------------------------------------
-  // Load doctor application from trusted backend
-  // ------------------------------------------------
+  // Accept a user directly so login/register never reads stale React state.
+  const refreshDoctor = useCallback(
+    async (userOverride = null) => {
+      const user = userOverride || auth.currentUser;
 
-  const refreshDoctor = useCallback(async () => {
-    const user = auth.currentUser;
-
-    if (!user || !VALID_DOCTOR_ROLES.has(user.role)) {
-      setCurrentDoctor(null);
-      setLoadingDoctor(false);
-      return null;
-    }
-
-    setLoadingDoctor(true);
-    setAuthError(null);
-
-    try {
-      let application = null;
-
-      try {
-        application = await doctorApi.getMyApplication();
-      } catch (error) {
-        // A 404 means the account has no application.
-        // Other errors should not be silently ignored.
-        if (
-          !String(error.message || '').includes('404')
-        ) {
-          throw error;
-        }
+      if (!user || !VALID_DOCTOR_ROLES.has(user.role)) {
+        setCurrentDoctor(null);
+        setLoadingDoctor(false);
+        return null;
       }
 
-      const doctor = buildDoctorFromUser(user, application);
+      setLoadingDoctor(true);
+      setAuthError(null);
 
-      setCurrentDoctor(doctor);
-      return doctor;
-    } catch (error) {
-      console.error(
-        '[DoctorAuth] Unable to load doctor information:',
-        error
-      );
+      try {
+        let application = null;
 
-      setAuthError(error.message || 'Unable to load doctor information.');
+        try {
+          application = await doctorApi.getMyApplication();
+        } catch (error) {
+          if (!isNotFound(error)) {
+            throw error;
+          }
+        }
 
-      // Do not fabricate or retain potentially stale doctor data.
-      setCurrentDoctor(buildDoctorFromUser(user));
-      return null;
-    } finally {
-      setLoadingDoctor(false);
-    }
-  }, [auth.currentUser]);
+        const doctor = buildDoctorFromUser(
+          user,
+          application
+        );
 
-  // ------------------------------------------------
-  // Synchronize with Firebase authentication
-  // ------------------------------------------------
+        setCurrentDoctor(doctor);
+        return doctor;
+      } catch (error) {
+        console.error(
+          '[DoctorAuth] Unable to load doctor:',
+          error
+        );
 
+        setAuthError(
+          error.message ||
+          'Unable to load doctor information.'
+        );
+
+        setCurrentDoctor(
+          buildDoctorFromUser(user)
+        );
+
+        return null;
+      } finally {
+        setLoadingDoctor(false);
+      }
+    },
+    [auth.currentUser]
+  );
+
+  // Synchronize whenever Firebase authentication or role changes.
   useEffect(() => {
     refreshDoctor();
   }, [refreshDoctor]);
-
-  // ------------------------------------------------
-  // Doctor login
-  // ------------------------------------------------
 
   const loginDoctor = async (email, password) => {
     setAuthError(null);
@@ -191,33 +182,25 @@ export function DoctorAuthProvider({ children }) {
         await auth.logout();
 
         throw new Error(
-          'This account is not registered as a doctor. Please use the regular user login.'
+          'This account is not registered as a doctor. Use regular user login.'
         );
       }
 
-      const doctor = await refreshDoctor();
-
-      return doctor;
+      return await refreshDoctor(user);
     } catch (error) {
       setAuthError(error.message);
       throw error;
     }
   };
 
-  // ------------------------------------------------
-  // Doctor registration
-  //
-  // Never assign a doctor role from the frontend.
-  // The backend assigns DOCTOR_PENDING after receiving
-  // a valid application from an authenticated user.
-  // ------------------------------------------------
-
   const registerDoctor = async (doctorData) => {
     setAuthError(null);
 
     try {
       if (!doctorData) {
-        throw new Error('Doctor registration details are required.');
+        throw new Error(
+          'Doctor registration details are required.'
+        );
       }
 
       const user = await auth.register({
@@ -228,46 +211,51 @@ export function DoctorAuthProvider({ children }) {
       });
 
       if (!user) {
-        throw new Error('Account registration failed.');
+        throw new Error(
+          'Account registration failed.'
+        );
       }
 
-      const refreshed = await auth.refreshToken?.();
+      const refreshedUser =
+        await auth.refreshToken();
 
       const emailVerified =
-        refreshed?.emailVerified ??
-        auth.currentUser?.emailVerified ??
+        refreshedUser?.emailVerified ??
+        user.emailVerified ??
         false;
 
       if (!emailVerified) {
         throw new Error(
-          'Verify your email before submitting your doctor application. Your account has been created; sign in again after verification.'
+          'Your account has been created. Verify your email, then sign in and submit your doctor application.'
         );
       }
 
       const application = {
         full_name: doctorData.fullName,
         phone: doctorData.phone,
-        registration_number: doctorData.registrationNumber,
-        issuing_council: doctorData.issuingCouncil,
-        qualification: doctorData.qualification,
-        specialization: doctorData.specialization,
-        clinic_name: doctorData.clinicName || ''
+        registration_number:
+          doctorData.registrationNumber,
+        issuing_council:
+          doctorData.issuingCouncil,
+        qualification:
+          doctorData.qualification,
+        specialization:
+          doctorData.specialization,
+        clinic_name:
+          doctorData.clinicName || ''
       };
 
       await doctorApi.submitApplication(application);
 
-      await auth.refreshToken?.();
+      const updatedUser =
+        await auth.refreshToken();
 
-      return await refreshDoctor();
+      return await refreshDoctor(updatedUser);
     } catch (error) {
       setAuthError(error.message);
       throw error;
     }
   };
-
-  // ------------------------------------------------
-  // Logout
-  // ------------------------------------------------
 
   const logoutDoctor = async () => {
     setAuthError(null);
@@ -275,41 +263,28 @@ export function DoctorAuthProvider({ children }) {
     try {
       await auth.logout();
       setCurrentDoctor(null);
+      return true;
     } catch (error) {
       setAuthError(error.message);
       throw error;
     }
   };
 
-  // ------------------------------------------------
-  // Refresh doctor data after backend changes
-  // ------------------------------------------------
-
   const updateDoctorProfile = async () => {
-    // Medical credentials and verification status must
-    // be changed through the trusted backend.
     return refreshDoctor();
   };
 
-  // ------------------------------------------------
-  // Block client-side verification changes
-  // ------------------------------------------------
-
   const setVerificationStatus = () => {
     throw new Error(
-      'Doctor verification status must be managed by an administrator through the backend.'
+      'Only an administrator can change doctor verification status.'
     );
   };
 
   const updateDoctorRole = () => {
     throw new Error(
-      'Doctor roles can only be assigned by the trusted backend.'
+      'Doctor roles must be assigned by the trusted backend.'
     );
   };
-
-  // ------------------------------------------------
-  // Role states
-  // ------------------------------------------------
 
   const isVerifiedDoctor =
     currentDoctor?.role === DOCTOR_ROLES.VERIFIED;
@@ -320,29 +295,26 @@ export function DoctorAuthProvider({ children }) {
   const isSuspendedDoctor =
     currentDoctor?.role === DOCTOR_ROLES.SUSPENDED;
 
-  const isAuthenticatedDoctor =
-    Boolean(currentDoctor) &&
+  const isAuthenticatedDoctor = Boolean(
+    currentDoctor &&
     (
       isVerifiedDoctor ||
       isPendingDoctor ||
       isSuspendedDoctor
-    );
-
-  // ------------------------------------------------
-  // Context
-  // ------------------------------------------------
+    )
+  );
 
   const value = {
     currentDoctor,
 
     doctor: currentDoctor
       ? {
-        ...currentDoctor,
-        fullName: currentDoctor.name,
-        regNumber: currentDoctor.registrationNumber,
-        clinicName: currentDoctor.clinic,
-        uid: currentDoctor.id
-      }
+          ...currentDoctor,
+          fullName: currentDoctor.fullName,
+          regNumber: currentDoctor.registrationNumber,
+          clinicName: currentDoctor.clinic,
+          uid: currentDoctor.uid
+        }
       : null,
 
     loadingDoctor,
@@ -355,8 +327,7 @@ export function DoctorAuthProvider({ children }) {
 
     isVerified: isVerifiedDoctor,
 
-    doctorRole:
-      currentDoctor?.role || null,
+    doctorRole: currentDoctor?.role || null,
 
     loginDoctor,
     registerDoctor,
@@ -375,10 +346,6 @@ export function DoctorAuthProvider({ children }) {
     </DoctorAuthContext.Provider>
   );
 }
-
-// --------------------------------------------------
-// Hook
-// --------------------------------------------------
 
 export function useDoctorAuth() {
   const context = useContext(DoctorAuthContext);

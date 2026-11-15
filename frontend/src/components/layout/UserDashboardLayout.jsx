@@ -36,8 +36,8 @@ export default function UserDashboardLayout() {
     healthProfile?.name ||
     (currentUser?.displayName && currentUser.displayName.toLowerCase() !== 'patient' ? currentUser.displayName : null) ||
     (currentUser?.name && currentUser.name.toLowerCase() !== 'patient' ? currentUser.name : null) ||
-    'Pranjal Sharma';
-  const profileInitial = profileFullName.trim()[0] || 'P';
+    'User';
+  const profileInitial = profileFullName.trim()[0] || 'U';
 
   // Simplified friendly navigation labels matching exact dashboard specification
   const navItems = [

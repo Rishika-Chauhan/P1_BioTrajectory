@@ -101,6 +101,9 @@ export default function AttractivePieChart() {
           <p className={`text-xs mt-0.5 ${isDark ? 'text-[#D5BF86]' : 'text-[#8D775F]'}`}>
             {preset.subtitle}
           </p>
+          <p className={`text-[11px] mt-1 ${isDark ? 'text-[#D5BF86]' : 'text-[#8D775F]'}`}>
+            Illustrative demo-only chart. This component does not represent a real patient record.
+          </p>
         </div>
 
         {/* Preset Selector Buttons */}

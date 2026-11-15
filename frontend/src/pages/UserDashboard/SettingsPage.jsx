@@ -91,7 +91,7 @@ export default function SettingsPage() {
   };
 
   // Profile Form (Hydrated from healthProfile)
-  const [name, setName] = useState(healthProfile?.name || currentUser?.name || 'Pranjal Sharma');
+  const [name, setName] = useState(healthProfile?.name || currentUser?.name || 'User');
   const [ageRange, setAgeRange] = useState(healthProfile?.ageRange || '30–44');
   const [gender, setGender] = useState(healthProfile?.gender || 'Prefer not to say');
   const [units, setUnits] = useState(healthProfile?.units || 'metric');
