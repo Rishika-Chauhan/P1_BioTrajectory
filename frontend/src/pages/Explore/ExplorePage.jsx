@@ -253,14 +253,23 @@ export default function ExplorePage() {
                       <div className="relative w-full h-48 overflow-hidden bg-slate-100 dark:bg-slate-800">
                         <img
                           src={diseaseImg.primaryImage}
-                          alt={disease.name}
+                          alt={diseaseImg.primaryAlt || disease.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1000&q=80';
+                          }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
                         <span className="absolute bottom-3 left-3 text-[11px] font-bold text-white bg-slate-900/70 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/20">
                           {diseaseImg.badge || disease.categoryGroup}
                         </span>
+                        {diseaseImg.isSpecificPhoto === false && (
+                          <span className="absolute top-3 right-3 text-[10px] font-medium text-slate-300 bg-slate-950/75 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/10">
+                            Reference Guide
+                          </span>
+                        )}
                       </div>
 
                       <div className="p-6 space-y-4 flex-1 flex flex-col justify-between">

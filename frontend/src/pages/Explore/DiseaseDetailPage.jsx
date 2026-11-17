@@ -168,12 +168,16 @@ export default function DiseaseDetailPage() {
               <div className="relative aspect-video w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
                 <img
                   src={diseaseImages.primaryImage}
-                  alt={`${disease.name} overview`}
+                  alt={diseaseImages.primaryAlt || `${disease.name} overview`}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   loading="lazy"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1000&q=80';
+                  }}
                 />
                 <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur-md text-[11px] font-bold text-white border border-white/20">
-                  Clinical Overview
+                  {diseaseImages.isSpecificPhoto === false ? 'General Reference' : 'Clinical Overview'}
                 </div>
               </div>
               <div className="p-4 space-y-1.5">
@@ -192,12 +196,16 @@ export default function DiseaseDetailPage() {
               <div className="relative aspect-video w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
                 <img
                   src={diseaseImages.secondaryImage}
-                  alt={`${disease.name} diagnostic test`}
+                  alt={diseaseImages.secondaryAlt || `${disease.name} diagnostic test`}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   loading="lazy"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1000&q=80';
+                  }}
                 />
                 <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-cyan-900/80 backdrop-blur-md text-[11px] font-bold text-cyan-200 border border-cyan-400/30">
-                  Diagnosis & Prevention
+                  {diseaseImages.isSpecificPhoto === false ? 'General Care' : 'Diagnosis & Prevention'}
                 </div>
               </div>
               <div className="p-4 space-y-1.5">
