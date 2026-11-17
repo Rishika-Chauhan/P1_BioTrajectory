@@ -21,7 +21,9 @@ import {
   ShieldAlert
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import ThemeToggle from '../common/ThemeToggle';
+import LanguageSwitcher from '../common/LanguageSwitcher';
 import BrandLogo from '../common/BrandLogo';
 
 export default function AdminDashboardLayout() {
@@ -30,19 +32,20 @@ export default function AdminDashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { currentUser, logout } = useAuth();
+  const { t, isHindi } = useLanguage();
 
   const adminNavItems = [
-    { label: 'Overview', path: '/admin/dashboard', icon: Shield },
-    { label: 'User Accounts', path: '/admin/users', icon: Users },
-    { label: 'Permissions', path: '/admin/roles', icon: Key },
-    { label: 'Doctor Verification', path: '/admin/verification', icon: Shield },
-    { label: 'Patient Management', path: '/admin/patients', icon: Users },
-    { label: 'Disease Guide', path: '/admin/diseases', icon: BookOpen },
-    { label: 'Articles & Guides', path: '/admin/content', icon: FileCheck },
-    { label: 'User Reports', path: '/admin/reports', icon: AlertCircle },
-    { label: 'System Stats', path: '/admin/analytics', icon: BarChart3 },
-    { label: 'User Feedback', path: '/admin/feedback', icon: MessageSquare },
-    { label: 'Security Settings', path: '/admin/settings', icon: Lock }
+    { label: t('admin.overview', {}, 'Overview'), path: '/admin/dashboard', icon: Shield },
+    { label: t('admin.userAccounts', {}, 'User Accounts'), path: '/admin/users', icon: Users },
+    { label: t('admin.permissions', {}, 'Permissions'), path: '/admin/roles', icon: Key },
+    { label: t('admin.doctorVerification', {}, 'Doctor Verification'), path: '/admin/verification', icon: Shield },
+    { label: t('admin.patientManagement', {}, 'Patient Management'), path: '/admin/patients', icon: Users },
+    { label: t('admin.diseaseGuide', {}, 'Disease Guide'), path: '/admin/diseases', icon: BookOpen },
+    { label: t('admin.articlesGuides', {}, 'Articles & Guides'), path: '/admin/content', icon: FileCheck },
+    { label: t('admin.userReports', {}, 'User Reports'), path: '/admin/reports', icon: AlertCircle },
+    { label: t('admin.systemStats', {}, 'System Stats'), path: '/admin/analytics', icon: BarChart3 },
+    { label: t('admin.userFeedback', {}, 'User Feedback'), path: '/admin/feedback', icon: MessageSquare },
+    { label: t('admin.securitySettings', {}, 'Security Settings'), path: '/admin/settings', icon: Lock }
   ];
 
   const handleLogout = () => {
@@ -175,7 +178,8 @@ export default function AdminDashboardLayout() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher compact />
             <ThemeToggle />
             <div className="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-slate-800">
               <div className="w-10 h-10 rounded-2xl bg-purple-500/20 text-purple-600 dark:text-purple-300 font-bold flex items-center justify-center text-sm border border-purple-500/30">

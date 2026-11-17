@@ -13,6 +13,48 @@ import { db, auth } from "./firebase";
 
 const APPOINTMENTS_COLLECTION = "appointments";
 
+const getDemoAppointments = (docUid = 'demo-doctor-uid-002') => [
+  {
+    id: 'demo-appt-1',
+    patientId: 'demo-patient-uid-003',
+    patientName: 'Alex Johnson',
+    doctorId: docUid,
+    doctorName: 'Dr. Sarah Mitchell, MD',
+    appointmentDate: new Date().toISOString().split('T')[0],
+    appointmentTime: '10:30',
+    type: 'video',
+    reason: 'Follow-up on cardiovascular blood pressure metrics and sodium levels',
+    status: 'ACCEPTED',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'demo-appt-2',
+    patientId: 'demo-pat-005',
+    patientName: 'Marcus Vance',
+    doctorId: docUid,
+    doctorName: 'Dr. Sarah Mitchell, MD',
+    appointmentDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+    appointmentTime: '14:00',
+    type: 'in-person',
+    reason: 'Annual preventive health trajectory review',
+    status: 'PENDING',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'demo-appt-3',
+    patientId: 'demo-pat-006',
+    patientName: 'Elena Rostova',
+    doctorId: docUid,
+    doctorName: 'Dr. Sarah Mitchell, MD',
+    appointmentDate: new Date(Date.now() - 86400000).toISOString().split('T')[0],
+    appointmentTime: '11:15',
+    type: 'video',
+    reason: 'Lipid panel consultation and dietary guidance',
+    status: 'COMPLETED',
+    createdAt: new Date().toISOString()
+  }
+];
+
 function sortAppointments(appointments) {
   return appointments.sort((a, b) => {
     const dateA = `${a.appointmentDate || ""}T${a.appointmentTime || "00:00"}`;
@@ -77,6 +119,12 @@ export const appointmentService = {
       return () => {};
     }
 
+    if (String(doctorUid).startsWith('demo-') || String(doctorUid).includes('doctor')) {
+      const demoList = getDemoAppointments(doctorUid);
+      onData(sortAppointments(demoList));
+      return () => {};
+    }
+
     const appointmentsQuery = query(
       collection(db, APPOINTMENTS_COLLECTION),
       where("doctorId", "==", doctorUid)
@@ -104,6 +152,20 @@ export const appointmentService = {
     const user = auth.currentUser;
 
     if (!user) {
+      const demoUserRaw = localStorage.getItem('biotrajectory_demo_user');
+      if (demoUserRaw) {
+        try {
+          const demoUser = JSON.parse(demoUserRaw);
+          if (demoUser.role === 'USER') {
+            const demoAppts = getDemoAppointments().filter(a => a.patientId === demoUser.uid);
+            onData(sortAppointments(demoAppts.length ? demoAppts : getDemoAppointments()));
+            return () => {};
+          }
+        } catch {
+          // ignore
+        }
+      }
+
       onError?.(new Error("Please log in to view your appointments."));
       return () => {};
     }

@@ -8,6 +8,7 @@ import {
 } from 'react-router-dom';
 
 import { ThemeProvider } from './context/ThemeContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { AuthProvider } from './context/AuthContext';
 import { DoctorAuthProvider } from './context/DoctorAuthContext';
 
@@ -323,11 +324,13 @@ export default function App() {
     <ErrorBoundary>
       <BrowserRouter>
         <ThemeProvider>
-          <AuthProvider>
-            <DoctorAuthProvider>
-              <AppRoutes />
-            </DoctorAuthProvider>
-          </AuthProvider>
+          <LanguageProvider>
+            <AuthProvider>
+              <DoctorAuthProvider>
+                <AppRoutes />
+              </DoctorAuthProvider>
+            </AuthProvider>
+          </LanguageProvider>
         </ThemeProvider>
       </BrowserRouter>
     </ErrorBoundary>

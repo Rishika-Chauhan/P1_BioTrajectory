@@ -21,7 +21,9 @@ import {
   Camera
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import ThemeToggle from '../common/ThemeToggle';
+import LanguageSwitcher from '../common/LanguageSwitcher';
 import BrandLogo from '../common/BrandLogo';
 
 export default function UserDashboardLayout() {
@@ -31,6 +33,7 @@ export default function UserDashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { currentUser, healthProfile, logout } = useAuth();
+  const { t, isHindi } = useLanguage();
 
   const profileFullName =
     healthProfile?.name ||
@@ -39,18 +42,18 @@ export default function UserDashboardLayout() {
     'User';
   const profileInitial = profileFullName.trim()[0] || 'U';
 
-  // Simplified friendly navigation labels matching exact dashboard specification
+  // Navigation labels with multilingual support
   const navItems = [
-    { label: 'Home', path: '/dashboard', icon: LayoutDashboard },
-    { label: 'My Health', path: '/dashboard/analytics', icon: LineChart },
-    { label: 'My Records', path: '/dashboard/history', icon: FolderHeart },
-    { label: 'Scan Test Strip', path: '/dashboard/urine?scan=true', icon: Camera },
-    { label: 'Urine Analysis', path: '/dashboard/urine', icon: Droplet },
-    { label: 'AI Assistant', path: '/dashboard/assistant', icon: Bot },
-    { label: 'Reports', path: '/dashboard/reports', icon: FileSpreadsheet },
-    { label: 'Doctor Connect', path: '/dashboard/consultation', icon: Video },
-    { label: 'Connected Devices', path: '/dashboard/devices', icon: Bluetooth },
-    { label: 'Settings', path: '/dashboard/settings', icon: Settings }
+    { label: t('dashboard.home', {}, 'Home'), path: '/dashboard', icon: LayoutDashboard },
+    { label: t('dashboard.myHealth', {}, 'My Health'), path: '/dashboard/analytics', icon: LineChart },
+    { label: t('dashboard.myRecords', {}, 'My Records'), path: '/dashboard/history', icon: FolderHeart },
+    { label: t('dashboard.scanStrip', {}, 'Scan Test Strip'), path: '/dashboard/urine?scan=true', icon: Camera },
+    { label: t('dashboard.urineAnalysis', {}, 'Urine Analysis'), path: '/dashboard/urine', icon: Droplet },
+    { label: t('dashboard.aiAssistant', {}, 'AI Assistant'), path: '/dashboard/assistant', icon: Bot },
+    { label: t('dashboard.reports', {}, 'Reports'), path: '/dashboard/reports', icon: FileSpreadsheet },
+    { label: t('dashboard.doctorConnect', {}, 'Doctor Connect'), path: '/dashboard/consultation', icon: Video },
+    { label: t('dashboard.connectedDevices', {}, 'Connected Devices'), path: '/dashboard/devices', icon: Bluetooth },
+    { label: t('dashboard.settings', {}, 'Settings'), path: '/dashboard/settings', icon: Settings }
   ];
 
   const handleLogout = () => {
@@ -188,6 +191,7 @@ export default function UserDashboardLayout() {
               <span className="hidden sm:inline">Bluetooth Devices</span>
             </Link>
 
+            <LanguageSwitcher compact />
             <ThemeToggle />
 
             {/* Notifications Popover */}

@@ -25,6 +25,16 @@ export const userProfileService = {
       throw new Error('A Firebase UID is required.');
     }
 
+    if (String(uid).startsWith('demo-')) {
+      return {
+        uid,
+        name: 'Alex Johnson',
+        email: 'patient@biotrajectory.health',
+        createdAt: '2024-02-01T00:00:00.000Z',
+        onboardingCompleted: true
+      };
+    }
+
     const snapshot = await getDoc(
       doc(requireDb(), 'users', uid)
     );
@@ -38,6 +48,18 @@ export const userProfileService = {
   async createIfMissing(firebaseUser) {
     if (!firebaseUser?.uid) {
       throw new Error('A valid authenticated user is required.');
+    }
+
+    if (firebaseUser.isDemo || String(firebaseUser.uid).startsWith('demo-')) {
+      return {
+        uid: firebaseUser.uid,
+        name: firebaseUser.name || firebaseUser.displayName || 'Alex Johnson',
+        email: firebaseUser.email || '',
+        photoURL: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        onboardingCompleted: true
+      };
     }
 
     const reference = doc(

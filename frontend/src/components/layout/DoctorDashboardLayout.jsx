@@ -23,8 +23,10 @@ import {
   Settings
 } from 'lucide-react';
 import { useDoctorAuth } from '../../context/DoctorAuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { formatDoctorTitle } from '../../services/doctorService';
 import ThemeToggle from '../common/ThemeToggle';
+import LanguageSwitcher from '../common/LanguageSwitcher';
 import BrandLogo from '../common/BrandLogo';
 
 export default function DoctorDashboardLayout() {
@@ -39,19 +41,20 @@ export default function DoctorDashboardLayout() {
     isPendingDoctor,
     isSuspendedDoctor
   } = useDoctorAuth();
+  const { t, isHindi } = useLanguage();
 
   const doctorNavItems = [
-    { label: 'Overview', path: '/doctor/dashboard', icon: Stethoscope },
-    { label: 'Scan Patient QR', path: '/doctor/scan-qr', icon: QrCode },
-    { label: 'My Patients', path: '/doctor/patients', icon: Users },
-    { label: 'Appointments', path: '/doctor/appointments', icon: Calendar },
-    { label: 'Video Consultation', path: '/doctor/video-consultation', icon: Video },
-    { label: 'Write Reports', path: '/doctor/reports', icon: FileText },
-    { label: 'Medical Records', path: '/doctor/medical-records', icon: FileText },
-    { label: 'Prescriptions', path: '/doctor/prescriptions', icon: Pill },
-    { label: 'Explore Diseases', path: '/doctor/explore', icon: BookOpen },
-    { label: 'My Profile', path: '/doctor/profile', icon: User },
-    { label: 'Settings', path: '/doctor/settings', icon: Settings }
+    { label: t('doctor.overview', {}, 'Overview'), path: '/doctor/dashboard', icon: Stethoscope },
+    { label: t('doctor.scanQr', {}, 'Scan Patient QR'), path: '/doctor/scan-qr', icon: QrCode },
+    { label: t('doctor.myPatients', {}, 'My Patients'), path: '/doctor/patients', icon: Users },
+    { label: t('doctor.appointments', {}, 'Appointments'), path: '/doctor/appointments', icon: Calendar },
+    { label: t('doctor.videoConsultation', {}, 'Video Consultation'), path: '/doctor/video-consultation', icon: Video },
+    { label: t('doctor.writeReports', {}, 'Write Reports'), path: '/doctor/reports', icon: FileText },
+    { label: t('doctor.medicalRecords', {}, 'Medical Records'), path: '/doctor/medical-records', icon: FileText },
+    { label: t('doctor.prescriptions', {}, 'Prescriptions'), path: '/doctor/prescriptions', icon: Pill },
+    { label: t('doctor.exploreDiseases', {}, 'Explore Diseases'), path: '/doctor/explore', icon: BookOpen },
+    { label: t('doctor.myProfile', {}, 'My Profile'), path: '/doctor/profile', icon: User },
+    { label: t('doctor.settings', {}, 'Settings'), path: '/doctor/settings', icon: Settings }
   ];
 
   const handleLogout = () => {
@@ -230,6 +233,7 @@ export default function DoctorDashboardLayout() {
           </div>
 
           <div className="flex items-center gap-4">
+            <LanguageSwitcher compact />
             <ThemeToggle />
 
             <div className="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-slate-800">

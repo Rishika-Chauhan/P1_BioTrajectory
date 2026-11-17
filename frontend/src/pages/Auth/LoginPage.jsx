@@ -18,7 +18,9 @@ import {
   Undo2
 } from 'lucide-react';
 import { useAuth, getDashboardPath, USER_ROLES } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import BrandLogo from '../../components/common/BrandLogo';
+import LanguageSwitcher from '../../components/common/LanguageSwitcher';
 import DisclaimerBanner from '../../components/common/DisclaimerBanner';
 
 export default function LoginPage() {
@@ -32,6 +34,7 @@ export default function LoginPage() {
   const [copiedKey, setCopiedKey] = useState(null);
 
   const { login, isAuthenticated, currentUser } = useAuth();
+  const { t, isHindi } = useLanguage();
   const navigate = useNavigate();
 
   // Redirect if already authenticated
@@ -142,8 +145,8 @@ export default function LoginPage() {
 
       <div className="w-full max-w-xl space-y-6 relative z-10">
         
-        {/* Single Clean Back Navigation Bar */}
-        <div className="flex items-center justify-between px-1">
+        {/* Single Clean Back Navigation Bar with Language Switcher */}
+        <div className="flex items-center justify-between px-1 gap-2">
           <button
             type="button"
             onClick={() => {
@@ -157,16 +160,19 @@ export default function LoginPage() {
             title="Go back to previous page"
           >
             <Undo2 className="w-4 h-4 text-cyan-600 dark:text-cyan-400 group-hover:-translate-x-0.5 transition-transform" />
-            <span>Back to Previous Page</span>
+            <span>{t('nav.backToPrevious', {}, 'Back to Previous Page')}</span>
           </button>
 
-          <Link
-            to="/"
-            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
-          >
-            <span>Home</span>
-            <ChevronRight className="w-4 h-4" />
-          </Link>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher compact />
+            <Link
+              to="/"
+              className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+            >
+              <span>{t('nav.home', {}, 'Home')}</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
 
         {/* Brand Header */}
@@ -175,10 +181,10 @@ export default function LoginPage() {
             <BrandLogo size="lg" />
           </div>
           <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white">
-            Sign In to BioTrajectory
+            {t('auth.signInTitle', {}, 'Sign In to BioTrajectory')}
           </h1>
           <p className="text-sm text-slate-600 dark:text-slate-400">
-            One unified login for patients, physicians, and platform administrators.
+            {t('auth.signInSubtitle', {}, 'One unified login for patients, physicians, and platform administrators.')}
           </p>
         </div>
 
@@ -190,11 +196,11 @@ export default function LoginPage() {
                 <Sparkles className="w-4 h-4" />
               </div>
               <span className="text-xs font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-300">
-                Instant Demo Logins
+                {t('auth.instantDemoTitle', {}, 'Instant Demo Logins')}
               </span>
             </div>
             <span className="text-[11px] text-slate-500 dark:text-slate-400">
-              Click to autofill or sign in
+              {isHindi ? 'त्वरित प्रवेश के लिए क्लिक करें' : 'Click to autofill or sign in'}
             </span>
           </div>
 
@@ -207,7 +213,7 @@ export default function LoginPage() {
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-700 dark:text-purple-300">
-                    <ShieldCheck className="w-3 h-3" /> Admin
+                    <ShieldCheck className="w-3 h-3" /> {t('auth.demoAdminRole', {}, 'Admin')}
                   </span>
                   <button
                     type="button"
@@ -237,7 +243,7 @@ export default function LoginPage() {
                 }}
                 className="mt-2.5 w-full py-1.5 px-2 rounded-xl text-[11px] font-bold bg-purple-600 hover:bg-purple-500 text-white transition-all shadow-sm flex items-center justify-center gap-1 cursor-pointer"
               >
-                <span>Login Admin</span>
+                <span>{t('auth.demoAdminBtn', {}, 'Login Admin')}</span>
                 <ChevronRight className="w-3 h-3" />
               </button>
             </div>
@@ -250,7 +256,7 @@ export default function LoginPage() {
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-500/20 text-teal-700 dark:text-teal-300">
-                    <Stethoscope className="w-3 h-3" /> Doctor
+                    <Stethoscope className="w-3 h-3" /> {t('auth.demoDoctorRole', {}, 'Doctor')}
                   </span>
                   <button
                     type="button"
@@ -280,7 +286,7 @@ export default function LoginPage() {
                 }}
                 className="mt-2.5 w-full py-1.5 px-2 rounded-xl text-[11px] font-bold bg-teal-600 hover:bg-teal-500 text-white transition-all shadow-sm flex items-center justify-center gap-1 cursor-pointer"
               >
-                <span>Login Doctor</span>
+                <span>{t('auth.demoDoctorBtn', {}, 'Login Doctor')}</span>
                 <ChevronRight className="w-3 h-3" />
               </button>
             </div>
@@ -293,7 +299,7 @@ export default function LoginPage() {
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/20 text-cyan-700 dark:text-cyan-300">
-                    <User className="w-3 h-3" /> Patient
+                    <User className="w-3 h-3" /> {t('auth.demoPatientRole', {}, 'Patient')}
                   </span>
                   <button
                     type="button"
@@ -323,7 +329,7 @@ export default function LoginPage() {
                 }}
                 className="mt-2.5 w-full py-1.5 px-2 rounded-xl text-[11px] font-bold bg-cyan-600 hover:bg-cyan-500 text-white transition-all shadow-sm flex items-center justify-center gap-1 cursor-pointer"
               >
-                <span>Login Patient</span>
+                <span>{t('auth.demoPatientBtn', {}, 'Login Patient')}</span>
                 <ChevronRight className="w-3 h-3" />
               </button>
             </div>
@@ -350,7 +356,7 @@ export default function LoginPage() {
             {/* Email Field */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Email Address
+                {t('auth.emailLabel', {}, 'Email Address')}
               </label>
               <div className="relative">
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -369,13 +375,13 @@ export default function LoginPage() {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Password
+                  {t('auth.passwordLabel', {}, 'Password')}
                 </label>
                 <Link
                   to="/forgot-password"
                   className="text-xs text-cyan-600 dark:text-cyan-400 hover:underline font-medium"
                 >
-                  Forgot password?
+                  {t('auth.forgotPassword', {}, 'Forgot password?')}
                 </Link>
               </div>
               <div className="relative">
@@ -408,7 +414,7 @@ export default function LoginPage() {
                 className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-cyan-500 focus:ring-cyan-400 focus:ring-offset-0"
               />
               <label htmlFor="rememberMe" className="ml-2 text-xs text-slate-600 dark:text-slate-400">
-                Remember this device for 30 days
+                {t('auth.rememberMe', {}, 'Remember this device for 30 days')}
               </label>
             </div>
 
@@ -418,7 +424,7 @@ export default function LoginPage() {
               disabled={isLoading}
               className="w-full py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 transition-all shadow-md shadow-cyan-500/20 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
             >
-              <span>{isLoading ? 'Authenticating & Verifying Claims...' : 'Login'}</span>
+              <span>{isLoading ? t('auth.authenticating', {}, 'Authenticating & Verifying Claims...') : t('nav.login', {}, 'Login')}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
 

@@ -25,6 +25,93 @@ export const USER_ROLES = ROLES;
 
 const ALLOWED_ROLES = new Set(Object.values(USER_ROLES));
 
+export const DEMO_STORAGE_KEY = 'biotrajectory_demo_user';
+
+export const getDemoHealthProfile = () => ({
+  name: 'Alex Johnson',
+  age: 34,
+  gender: 'male',
+  bloodGroup: 'O+',
+  height: 178,
+  weight: 72,
+  allergies: ['Penicillin'],
+  conditions: ['Mild Hypertension (Monitored)'],
+  emergencyContact: {
+    name: 'Emily Johnson',
+    relationship: 'Spouse',
+    phone: '+1 (555) 987-6543'
+  },
+  consent: {
+    storeAndProcessHealthData: true,
+    nonDiagnosticScopeAcknowledged: true
+  },
+  onboardingCompleted: true
+});
+
+export const DEMO_ACCOUNTS = {
+  'admin@biotrajectory.health': {
+    uid: 'demo-admin-uid-001',
+    id: 'demo-admin-uid-001',
+    email: 'admin@biotrajectory.health',
+    password: 'admin123',
+    name: 'System Administrator',
+    displayName: 'System Administrator',
+    role: USER_ROLES.ADMIN,
+    emailVerified: true,
+    claims: { role: USER_ROLES.ADMIN },
+    joinedDate: '2024-01-01',
+    isDemo: true
+  },
+  'doctor@biotrajectory.health': {
+    uid: 'demo-doctor-uid-002',
+    id: 'demo-doctor-uid-002',
+    email: 'doctor@biotrajectory.health',
+    password: 'doctor123',
+    name: 'Dr. Sarah Mitchell, MD',
+    displayName: 'Dr. Sarah Mitchell, MD',
+    role: USER_ROLES.DOCTOR,
+    emailVerified: true,
+    claims: { role: USER_ROLES.DOCTOR },
+    joinedDate: '2024-01-15',
+    isDemo: true
+  },
+  'doctor.pending@biotrajectory.health': {
+    uid: 'demo-doctor-pending-004',
+    id: 'demo-doctor-pending-004',
+    email: 'doctor.pending@biotrajectory.health',
+    password: 'doctor123',
+    name: 'Dr. Robert Chen, MD',
+    displayName: 'Dr. Robert Chen, MD',
+    role: USER_ROLES.DOCTOR_PENDING,
+    emailVerified: true,
+    claims: { role: USER_ROLES.DOCTOR_PENDING },
+    joinedDate: '2024-03-01',
+    isDemo: true
+  },
+  'patient@biotrajectory.health': {
+    uid: 'demo-patient-uid-003',
+    id: 'demo-patient-uid-003',
+    email: 'patient@biotrajectory.health',
+    password: 'patient123',
+    name: 'Alex Johnson',
+    displayName: 'Alex Johnson',
+    role: USER_ROLES.USER,
+    emailVerified: true,
+    claims: { role: USER_ROLES.USER },
+    joinedDate: '2024-02-01',
+    isDemo: true
+  }
+};
+
+export function getStoredDemoUser() {
+  try {
+    const raw = localStorage.getItem(DEMO_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 export const getDashboardPath = (role) => {
   switch (role) {
     case USER_ROLES.ADMIN:
@@ -84,14 +171,18 @@ const getEmptyHealthProfile = () => ({
 });
 
 export function AuthProvider({ children }) {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const initialDemoUser = getStoredDemoUser();
+  const [currentUser, setCurrentUser] = useState(initialDemoUser);
+  const [isAuthLoading, setIsAuthLoading] = useState(!initialDemoUser);
   const [authError, setAuthError] = useState(null);
-  const [tokenClaims, setTokenClaims] = useState(null);
+  const [tokenClaims, setTokenClaims] = useState(initialDemoUser?.claims || null);
 
-  const [healthProfile, setHealthProfile] = useState(
-    getEmptyHealthProfile
-  );
+  const [healthProfile, setHealthProfile] = useState(() => {
+    if (initialDemoUser?.role === USER_ROLES.USER) {
+      return getDemoHealthProfile();
+    }
+    return getEmptyHealthProfile();
+  });
 
   const loadUserProfiles = async (firebaseUser) => {
     const basicProfile =
@@ -118,6 +209,13 @@ export function AuthProvider({ children }) {
       unsubscribe = FirebaseService.onAuthStateChanged(
         async (firebaseUser) => {
           if (!active) return;
+
+          // If a demo user session is currently active, preserve it
+          const storedDemo = getStoredDemoUser();
+          if (storedDemo && !firebaseUser) {
+            setIsAuthLoading(false);
+            return;
+          }
 
           if (!firebaseUser) {
             setCurrentUser(null);
@@ -208,6 +306,31 @@ export function AuthProvider({ children }) {
     try {
       if (!email?.trim() || !password) {
         throw new Error('Please enter your email and password.');
+      }
+
+      const cleanEmail = email.trim().toLowerCase();
+      const demoAccount = DEMO_ACCOUNTS[cleanEmail];
+
+      if (demoAccount) {
+        if (password !== demoAccount.password) {
+          throw new Error('Invalid email or password.');
+        }
+
+        const appUser = { ...demoAccount };
+        localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(appUser));
+        setCurrentUser(appUser);
+        setTokenClaims(appUser.claims);
+
+        if (appUser.role === USER_ROLES.USER) {
+          const demoHealth = getDemoHealthProfile();
+          setHealthProfile(demoHealth);
+          trajectoryStorage.saveHealthProfile(demoHealth);
+        } else {
+          setHealthProfile(getEmptyHealthProfile());
+        }
+
+        setIsAuthLoading(false);
+        return appUser;
       }
 
       const firebaseUser = await FirebaseService.signInWithEmail(
@@ -321,7 +444,8 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      await FirebaseService.signOut();
+      localStorage.removeItem(DEMO_STORAGE_KEY);
+      await FirebaseService.signOut().catch(() => {});
 
       setCurrentUser(null);
       setTokenClaims(null);

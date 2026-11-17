@@ -265,6 +265,66 @@ export const healthReadingService = {
       throw new Error('Limit must be between 1 and 100.');
     }
 
+    if (String(uid).startsWith('demo-')) {
+      const stored = localStorage.getItem('bt_demo_user_readings');
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch {
+          // ignore
+        }
+      }
+      return [
+        {
+          id: 'demo-bp-01',
+          type: 'blood_pressure',
+          values: { systolic: 118, diastolic: 78, pulse: 72 },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 3600000).toISOString(),
+          notes: 'Resting morning blood pressure reading'
+        },
+        {
+          id: 'demo-hr-01',
+          type: 'heart_rate',
+          values: { bpm: 72 },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 3600000).toISOString(),
+          notes: 'Resting pulse rate'
+        },
+        {
+          id: 'demo-spo2-01',
+          type: 'oxygen_saturation',
+          values: { spo2: 99 },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 7200000).toISOString(),
+          notes: 'Pulse oximeter reading'
+        },
+        {
+          id: 'demo-act-01',
+          type: 'activity',
+          values: { steps: 8420, distanceKm: 6.2, exerciseMinutes: 45 },
+          source: 'manual',
+          measuredAt: new Date().toISOString(),
+          notes: 'Daily pedometer step count'
+        },
+        {
+          id: 'demo-urine-01',
+          type: 'urine_test',
+          values: {
+            protein: 'Negative',
+            proteinMgDl: 0,
+            ph: 6.5,
+            glucose: 'Negative',
+            nitrites: 'Negative',
+            specificGravity: 1.015
+          },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 86400000).toISOString(),
+          notes: 'Biomarker reagent test strip scan'
+        }
+      ];
+    }
+
     const readingsQuery = query(
       getReadingsCollection(uid),
       orderBy('measuredAt', 'desc'),

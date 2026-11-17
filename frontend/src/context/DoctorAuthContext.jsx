@@ -22,6 +22,51 @@ const VALID_DOCTOR_ROLES = new Set(
   Object.values(DOCTOR_ROLES)
 );
 
+export const DEMO_DOCTOR_DATA = {
+  'demo-doctor-uid-002': {
+    id: 'demo-doctor-uid-002',
+    uid: 'demo-doctor-uid-002',
+    name: 'Dr. Sarah Mitchell, MD',
+    fullName: 'Sarah Mitchell',
+    email: 'doctor@biotrajectory.health',
+    phone: '+1 (555) 234-5678',
+    registrationNumber: 'MD-89241-US',
+    specialization: 'Cardiology & Preventive Medicine',
+    qualification: 'MD, FACP (Harvard Medical School)',
+    issuingCouncil: 'American Board of Internal Medicine (ABIM)',
+    clinic: 'BioTrajectory Clinical Research Center',
+    clinicName: 'BioTrajectory Clinical Research Center',
+    role: 'DOCTOR',
+    avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=250&q=80',
+    joinedDate: '2024-01-15',
+    bio: 'Cardiologist with 12+ years experience in cardiovascular health monitoring and metabolic health trajectories.',
+    consultationFee: '$120 / session',
+    applicationStatus: 'APPROVED',
+    applicationNote: 'Verified credentials and license in good standing.'
+  },
+  'demo-doctor-pending-004': {
+    id: 'demo-doctor-pending-004',
+    uid: 'demo-doctor-pending-004',
+    name: 'Dr. Robert Chen, MD',
+    fullName: 'Robert Chen',
+    email: 'doctor.pending@biotrajectory.health',
+    phone: '+1 (555) 345-6789',
+    registrationNumber: 'MCI-99214-B',
+    specialization: 'Neurology & Cognitive Health',
+    qualification: 'MD, DM Neurology (Johns Hopkins)',
+    issuingCouncil: 'Medical Council of India / ABMS',
+    clinic: 'Metro Neurology Center',
+    clinicName: 'Metro Neurology Center',
+    role: 'DOCTOR_PENDING',
+    avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=250&q=80',
+    joinedDate: '2024-03-01',
+    bio: 'Neurologist specializing in stroke recovery and neuro-rehabilitation.',
+    consultationFee: '$110 / session',
+    applicationStatus: 'PENDING',
+    applicationNote: 'Submitted application. Pending administrator review.'
+  }
+};
+
 function cleanDoctorName(value) {
   return String(value || '')
     .replace(/^(?:(Dr\.?|Doctor)\s*)+/gi, '')
@@ -121,6 +166,16 @@ export function DoctorAuthProvider({ children }) {
 
       setLoadingDoctor(true);
       setAuthError(null);
+
+      if (user.isDemo || DEMO_DOCTOR_DATA[user.uid] || user.email?.includes('doctor@biotrajectory.health') || user.email?.includes('doctor.pending@biotrajectory.health')) {
+        const demoDoctor = DEMO_DOCTOR_DATA[user.uid] || {
+          ...buildDoctorFromUser(user),
+          applicationStatus: user.role === 'DOCTOR' ? 'APPROVED' : 'PENDING'
+        };
+        setCurrentDoctor(demoDoctor);
+        setLoadingDoctor(false);
+        return demoDoctor;
+      }
 
       try {
         let application = null;

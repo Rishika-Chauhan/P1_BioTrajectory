@@ -12,6 +12,8 @@ import {
   Undo2
 } from 'lucide-react';
 import { useDoctorAuth } from '../../context/DoctorAuthContext';
+import { useLanguage } from '../../context/LanguageContext';
+import LanguageSwitcher from '../../components/common/LanguageSwitcher';
 
 export default function DoctorLoginPage() {
   const [email, setEmail] = useState('');
@@ -22,6 +24,7 @@ export default function DoctorLoginPage() {
   
   const navigate = useNavigate();
   const { loginDoctor } = useDoctorAuth();
+  const { t, isHindi } = useLanguage();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -70,15 +73,18 @@ export default function DoctorLoginPage() {
           title="Undo and return to previous page"
         >
           <Undo2 className="w-4 h-4 text-cyan-600 dark:text-cyan-400 group-hover:-rotate-45 transition-transform" />
-          <span>Back to Previous Page</span>
+          <span>{t('nav.backToPrevious', {}, 'Back to Previous Page')}</span>
         </button>
 
-        <Link
-          to="/"
-          className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
-        >
-          Home
-        </Link>
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher compact />
+          <Link
+            to="/"
+            className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+          >
+            {t('nav.home', {}, 'Home')}
+          </Link>
+        </div>
       </div>
 
       {/* Brand Header */}
@@ -88,10 +94,10 @@ export default function DoctorLoginPage() {
         </div>
 
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-          Doctor Clinical Portal
+          {t('doctor.portalTitle', {}, 'Doctor Clinical Portal')}
         </h1>
         <p className="text-[17px] text-slate-600 dark:text-slate-400 max-w-md mx-auto">
-          Secure, verified access for licensed medical practitioners to consult and review patient vitals.
+          {t('doctor.portalSubtitle', {}, 'Secure, verified access for licensed medical practitioners to consult and review patient vitals.')}
         </p>
       </div>
 
@@ -160,7 +166,7 @@ export default function DoctorLoginPage() {
             disabled={loading}
             className="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-[18px] transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
           >
-            <span>{loading ? 'Authenticating...' : 'Sign In as Doctor'}</span>
+            <span>{loading ? (isHindi ? 'सत्यापन जारी है...' : 'Authenticating...') : t('doctor.signInDoctor', {}, 'Sign In as Doctor')}</span>
             <ArrowRight className="w-5 h-5" />
           </button>
         </form>
@@ -168,7 +174,7 @@ export default function DoctorLoginPage() {
         {/* Demo Doctor Quick Sign In Options */}
         <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
           <p className="text-xs font-bold uppercase tracking-wider text-slate-400 text-center">
-            Development & Clinical Demo Testing
+            {isHindi ? 'विकास एवं क्लिनिकल डेमो परीक्षण' : 'Development & Clinical Demo Testing'}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
@@ -177,7 +183,7 @@ export default function DoctorLoginPage() {
               className="py-3 px-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-bold text-[15px] hover:bg-emerald-500/20 transition-colors flex items-center justify-center gap-2 cursor-pointer"
             >
               <ShieldCheck className="w-4 h-4" />
-              <span>Login as Verified MD</span>
+              <span>{t('doctor.verifiedDoctorDemo', {}, 'Login as Verified MD')}</span>
             </button>
             <button
               type="button"
@@ -185,7 +191,7 @@ export default function DoctorLoginPage() {
               className="py-3 px-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 font-bold text-[15px] hover:bg-amber-500/20 transition-colors flex items-center justify-center gap-2 cursor-pointer"
             >
               <AlertTriangle className="w-4 h-4" />
-              <span>Login as Pending MD</span>
+              <span>{t('doctor.pendingDoctorDemo', {}, 'Login as Pending MD')}</span>
             </button>
           </div>
           <p className="text-center text-xs text-slate-500 dark:text-slate-400 font-mono">

@@ -3,11 +3,14 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, X, ArrowRight, User, LogOut } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import BrandLogo from './BrandLogo';
+import LanguageSwitcher from './LanguageSwitcher';
 import { useAuth, getDashboardPath } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { currentUser, isAuthenticated, logout } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -23,12 +26,18 @@ export default function Navbar() {
     return location.pathname.startsWith(path);
   };
 
+  const navLinks = [
+    { label: t('nav.home', {}, 'Home'), path: '/' },
+    { label: t('nav.explore', {}, 'Explore'), path: '/explore' },
+    { label: t('nav.about', {}, 'About'), path: '/about' }
+  ];
+
   return (
     <nav className="sticky top-0 z-50 w-full backdrop-blur-2xl border-b transition-colors duration-300 border-slate-200/70 dark:border-slate-800/70 bg-[#F5F8FC]/80 dark:bg-[#070B14]/85">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           
-          {/* Theme-Adaptive High Clarity Brand Logo */}
+          {/* Brand Logo */}
           <BrandLogo
             size="sm"
             onClick={() => {
@@ -38,13 +47,9 @@ export default function Navbar() {
             }}
           />
 
-          {/* Desktop Navigation Links — Strictly Home, Explore, About */}
+          {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center gap-7">
-            {[
-              { label: 'Home', path: '/' },
-              { label: 'Explore', path: '/explore' },
-              { label: 'About', path: '/about' }
-            ].map((item) => {
+            {navLinks.map((item) => {
               const active = isActive(item.path);
               return (
                 <Link
@@ -70,8 +75,9 @@ export default function Navbar() {
             })}
           </div>
 
-          {/* Right Action Controls */}
+          {/* Right Action Controls: Language Switcher + Theme Toggle + User Actions */}
           <div className="hidden md:flex items-center gap-3">
+            <LanguageSwitcher />
             <ThemeToggle />
 
             {isAuthenticated ? (
@@ -81,12 +87,12 @@ export default function Navbar() {
                   className="flex items-center gap-2 px-4 py-2 text-[14px] font-bold rounded-xl bg-cyan-500/15 border border-cyan-500/35 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/25 transition-all shadow-xs cursor-pointer"
                 >
                   <User className="w-4 h-4 text-cyan-500" />
-                  Dashboard
+                  <span>{t('nav.dashboard', {}, 'Dashboard')}</span>
                 </Link>
 
                 <button
                   onClick={handleLogout}
-                  title="Sign out"
+                  title={t('nav.signOut', {}, 'Sign Out')}
                   className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all cursor-pointer active:scale-95"
                 >
                   <LogOut className="w-4 h-4" />
@@ -98,21 +104,22 @@ export default function Navbar() {
                   to="/login"
                   className="px-4 py-2 text-[14px] font-semibold text-slate-700 dark:text-slate-200 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
                 >
-                  Login
+                  {t('nav.login', {}, 'Login')}
                 </Link>
                 <Link
                   to="/register"
                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[14px] font-bold text-slate-950 bg-gradient-to-r from-cyan-400 via-cyan-300 to-blue-500 hover:from-cyan-300 hover:to-blue-400 transition-all shadow-sm active:scale-95"
                 >
-                  <span>Get Started</span>
+                  <span>{t('nav.getStarted', {}, 'Get Started')}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="flex items-center gap-3 md:hidden">
+          {/* Mobile Right Controls: Compact Language + Theme + Menu Toggle */}
+          <div className="flex items-center gap-2 md:hidden">
+            <LanguageSwitcher compact />
             <ThemeToggle />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -128,12 +135,12 @@ export default function Navbar() {
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden border-b border-slate-200 dark:border-slate-800 bg-[#F5F8FC]/95 dark:bg-[#070B14]/95 backdrop-blur-xl px-5 pt-4 pb-6 space-y-4">
+          <div className="flex justify-center pb-2 border-b border-slate-200/60 dark:border-slate-800/60">
+            <LanguageSwitcher />
+          </div>
+
           <div className="flex flex-col space-y-2">
-            {[
-              { label: 'Home', path: '/' },
-              { label: 'Explore', path: '/explore' },
-              { label: 'About', path: '/about' }
-            ].map((item) => (
+            {navLinks.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
@@ -162,7 +169,7 @@ export default function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full text-center py-3 px-4 rounded-xl text-[16px] font-bold bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30"
                 >
-                  Go to Dashboard
+                  {t('nav.dashboard', {}, 'Go to Dashboard')}
                 </Link>
                 <button
                   onClick={() => {
@@ -171,7 +178,7 @@ export default function Navbar() {
                   }}
                   className="w-full text-center py-2.5 px-4 rounded-xl text-[15px] font-semibold text-red-500 hover:bg-red-500/10 cursor-pointer"
                 >
-                  Log Out
+                  {t('nav.signOut', {}, 'Log Out')}
                 </button>
               </>
             ) : (
@@ -181,14 +188,14 @@ export default function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                   className="text-center py-3 px-4 rounded-xl text-[16px] font-semibold border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200"
                 >
-                  Login
+                  {t('nav.login', {}, 'Login')}
                 </Link>
                 <Link
                   to="/register"
                   onClick={() => setMobileMenuOpen(false)}
                   className="text-center py-3 px-4 rounded-xl text-[16px] font-bold bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950"
                 >
-                  Get Started
+                  {t('nav.getStarted', {}, 'Get Started')}
                 </Link>
               </div>
             )}
