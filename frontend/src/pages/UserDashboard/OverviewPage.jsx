@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { healthReadingService } from '../../services/healthReadingService';
 import DisclaimerBanner from '../../components/common/DisclaimerBanner';
 
@@ -140,6 +141,7 @@ const mapReadingsToVitals = (readings) => {
 
 export default function OverviewPage() {
   const { currentUser } = useAuth();
+  const { t, isHindi } = useLanguage();
 
   const [readings, setReadings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -222,17 +224,17 @@ export default function OverviewPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-              Welcome back, {firstName}
+              {isHindi ? 'पुनः स्वागत है,' : 'Welcome back,'} {firstName}
             </h1>
 
             <span className="text-[13px] font-bold px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-500/25">
-              Health Dashboard
+              {isHindi ? 'स्वास्थ्य डैशबोर्ड' : 'Health Dashboard'}
             </span>
           </div>
 
           <p className="text-[16px] text-slate-600 dark:text-slate-400">
-            Today is{' '}
-            {new Date().toLocaleDateString('en-US', {
+            {isHindi ? 'आज है ' : 'Today is '}
+            {new Date().toLocaleDateString(isHindi ? 'hi-IN' : 'en-US', {
               weekday: 'long',
               month: 'long',
               day: 'numeric',
@@ -248,7 +250,7 @@ export default function OverviewPage() {
             className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl text-[15px] font-bold bg-cyan-500/15 text-cyan-500 dark:text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/25 transition-all"
           >
             <Bluetooth className="w-5 h-5" />
-            <span>Connected Devices</span>
+            <span>{isHindi ? 'कनेक्टेड डिवाइसेस' : 'Connected Devices'}</span>
           </Link>
 
           <Link
@@ -256,7 +258,7 @@ export default function OverviewPage() {
             className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-[15px] font-bold bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 hover:from-cyan-300 hover:to-blue-400 transition-all shadow-md shadow-cyan-500/20"
           >
             <Plus className="w-5 h-5" />
-            <span>Add Today's Reading</span>
+            <span>{isHindi ? 'आज की रीडिंग जोड़ें' : "Add Today's Reading"}</span>
           </Link>
 
           <Link
@@ -293,21 +295,22 @@ export default function OverviewPage() {
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2.5">
               <h3 className="font-extrabold text-[17px] text-slate-900 dark:text-white">
-                Health Data Overview
+                {isHindi ? 'स्वास्थ्य डेटा अवलोकन' : 'Health Data Overview'}
               </h3>
 
               <span className="text-[12px] px-2.5 py-0.5 rounded-full bg-slate-500/10 text-slate-500 dark:text-slate-400 font-bold border border-slate-500/30">
                 {isLoading
-                  ? 'Loading'
+                  ? (isHindi ? 'लोड हो रहा है' : 'Loading')
                   : error
-                    ? 'Unavailable'
-                    : `${readings.length} Recorded`}
+                    ? (isHindi ? 'अनुपलब्ध' : 'Unavailable')
+                    : `${readings.length} ${isHindi ? 'रिकॉर्ड्स' : 'Recorded'}`}
               </span>
             </div>
 
             <p className="text-[14px] text-slate-600 dark:text-slate-400">
-              Measurements displayed here are retrieved from your
-              Firestore health records.
+              {isHindi
+                ? 'यहां प्रदर्शित माप आपके सुरक्षित स्वास्थ्य रिकॉर्ड्स से प्राप्त किए गए हैं।'
+                : 'Measurements displayed here are retrieved from your Firestore health records.'}
             </p>
           </div>
         </div>
@@ -316,7 +319,7 @@ export default function OverviewPage() {
           <button
             onClick={() => loadReadings(true)}
             disabled={isLoading || isRefreshing}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[14px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/35 hover:bg-cyan-500/30 transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[14px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/35 hover:bg-cyan-500/30 transition-all disabled:opacity-50 cursor-pointer"
           >
             <RefreshCw
               className={`w-4 h-4 ${
@@ -324,7 +327,9 @@ export default function OverviewPage() {
               }`}
             />
             <span>
-              {isRefreshing ? 'Refreshing...' : 'Refresh Readings'}
+              {isRefreshing
+                ? (isHindi ? 'रीफ्रेश हो रहा है...' : 'Refreshing...')
+                : (isHindi ? 'रीडिंग्स रीफ्रेश करें' : 'Refresh Readings')}
             </span>
           </button>
 

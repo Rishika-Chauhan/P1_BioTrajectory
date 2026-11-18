@@ -172,8 +172,10 @@ export const translations = {
       verifiedDoctorDemo: 'Login as Verified MD',
       pendingDoctorDemo: 'Login as Pending MD',
       doctorDashboard: 'Doctor Workspace',
+      clinicalWorkspace: 'Clinical Workspace',
       overview: 'Overview',
       myPatients: 'My Patients',
+      authorizedPatients: 'Authorized Patients',
       appointments: 'Appointments',
       videoConsultation: 'Video Consultation',
       writeReports: 'Write Reports',
@@ -188,12 +190,31 @@ export const translations = {
       pendingReviews: 'Pending Consultations',
       verifiedStatus: 'Verified Licensed Physician',
       pendingStatus: 'Verification Pending Review',
-      suspendedStatus: 'Clinical Access Suspended'
+      suspendedStatus: 'Clinical Access Suspended',
+      welcomeBack: 'Welcome back,',
+      practicePortal: 'Doctor Practice Portal',
+      verifiedPractitioner: 'Verified Practitioner',
+      upcomingVideo: 'Upcoming Accepted Video Appointments',
+      patientDirectory: 'Doctor Practice Directory',
+      patientVaultsDesc: 'Patient health vaults accessible through direct consultation consent or QR authorization.',
+      authorizeNewPatient: 'Authorize New Patient (Scan QR)',
+      searchPatientsPlaceholder: 'Search by patient name, condition, or phone...',
+      filterAll: 'All Patients',
+      filterRecent: 'Recent Visits',
+      filterUpcoming: 'Upcoming Follow-ups',
+      filterActive: 'Active Care',
+      noPatientsFound: 'No patients found matching your search.',
+      viewVault: 'Open Health Vault',
+      patientDashboardLink: 'Patient Dashboard',
+      signOut: 'Sign Out',
+      status: 'Status:'
     },
 
     // ---------------- ADMIN DASHBOARD ----------------
     admin: {
       portalTitle: 'BioTrajectory Administrator Control',
+      adminManagement: 'Admin Management',
+      systemAdminBadge: 'System Admin',
       overview: 'Overview',
       userAccounts: 'User Accounts',
       permissions: 'Role Permissions',
@@ -205,13 +226,18 @@ export const translations = {
       systemStats: 'System Stats',
       userFeedback: 'User Feedback',
       securitySettings: 'Security Settings',
-      privateRecordsTag: 'Private Health Records: Administrators cannot view private patient medical readings.',
+      privateRecordsTag: 'Private Health Records',
+      privateRecordsDesc: 'Administrators cannot view private patient medical readings.',
       totalUsers: 'Total User Accounts',
       approvedDoctors: 'Approved Physicians',
       pendingApplications: 'Pending Doctor Applications',
       systemUptime: 'System Uptime Status',
       approveBtn: 'Approve Application',
-      rejectBtn: 'Reject Application'
+      rejectBtn: 'Reject Application',
+      searchUsersPlaceholder: 'Search by name, email, or UID...',
+      allRoles: 'All Roles',
+      goToUserDashboard: 'Go to User Dashboard',
+      signOut: 'Sign Out'
     },
 
     // ---------------- PATIENT DASHBOARD ----------------
@@ -225,7 +251,7 @@ export const translations = {
       reports: 'Daily Reports',
       doctorConnect: 'Doctor Consultation',
       connectedDevices: 'Connected Devices',
-      settings: 'Account Settings',
+      settings: 'Settings',
       vitalsOverview: 'Current Vital Measurements',
       bloodPressure: 'Blood Pressure',
       heartRate: 'Heart Rate',
@@ -238,6 +264,93 @@ export const translations = {
       elevatedNotice: 'Consult your physician if readings consistently exceed target thresholds.',
       addMeasurement: 'Add New Reading',
       viewFullHistory: 'View Full History'
+    },
+
+    // ---------------- ANALYTICS & CHARTS ----------------
+    analytics: {
+      title: 'Health Analytics & Vital Trends',
+      subtitle: 'Longitudinal biomarker tracking with clinical normal lines and danger thresholds.',
+      timeRanges: {
+        '7D': '7 Days',
+        '30D': '30 Days',
+        '90D': '90 Days',
+        'All': 'All Time'
+      },
+      metricTabs: {
+        all: 'All Vitals',
+        bp: 'Blood Pressure',
+        hr: 'Heart Rate',
+        spo2: 'Blood Oxygen (SpO2)',
+        steps: 'Daily Activity / Steps',
+        glucose: 'Blood Glucose'
+      },
+      latestBP: 'Latest Blood Pressure',
+      latestHR: 'Latest Heart Rate',
+      latestSpO2: 'Latest Blood Oxygen',
+      latestSteps: 'Daily Steps',
+      recentTrend: 'Vital Sign Trajectory & Threshold Analysis',
+      refresh: 'Refresh Data',
+      normalLine: 'Normal Limit',
+      warningLine: 'Warning Level',
+      dangerLine: 'Danger Level',
+      dailyTarget: 'Daily Goal',
+      systolic: 'Systolic BP',
+      diastolic: 'Diastolic BP',
+      allNormalTitle: 'All Vitals Within Normal Range',
+      allNormalDesc: 'Your recent physiological measurements are safely within established clinical baselines.',
+      warningAlertTitle: 'Elevation Warning Alert',
+      dangerAlertTitle: 'Critical Threshold Alert',
+      recommendConsult: 'Please rest, log again in 30 minutes, or consult your attending physician if elevated numbers persist.'
+    },
+
+    // ---------------- MEDICAL RECORDS ----------------
+    records: {
+      title: 'My Medical Records & Test Library',
+      subtitle: 'Complete repository for blood pressure, heart rate, oxygen, activity, urine tests, blood tests, and uploaded clinical files.',
+      searchPlaceholder: 'Search tests, values, doctors, lab notes, or diagnoses...',
+      uploadBtn: 'Upload Medical Record',
+      categories: {
+        all: 'All Records',
+        blood_pressure: 'Blood Pressure',
+        heart_rate: 'Heart Rate',
+        oxygen_saturation: 'Blood Oxygen (SpO2)',
+        activity: 'Activity & Steps',
+        urine_test: 'Urine Test Strip',
+        blood_test: 'Blood Test / Lab',
+        document: 'Uploaded Documents / Scans'
+      },
+      detailsModalTitle: 'Medical Record Clinical Details',
+      closeBtn: 'Close',
+      recordedAt: 'Recorded On',
+      sourceLabel: 'Measurement Source',
+      notesLabel: 'Clinical Notes',
+      normalRangeLabel: 'Standard Reference Range',
+      interpretation: 'Status Assessment',
+      uploadModalTitle: 'Upload New Medical Record',
+      recordTypeLabel: 'Record Category',
+      recordTitleLabel: 'Record / Test Name',
+      recordDateLabel: 'Date of Examination',
+      doctorClinicLabel: 'Doctor / Laboratory / Clinic',
+      valuesLabel: 'Diagnostic Result Values',
+      notesPlaceholder: 'Enter any clinician remarks or personal symptoms...',
+      fileUploadLabel: 'Attach Report Document or Image (Optional)',
+      saveRecordBtn: 'Save to Health Records',
+      successUploaded: 'Medical record uploaded and securely stored.'
+    },
+
+    // ---------------- PROFILE & SETTINGS ----------------
+    profile: {
+      title: 'Health Profile & Identity',
+      subtitle: 'Manage your patient emergency ID, connected devices, and display settings.',
+      accountSettingsBtn: 'Account Settings',
+      profileDetails: 'Profile Details',
+      connectedDevices: 'Connected Health Devices',
+      themeSetting: 'Theme & Appearance',
+      languageSetting: 'Language / भाषा',
+      medicalIdCard: 'Emergency Digital Medical ID',
+      bloodGroup: 'Blood Group',
+      emergencyContact: 'Emergency Contact',
+      allergies: 'Known Allergies'
     }
   },
 
@@ -409,8 +522,10 @@ export const translations = {
       verifiedDoctorDemo: 'सत्यापित डॉक्टर के रूप में लॉगिन',
       pendingDoctorDemo: 'समीक्षाधीन डॉक्टर के रूप में लॉगिन',
       doctorDashboard: 'डॉक्टर कार्यक्षेत्र',
+      clinicalWorkspace: 'क्लिनिकल कार्यक्षेत्र',
       overview: 'अवलोकन',
       myPatients: 'मेरे मरीज (My Patients)',
+      authorizedPatients: 'अधिकृत मरीज',
       appointments: 'नियुक्तियां (Appointments)',
       videoConsultation: 'वीडियो परामर्श',
       writeReports: 'रिपोर्ट लिखें',
@@ -425,12 +540,31 @@ export const translations = {
       pendingReviews: 'लंबित परामर्श',
       verifiedStatus: 'सत्यापित लाइसेंस प्राप्त चिकित्सक',
       pendingStatus: 'सत्यापन समीक्षाधीन है',
-      suspendedStatus: 'क्लिनिकल पहुंच निलंबित'
+      suspendedStatus: 'क्लिनिकल पहुंच निलंबित',
+      welcomeBack: 'पुनः स्वागत है,',
+      practicePortal: 'डॉक्टर क्लिनिकल पोर्टल',
+      verifiedPractitioner: 'सत्यापित चिकित्सक',
+      upcomingVideo: 'स्वीकृत वीडियो परामर्श',
+      patientDirectory: 'डॉक्टर क्लिनिक मरीज निर्देशिका',
+      patientVaultsDesc: 'सहमति या क्यूआर प्रमाणीकरण द्वारा अधिकृत मरीजों के स्वास्थ्य रिकॉर्ड।',
+      authorizeNewPatient: 'नया मरीज अधिकृत करें (QR स्कैन करें)',
+      searchPatientsPlaceholder: 'मरीज का नाम, रोग या फोन नंबर खोजें...',
+      filterAll: 'सभी मरीज',
+      filterRecent: 'हाल के दौरे',
+      filterUpcoming: 'आगामी फॉलो-अप',
+      filterActive: 'सक्रिय देखभाल',
+      noPatientsFound: 'आपकी खोज से मेल खाता कोई मरीज नहीं मिला।',
+      viewVault: 'स्वास्थ्य वॉल्ट खोलें',
+      patientDashboardLink: 'मरीज डैशबोर्ड',
+      signOut: 'लॉगआउट',
+      status: 'स्थिति:'
     },
 
     // ---------------- ADMIN DASHBOARD ----------------
     admin: {
       portalTitle: 'बायोट्रैजेक्टरी व्यवस्थापक (एडमिन) नियंत्रण केंद्र',
+      adminManagement: 'व्यवस्थापक प्रबंधन',
+      systemAdminBadge: 'सिस्टम एडमिन',
       overview: 'अवलोकन (Overview)',
       userAccounts: 'उपयोगकर्ता खाते (Users)',
       permissions: 'भूमिका अनुमतियां (Permissions)',
@@ -442,13 +576,18 @@ export const translations = {
       systemStats: 'सिस्टम आंकड़े (Analytics)',
       userFeedback: 'प्रतिक्रिया (Feedback)',
       securitySettings: 'सुरक्षा सेटिंग्स',
-      privateRecordsTag: 'निजी स्वास्थ्य रिकॉर्ड: व्यवस्थापक मरीजों की निजी मेडिकल रीडिंग नहीं देख सकते।',
+      privateRecordsTag: 'निजी स्वास्थ्य रिकॉर्ड',
+      privateRecordsDesc: 'व्यवस्थापक मरीजों की निजी मेडिकल रीडिंग नहीं देख सकते।',
       totalUsers: 'कुल उपयोगकर्ता खाते',
       approvedDoctors: 'स्वीकृत डॉक्टर',
       pendingApplications: 'लंबित डॉक्टर आवेदन',
       systemUptime: 'सिस्टम अपटाइम स्थिति',
       approveBtn: 'आवेदन स्वीकृत करें',
-      rejectBtn: 'आवेदन अस्वीकृत करें'
+      rejectBtn: 'आवेदन अस्वीकृत करें',
+      searchUsersPlaceholder: 'नाम, ईमेल या आईडी से खोजें...',
+      allRoles: 'सभी भूमिकाएं',
+      goToUserDashboard: 'यूजर डैशबोर्ड पर जाएं',
+      signOut: 'लॉगआउट'
     },
 
     // ---------------- PATIENT DASHBOARD ----------------
@@ -462,7 +601,7 @@ export const translations = {
       reports: 'दैनिक रिपोर्ट',
       doctorConnect: 'डॉक्टर परामर्श (Doctor Connect)',
       connectedDevices: 'कनेक्टेड डिवाइसेस',
-      settings: 'खाता सेटिंग्स',
+      settings: 'सेटिंग्स',
       vitalsOverview: 'वर्तमान महत्वपूर्ण संकेत (Vitals)',
       bloodPressure: 'रक्तचाप (Blood Pressure)',
       heartRate: 'हृदय गति (Heart Rate)',
@@ -475,6 +614,93 @@ export const translations = {
       elevatedNotice: 'यदि आपकी रीडिंग लगातार सीमा से अधिक रहे तो अपने डॉक्टर से परामर्श अवश्य लें।',
       addMeasurement: 'नई रीडिंग जोड़ें',
       viewFullHistory: 'पूरा इतिहास देखें'
+    },
+
+    // ---------------- ANALYTICS & CHARTS ----------------
+    analytics: {
+      title: 'स्वास्थ्य विश्लेषण एवं महत्वपूर्ण रुझान',
+      subtitle: 'चिकित्सीय सामान्य रेखाओं और खतरे की सीमाओं के साथ दीर्घकालिक बायोमार्कर ट्रैकिंग।',
+      timeRanges: {
+        '7D': '7 दिन',
+        '30D': '30 दिन',
+        '90D': '90 दिन',
+        'All': 'सभी'
+      },
+      metricTabs: {
+        all: 'समग्र रुझान (All)',
+        bp: 'रक्तचाप (Blood Pressure)',
+        hr: 'हृदय गति (Heart Rate)',
+        spo2: 'ऑक्सीजन (SpO2)',
+        steps: 'दैनिक गतिविधि / कदम (Steps)',
+        glucose: 'रक्त शर्करा (Blood Glucose)'
+      },
+      latestBP: 'नवीनतम रक्तचाप (Latest BP)',
+      latestHR: 'नवीनतम हृदय गति (Heart Rate)',
+      latestSpO2: 'नवीनतम ऑक्सीजन (SpO2)',
+      latestSteps: 'दैनिक कदम (Daily Steps)',
+      recentTrend: 'महत्वपूर्ण संकेतों की ट्रैकिंग एवं सीमा विश्लेषण',
+      refresh: 'रीफ्रेश करें',
+      normalLine: 'सामान्य सीमा (Normal Limit)',
+      warningLine: 'चेतावनी स्तर (Warning Level)',
+      dangerLine: 'खतरा स्तर (Danger Level)',
+      dailyTarget: 'दैनिक लक्ष्य (Daily Target)',
+      systolic: 'सिस्टोलिक (Systolic)',
+      diastolic: 'डायस्टोलिक (Diastolic)',
+      allNormalTitle: 'सभी महत्वपूर्ण संकेत सामान्य सीमा में हैं',
+      allNormalDesc: 'आपकी हालिया रीडिंग स्थापित चिकित्सीय सीमाओं के भीतर सुरक्षित हैं।',
+      warningAlertTitle: 'उच्च स्तर चेतावनी सूचना (Warning)',
+      dangerAlertTitle: 'गंभीर स्तर चेतावनी (Critical Alert)',
+      recommendConsult: 'कृपया आराम करें और 30 मिनट बाद पुनः जांचें। यदि रीडिंग लगातार अधिक रहे तो डॉक्टर से संपर्क करें।'
+    },
+
+    // ---------------- MEDICAL RECORDS ----------------
+    records: {
+      title: 'मेरे मेडिकल रिकॉर्ड्स एवं टेस्ट लाइब्रेरी',
+      subtitle: 'रक्तचाप, हृदय गति, ऑक्सीजन, शारीरिक गतिविधि, मूत्र परीक्षण, रक्त परीक्षण एवं अपलोड की गई रिपोर्टों का सुरक्षित संग्रह।',
+      searchPlaceholder: 'टेस्ट, रीडिंग, डॉक्टर या लैब नोट्स खोजें...',
+      uploadBtn: 'मेडिकल रिकॉर्ड अपलोड करें',
+      categories: {
+        all: 'सभी रिकॉर्ड्स',
+        blood_pressure: 'रक्तचाप (BP)',
+        heart_rate: 'हृदय गति (HR)',
+        oxygen_saturation: 'ऑक्सीजन (SpO2)',
+        activity: 'शारीरिक गतिविधि (Steps)',
+        urine_test: 'मूत्र परीक्षण (Urine Test)',
+        blood_test: 'रक्त जांच / लैब टेस्ट (Blood Test)',
+        document: 'अपलोड किए गए दस्तावेज़ / रिपोर्ट'
+      },
+      detailsModalTitle: 'मेडिकल रिकॉर्ड का विस्तृत विवरण',
+      closeBtn: 'बंद करें',
+      recordedAt: 'दर्ज करने का समय',
+      sourceLabel: 'रीडिंग स्रोत',
+      notesLabel: 'चिकित्सकीय नोट्स',
+      normalRangeLabel: 'मानक संदर्भ सीमा (Normal Range)',
+      interpretation: 'स्वास्थ्य स्थिति मूल्यांकन',
+      uploadModalTitle: 'नया मेडिकल रिकॉर्ड अपलोड करें',
+      recordTypeLabel: 'रिकॉर्ड श्रेणी',
+      recordTitleLabel: 'रिकॉर्ड या टेस्ट का नाम',
+      recordDateLabel: 'परीक्षण की तारीख',
+      doctorClinicLabel: 'डॉक्टर / लैब / अस्पताल का नाम',
+      valuesLabel: 'जांच परिणाम (परिणाम मान)',
+      notesPlaceholder: 'डॉक्टर की सलाह या कोई अन्य लक्षण दर्ज करें...',
+      fileUploadLabel: 'रिपोर्ट दस्तावेज़ या फोटो जोड़ें (वैकल्पिक)',
+      saveRecordBtn: 'स्वास्थ्य रिकॉर्ड में सहेजें',
+      successUploaded: 'मेडिकल रिकॉर्ड सफलतापूर्वक सहेज लिया गया है।'
+    },
+
+    // ---------------- PROFILE & SETTINGS ----------------
+    profile: {
+      title: 'स्वास्थ्य प्रोफाइल एवं पहचान',
+      subtitle: 'अपनी आपातकालीन आईडी, कनेक्टेड डिवाइसेस और प्रदर्शन सेटिंग्स प्रबंधित करें।',
+      accountSettingsBtn: 'खाता सेटिंग्स (Account Settings)',
+      profileDetails: 'प्रोफाइल विवरण',
+      connectedDevices: 'कनेक्टेड स्वास्थ्य उपकरण',
+      themeSetting: 'थीम एवं दिखावट (Theme)',
+      languageSetting: 'भाषा चयन (Language)',
+      medicalIdCard: 'आपातकालीन डिजिटल मेडिकल आईडी',
+      bloodGroup: 'रक्त समूह (Blood Group)',
+      emergencyContact: 'आपातकालीन संपर्क',
+      allergies: 'ज्ञात एलर्जी'
     }
   }
 };

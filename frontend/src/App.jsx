@@ -200,8 +200,10 @@ function AppRoutes() {
           <Route path="urine" element={<UrineAnalysisPage />} />
           <Route path="urine-analysis" element={<UrineAnalysisPage />} />
           <Route path="history" element={<MedicalHistoryPage />} />
+          <Route path="records" element={<MedicalHistoryPage />} />
           <Route path="assistant" element={<AiAssistantPage />} />
           <Route path="consultation" element={<DoctorConsultationPage />} />
+          <Route path="profile" element={<QrProfilePage />} />
           <Route path="qr" element={<QrProfilePage />} />
           <Route path="devices" element={<ConnectedDevicesPage />} />
           <Route path="settings" element={<SettingsPage />} />

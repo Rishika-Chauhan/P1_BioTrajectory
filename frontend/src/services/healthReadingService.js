@@ -19,7 +19,9 @@ const ALLOWED_TYPES = new Set([
   'heart_rate',
   'oxygen_saturation',
   'activity',
-  'urine_test'
+  'urine_test',
+  'blood_test',
+  'document'
 ]);
 
 function getReadingsCollection(uid) {
@@ -84,6 +86,28 @@ function validateValues(type, values) {
       'glucose',
       'nitrites',
       'specificGravity'
+    ],
+    blood_test: [
+      'glucose',
+      'fastingGlucose',
+      'hba1c',
+      'totalCholesterol',
+      'hdl',
+      'ldl',
+      'triglycerides',
+      'hemoglobin',
+      'platelets',
+      'creatinine'
+    ],
+    document: [
+      'title',
+      'category',
+      'fileName',
+      'fileUrl',
+      'fileType',
+      'doctorName',
+      'facility',
+      'testSummary'
     ]
   };
 
@@ -233,17 +257,34 @@ export const healthReadingService = {
     }
 
     const record = {
+      id: `reading-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
       type,
       values: cleanValues(values),
       source,
       measuredAt: normalizeMeasuredAt(measuredAt),
-      createdAt: serverTimestamp(),
+      createdAt: new Date().toISOString(),
       notes: notes.trim()
     };
 
+    if (String(uid).startsWith('demo-')) {
+      let existing = [];
+      try {
+        const stored = localStorage.getItem('bt_demo_user_readings');
+        existing = stored ? JSON.parse(stored) : await this.list(uid, 100);
+      } catch {
+        existing = [];
+      }
+      const updated = [record, ...existing];
+      localStorage.setItem('bt_demo_user_readings', JSON.stringify(updated));
+      return record;
+    }
+
     const reference = await addDoc(
       getReadingsCollection(uid),
-      record
+      {
+        ...record,
+        createdAt: serverTimestamp()
+      }
     );
 
     return {
@@ -275,13 +316,14 @@ export const healthReadingService = {
         }
       }
       return [
+        // Today (Nov 17)
         {
           id: 'demo-bp-01',
           type: 'blood_pressure',
           values: { systolic: 118, diastolic: 78, pulse: 72 },
           source: 'manual',
           measuredAt: new Date(Date.now() - 3600000).toISOString(),
-          notes: 'Resting morning blood pressure reading'
+          notes: 'Resting morning blood pressure reading (Healthy & Stable)'
         },
         {
           id: 'demo-hr-01',
@@ -289,7 +331,7 @@ export const healthReadingService = {
           values: { bpm: 72 },
           source: 'manual',
           measuredAt: new Date(Date.now() - 3600000).toISOString(),
-          notes: 'Resting pulse rate'
+          notes: 'Resting heart rate in normal zone'
         },
         {
           id: 'demo-spo2-01',
@@ -297,7 +339,7 @@ export const healthReadingService = {
           values: { spo2: 99 },
           source: 'manual',
           measuredAt: new Date(Date.now() - 7200000).toISOString(),
-          notes: 'Pulse oximeter reading'
+          notes: 'Room air pulse oximeter measurement'
         },
         {
           id: 'demo-act-01',
@@ -307,6 +349,172 @@ export const healthReadingService = {
           measuredAt: new Date().toISOString(),
           notes: 'Daily pedometer step count'
         },
+        // Nov 16
+        {
+          id: 'demo-bp-02',
+          type: 'blood_pressure',
+          values: { systolic: 122, diastolic: 80, pulse: 74 },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 86400000).toISOString(),
+          notes: 'Evening reading after walking'
+        },
+        {
+          id: 'demo-hr-02',
+          type: 'heart_rate',
+          values: { bpm: 74 },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 86400000).toISOString(),
+          notes: 'Evening resting pulse'
+        },
+        {
+          id: 'demo-spo2-02',
+          type: 'oxygen_saturation',
+          values: { spo2: 98 },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 86400000).toISOString(),
+          notes: 'Normal oxygen saturation'
+        },
+        {
+          id: 'demo-act-02',
+          type: 'activity',
+          values: { steps: 9150, distanceKm: 6.8, exerciseMinutes: 50 },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 86400000).toISOString(),
+          notes: 'Daily activity goal met'
+        },
+        // Nov 15: Warning Elevation Day! (Systolic 136, Diastolic 88)
+        {
+          id: 'demo-bp-03',
+          type: 'blood_pressure',
+          values: { systolic: 136, diastolic: 88, pulse: 84 },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+          notes: 'Elevated post-work meeting. Higher stress noticed.'
+        },
+        {
+          id: 'demo-hr-03',
+          type: 'heart_rate',
+          values: { bpm: 84 },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+          notes: 'Elevated pulse rate during stressful day'
+        },
+        {
+          id: 'demo-spo2-03',
+          type: 'oxygen_saturation',
+          values: { spo2: 97 },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+          notes: 'SpO2 normal'
+        },
+        {
+          id: 'demo-act-03',
+          type: 'activity',
+          values: { steps: 5800, distanceKm: 4.1, exerciseMinutes: 20 },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+          notes: 'Low activity day'
+        },
+        // Nov 14
+        {
+          id: 'demo-bp-04',
+          type: 'blood_pressure',
+          values: { systolic: 120, diastolic: 78, pulse: 70 },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+          notes: 'Normal resting blood pressure'
+        },
+        {
+          id: 'demo-hr-04',
+          type: 'heart_rate',
+          values: { bpm: 70 },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+          notes: 'Resting pulse'
+        },
+        {
+          id: 'demo-spo2-04',
+          type: 'oxygen_saturation',
+          values: { spo2: 99 },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+          notes: 'Normal SpO2'
+        },
+        {
+          id: 'demo-act-04',
+          type: 'activity',
+          values: { steps: 10400, distanceKm: 7.9, exerciseMinutes: 60 },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+          notes: 'Exceeded 10k daily step goal'
+        },
+        // Nov 13
+        {
+          id: 'demo-bp-05',
+          type: 'blood_pressure',
+          values: { systolic: 119, diastolic: 76, pulse: 71 },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 4 * 86400000).toISOString(),
+          notes: 'Optimal blood pressure'
+        },
+        {
+          id: 'demo-hr-05',
+          type: 'heart_rate',
+          values: { bpm: 71 },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 4 * 86400000).toISOString(),
+          notes: 'Resting pulse'
+        },
+        {
+          id: 'demo-spo2-05',
+          type: 'oxygen_saturation',
+          values: { spo2: 98 },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 4 * 86400000).toISOString(),
+          notes: 'Good saturation'
+        },
+        {
+          id: 'demo-act-05',
+          type: 'activity',
+          values: { steps: 8900, distanceKm: 6.5, exerciseMinutes: 45 },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 4 * 86400000).toISOString(),
+          notes: 'Walk in the park'
+        },
+        // Nov 12
+        {
+          id: 'demo-bp-06',
+          type: 'blood_pressure',
+          values: { systolic: 124, diastolic: 82, pulse: 75 },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 5 * 86400000).toISOString(),
+          notes: 'Normal BP reading'
+        },
+        {
+          id: 'demo-hr-06',
+          type: 'heart_rate',
+          values: { bpm: 75 },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 5 * 86400000).toISOString(),
+          notes: 'Normal HR'
+        },
+        {
+          id: 'demo-spo2-06',
+          type: 'oxygen_saturation',
+          values: { spo2: 99 },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 5 * 86400000).toISOString(),
+          notes: 'Normal SpO2'
+        },
+        {
+          id: 'demo-act-06',
+          type: 'activity',
+          values: { steps: 7800, distanceKm: 5.8, exerciseMinutes: 40 },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 5 * 86400000).toISOString(),
+          notes: 'Daily step count'
+        },
+        // Urine Test record Nov 16
         {
           id: 'demo-urine-01',
           type: 'urine_test',
@@ -320,7 +528,107 @@ export const healthReadingService = {
           },
           source: 'manual',
           measuredAt: new Date(Date.now() - 86400000).toISOString(),
-          notes: 'Biomarker reagent test strip scan'
+          notes: 'Clean renal filtration and normal urine biomarker dipstick'
+        },
+        // Urine Test record Nov 17 (Today)
+        {
+          id: 'demo-urine-today',
+          type: 'urine_test',
+          values: {
+            protein: 'Negative',
+            proteinMgDl: 0,
+            ph: 6.8,
+            glucose: 'Negative',
+            nitrites: 'Negative',
+            specificGravity: 1.018
+          },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 3600000).toISOString(),
+          notes: 'Morning urinalysis dipstick: clear renal indices and neutral pH.'
+        },
+        // Urine Test record Nov 15 (Trace warning)
+        {
+          id: 'demo-urine-warning',
+          type: 'urine_test',
+          values: {
+            protein: 'Trace',
+            proteinMgDl: 30,
+            ph: 7.2,
+            glucose: 'Negative',
+            nitrites: 'Negative',
+            specificGravity: 1.022
+          },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+          notes: 'Transient trace protein recorded following dehydration and stressful work day.'
+        },
+        // Blood Test record Nov 17 (Today)
+        {
+          id: 'demo-blood-today',
+          type: 'blood_test',
+          values: {
+            glucose: 92,
+            fastingGlucose: 92,
+            hba1c: 5.4,
+            totalCholesterol: 178,
+            hdl: 60,
+            ldl: 98,
+            hemoglobin: 14.9,
+            platelets: 248000
+          },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 7200000).toISOString(),
+          notes: 'Morning fingerstick fasting blood glucose measurement (optimal biological corridor).'
+        },
+        // Blood Test record Nov 15 (Elevated Warning)
+        {
+          id: 'demo-blood-warning',
+          type: 'blood_test',
+          values: {
+            glucose: 108,
+            fastingGlucose: 108,
+            hba1c: 5.5,
+            totalCholesterol: 190,
+            hdl: 56,
+            ldl: 110
+          },
+          source: 'manual',
+          measuredAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+          notes: 'Fasting glucose slightly elevated (108 mg/dL) into prediabetes warning threshold (ADA).'
+        },
+        // Blood Test record Nov 14
+        {
+          id: 'demo-blood-01',
+          type: 'blood_test',
+          values: {
+            glucose: 94,
+            fastingGlucose: 94,
+            hba1c: 5.4,
+            totalCholesterol: 182,
+            hdl: 58,
+            ldl: 104,
+            hemoglobin: 14.8,
+            platelets: 245000
+          },
+          source: 'imported',
+          measuredAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+          notes: 'Annual fasting metabolic & lipid panel by Metro Diagnostic Labs'
+        },
+        // Document record
+        {
+          id: 'demo-doc-01',
+          type: 'document',
+          values: {
+            title: 'Annual Comprehensive Physical Examination',
+            category: 'Diagnostic Lab Report',
+            fileName: 'alex_johnson_lab_report_2026.pdf',
+            doctorName: 'Dr. Sarah Vance, MD',
+            facility: 'City Central Health Center',
+            testSummary: 'All organ systems clear; cardiac and renal function within normal biological corridors.'
+          },
+          source: 'imported',
+          measuredAt: new Date(Date.now() - 5 * 86400000).toISOString(),
+          notes: 'Verified electronic health summary signed by attending physician'
         }
       ];
     }

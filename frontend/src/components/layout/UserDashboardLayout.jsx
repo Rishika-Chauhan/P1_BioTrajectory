@@ -121,7 +121,11 @@ export default function UserDashboardLayout() {
         <div className="p-4 border-t border-slate-200 dark:border-slate-800 space-y-2">
           {!collapsed ? (
             <div className="p-3 rounded-2xl bg-slate-100/80 dark:bg-[#101827] border border-slate-200 dark:border-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-3 min-w-0">
+              <Link
+                to="/dashboard/profile"
+                className="flex items-center gap-3 min-w-0 hover:opacity-80 transition-opacity cursor-pointer"
+                title={isHindi ? 'प्रोफाइल देखें' : 'View Profile'}
+              >
                 <div className="w-10 h-10 rounded-full bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 font-bold flex items-center justify-center text-[15px] shrink-0">
                   {profileInitial}
                 </div>
@@ -130,14 +134,14 @@ export default function UserDashboardLayout() {
                     {profileFullName}
                   </p>
                   <p className="text-[13px] text-slate-500 dark:text-slate-400 truncate">
-                    Your Health Profile
+                    {isHindi ? 'आपकी स्वास्थ्य प्रोफाइल' : 'Your Health Profile'}
                   </p>
                 </div>
-              </div>
+              </Link>
               <button
                 onClick={handleLogout}
                 title="Log out"
-                className="p-2 text-slate-400 hover:text-rose-500 rounded-xl hover:bg-rose-500/10 transition-colors cursor-pointer"
+                className="p-2 text-slate-400 hover:text-rose-500 rounded-xl hover:bg-rose-500/10 transition-colors cursor-pointer shrink-0"
               >
                 <LogOut className="w-5 h-5" />
               </button>
@@ -227,8 +231,9 @@ export default function UserDashboardLayout() {
 
             {/* User Avatar */}
             <Link
-              to="/dashboard/settings"
+              to="/dashboard/profile"
               className="flex items-center gap-2.5 pl-3 border-l border-slate-200 dark:border-slate-800 hover:opacity-80 transition-opacity"
+              title={isHindi ? 'प्रोफाइल एवं खाता' : 'Profile & Account'}
             >
               <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-400 to-blue-500 text-slate-950 font-bold flex items-center justify-center text-[15px] shadow-xs">
                 {profileInitial}

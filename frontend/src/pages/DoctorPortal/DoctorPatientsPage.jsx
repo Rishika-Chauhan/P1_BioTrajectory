@@ -16,10 +16,12 @@ import {
   QrCode
 } from 'lucide-react';
 import { useDoctorAuth } from '../../context/DoctorAuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { DoctorService } from '../../services/doctorService';
 
 export default function DoctorPatientsPage() {
   const { doctor } = useDoctorAuth();
+  const { t, isHindi } = useLanguage();
   const [patients, setPatients] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
@@ -61,14 +63,14 @@ export default function DoctorPatientsPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
-              Doctor Practice Directory
+              {t('doctor.patientDirectory', {}, 'Doctor Practice Directory')}
             </span>
           </div>
           <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
-            My Authorized Patients
+            {t('doctor.authorizedPatients', {}, 'My Authorized Patients')}
           </h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
-            Patient health vaults accessible through direct consultation consent or QR authorization.
+            {t('doctor.patientVaultsDesc', {}, 'Patient health vaults accessible through direct consultation consent or QR authorization.')}
           </p>
         </div>
 
@@ -77,7 +79,7 @@ export default function DoctorPatientsPage() {
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-medium text-xs shadow-md transition-all self-start sm:self-auto"
         >
           <QrCode className="w-4 h-4" />
-          Authorize New Patient (Scan QR)
+          {t('doctor.authorizeNewPatient', {}, 'Authorize New Patient (Scan QR)')}
         </Link>
       </div>
 
@@ -89,17 +91,17 @@ export default function DoctorPatientsPage() {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search by patient name, condition, or phone..."
+            placeholder={t('doctor.searchPatientsPlaceholder', {}, 'Search by patient name, condition, or phone...')}
             className="w-full pl-10 pr-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
           {[
-            { id: 'all', label: 'All Patients' },
-            { id: 'recent', label: 'Recent Visits' },
-            { id: 'upcoming', label: 'Follow-ups' },
-            { id: 'active', label: 'Active Care' },
+            { id: 'all', label: t('doctor.filterAll', {}, 'All Patients') },
+            { id: 'recent', label: t('doctor.filterRecent', {}, 'Recent Visits') },
+            { id: 'upcoming', label: t('doctor.filterUpcoming', {}, 'Upcoming Follow-ups') },
+            { id: 'active', label: t('doctor.filterActive', {}, 'Active Care') },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -147,18 +149,18 @@ export default function DoctorPatientsPage() {
               {/* Patient Info pills */}
               <div className="mt-4 space-y-2">
                 <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 text-xs">
-                  <span className="text-slate-400 text-[11px] block">Primary Concern:</span>
+                  <span className="text-slate-400 text-[11px] block">{isHindi ? 'प्राथमिक समस्या:' : 'Primary Concern:'}</span>
                   <span className="font-medium text-slate-800 dark:text-slate-200">{p.condition}</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-[11px]">
                   <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/40">
-                    <span className="text-slate-400 block">Last Consultation:</span>
+                    <span className="text-slate-400 block">{isHindi ? 'अंतिम परामर्श:' : 'Last Consultation:'}</span>
                     <span className="font-medium text-slate-700 dark:text-slate-300">{p.lastVisit}</span>
                   </div>
                   <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/40">
-                    <span className="text-slate-400 block">Next Follow-Up:</span>
-                    <span className="font-medium text-slate-700 dark:text-slate-300">{p.nextFollowUp || 'None'}</span>
+                    <span className="text-slate-400 block">{isHindi ? 'अगला फॉलो-अप:' : 'Next Follow-Up:'}</span>
+                    <span className="font-medium text-slate-700 dark:text-slate-300">{p.nextFollowUp || (isHindi ? 'कोई नहीं' : 'None')}</span>
                   </div>
                 </div>
 
@@ -175,21 +177,21 @@ export default function DoctorPatientsPage() {
                 to={`/doctor/patients/${p.id}`}
                 className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5"
               >
-                Clinical File <ChevronRight className="w-3 h-3" />
+                {isHindi ? 'क्लिनिकल फ़ाइल' : 'Clinical File'} <ChevronRight className="w-3 h-3" />
               </Link>
 
               <div className="flex items-center gap-1.5">
                 <Link
                   to={`/doctor/video-consultation?patientId=${p.id}&name=${encodeURIComponent(p.name)}`}
                   className="p-1.5 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-300 hover:bg-purple-100 transition-colors"
-                  title="Video Call"
+                  title={isHindi ? 'वीडियो परामर्श' : 'Video Call'}
                 >
                   <Video className="w-4 h-4" />
                 </Link>
                 <Link
                   to={`/doctor/reports/new?patientId=${p.id}&name=${encodeURIComponent(p.name)}`}
                   className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-300 hover:bg-blue-100 transition-colors"
-                  title="Write Report"
+                  title={isHindi ? 'रिपोर्ट लिखें' : 'Write Report'}
                 >
                   <FileText className="w-4 h-4" />
                 </Link>
@@ -202,9 +204,13 @@ export default function DoctorPatientsPage() {
       {filteredPatients.length === 0 && (
         <div className="text-center py-12 bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800">
           <Users className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">No patients found</h3>
+          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">
+            {t('doctor.noPatientsFound', {}, 'No patients found')}
+          </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Try adjusting your search term or scan a patient QR code to add a patient.
+            {isHindi
+              ? 'अपनी खोज बदलें या नया मरीज जोड़ने के लिए मरीज का QR कोड स्कैन करें।'
+              : 'Try adjusting your search term or scan a patient QR code to add a patient.'}
           </p>
         </div>
       )}

@@ -26,6 +26,7 @@ import {
 } from "recharts";
 
 import adminDashboardService from "../../services/adminDashboardService";
+import { useLanguage } from "../../context/LanguageContext";
 
 const cardStyle =
   "p-6 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-sm";
@@ -70,6 +71,7 @@ function StatusRow({ label, value, color }) {
 }
 
 export default function AdminOverviewPage() {
+  const { t, isHindi } = useLanguage();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -119,11 +121,11 @@ export default function AdminOverviewPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-            Admin Overview
+            {isHindi ? 'व्यवस्थापक अवलोकन (Admin Overview)' : 'Admin Overview'}
           </h1>
 
           <p className="text-base text-slate-600 dark:text-slate-400 mt-2">
-            Live platform statistics from BioTrajectory.
+            {isHindi ? 'बायोट्रैजेक्टरी लाइव प्लेटफॉर्म आंकड़े एवं सिस्टम स्थिति।' : 'Live platform statistics from BioTrajectory.'}
           </p>
         </div>
 
@@ -131,12 +133,12 @@ export default function AdminOverviewPage() {
           type="button"
           onClick={loadStats}
           disabled={loading}
-          className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-semibold transition"
+          className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-semibold transition cursor-pointer"
         >
           <RefreshCw
             className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
           />
-          {loading ? "Refreshing..." : "Refresh data"}
+          {loading ? (isHindi ? "रीफ्रेश हो रहा है..." : "Refreshing...") : (isHindi ? "आंकड़े रीफ्रेश करें" : "Refresh data")}
         </button>
       </div>
 
@@ -146,14 +148,13 @@ export default function AdminOverviewPage() {
 
         <div>
           <p className="font-bold text-purple-700 dark:text-purple-300">
-            Strict Patient Privacy Protection
+            {isHindi ? 'कड़ा रोगी गोपनीयता संरक्षण' : 'Strict Patient Privacy Protection'}
           </p>
 
           <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
-            This dashboard displays administrative aggregates only.
-            Administrators cannot view private patient readings,
-            medical records, consultations or private AI conversations
-            through this dashboard.
+            {isHindi
+              ? 'यह डैशबोर्ड केवल प्रशासनिक आंकड़े प्रदर्शित करता है। व्यवस्थापक निजी रोगी रीडिंग, मेडिकल रिकॉर्ड या निजी परामर्श नहीं देख सकते।'
+              : 'This dashboard displays administrative aggregates only. Administrators cannot view private patient readings, medical records, consultations or private AI conversations through this dashboard.'}
           </p>
         </div>
       </div>
@@ -203,33 +204,33 @@ export default function AdminOverviewPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
 
             <MetricCard
-              title="Registered Profiles"
+              title={isHindi ? "पंजीकृत प्रोफाइल" : "Registered Profiles"}
               value={formatNumber(stats.users?.totalProfiles)}
-              description="Firestore user profiles"
+              description={isHindi ? "सक्रिय उपयोगकर्ता खाते" : "Firestore user profiles"}
               icon={Users}
               color="text-purple-500"
             />
 
             <MetricCard
-              title="Approved Doctors"
+              title={isHindi ? "स्वीकृत चिकित्सक" : "Approved Doctors"}
               value={formatNumber(stats.doctors?.approved)}
-              description="Published doctor profiles"
+              description={isHindi ? "सत्यापित डॉक्टर प्रोफाइल" : "Published doctor profiles"}
               icon={Stethoscope}
               color="text-blue-500"
             />
 
             <MetricCard
-              title="Total Appointments"
+              title={isHindi ? "कुल नियुक्तियां" : "Total Appointments"}
               value={formatNumber(stats.appointments?.total)}
-              description="Recorded appointment documents"
+              description={isHindi ? "दर्ज परामर्श नियुक्तियां" : "Recorded appointment documents"}
               icon={CalendarCheck}
               color="text-cyan-500"
             />
 
             <MetricCard
-              title="Pending Appointments"
+              title={isHindi ? "लंबित नियुक्तियां" : "Pending Appointments"}
               value={formatNumber(appointmentStatuses.PENDING)}
-              description="Awaiting doctor response"
+              description={isHindi ? "प्रतीक्षारत अनुरोध" : "Awaiting doctor response"}
               icon={Clock}
               color="text-amber-500"
             />
@@ -241,11 +242,11 @@ export default function AdminOverviewPage() {
             <div className={`lg:col-span-8 ${cardStyle} space-y-5`}>
               <div>
                 <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                  Monthly Profile Registrations
+                  {isHindi ? "मासिक उपयोगकर्ता पंजीकरण रुझान" : "Monthly Profile Registrations"}
                 </h2>
 
                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                  New Firestore user profiles created each month.
+                  {isHindi ? "प्रत्येक माह बनाए गए नए प्रोफाइल।" : "New Firestore user profiles created each month."}
                 </p>
               </div>
 

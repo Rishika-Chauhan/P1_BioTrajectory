@@ -21,10 +21,12 @@ import {
   Stethoscope,
   Info,
   Check,
-  RotateCcw
+  RotateCcw,
+  Globe
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { trajectoryStorage } from '../../services/trajectoryStorage';
 import { BluetoothService } from '../../services/bluetoothService';
 
@@ -73,6 +75,7 @@ const GOAL_OPTIONS = [
 export default function SettingsPage() {
   const { currentUser, healthProfile, updateHealthProfile, deleteAccountData } = useAuth();
   const { theme, isDark, toggleTheme } = useTheme();
+  const { language, setLanguage, isHindi } = useLanguage();
 
   const [activeTab, setActiveTab] = useState('profile');
   const [toastMessage, setToastMessage] = useState(null);
@@ -227,30 +230,33 @@ export default function SettingsPage() {
       {/* Header */}
       <div>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-          Settings &amp; Health Profile
+          {isHindi ? 'सेटिंग्स एवं स्वास्थ्य प्रोफाइल' : 'Settings & Health Profile'}
         </h1>
         <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 mt-2">
-          Manage your personal health profile, units, baseline goals, informed consent preferences, and data sovereignty.
+          {isHindi
+            ? 'अपनी व्यक्तिगत स्वास्थ्य प्रोफाइल, इकाइयां, डार्क/लाइट थीम, भाषा और कनेक्टेड उपकरण प्रबंधित करें।'
+            : 'Manage your personal health profile, units, baseline goals, dark/light theme, language, and connected devices.'}
         </p>
       </div>
 
       {/* Tab Navigation */}
       <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 text-sm font-semibold overflow-x-auto shadow-xs">
         {[
-          { id: 'profile', label: 'Health Profile & Goals', icon: User },
-          { id: 'devices', label: 'Urine Device & Peripherals', icon: Droplet },
-          { id: 'security', label: 'Privacy & Consent Preferences', icon: ShieldCheck },
-          { id: 'ai', label: 'AI Assistant', icon: Bot },
-          { id: 'notifications', label: 'Notifications', icon: Bell },
-          { id: 'theme', label: 'Appearance', icon: Sun }
+          { id: 'profile', label: isHindi ? 'स्वास्थ्य प्रोफाइल' : 'Health Profile & Goals', icon: User },
+          { id: 'devices', label: isHindi ? 'कनेक्टेड डिवाइसेस' : 'Connected Devices', icon: Droplet },
+          { id: 'theme', label: isHindi ? 'थीम एवं दिखावट' : 'Appearance', icon: Sun },
+          { id: 'language', label: isHindi ? 'भाषा (Language)' : 'Language / भाषा', icon: Globe },
+          { id: 'security', label: isHindi ? 'गोपनीयता व सहमति' : 'Privacy & Consent', icon: ShieldCheck },
+          { id: 'ai', label: isHindi ? 'एआई सहायक' : 'AI Assistant', icon: Bot },
+          { id: 'notifications', label: isHindi ? 'सूचनाएं' : 'Notifications', icon: Bell }
         ].map(tab => {
           const Icon = tab.icon;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all whitespace-nowrap ${activeTab === tab.id
-                  ? 'bg-[#00685f] text-white font-bold shadow-xs'
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all whitespace-nowrap cursor-pointer ${activeTab === tab.id
+                  ? 'bg-cyan-500 text-slate-950 font-bold shadow-xs'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
             >
@@ -910,6 +916,70 @@ export default function SettingsPage() {
                 </div>
               </div>
               {isDark && <CheckCircle2 className="w-5 h-5 text-[#6bd8cb]" />}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          TAB: LANGUAGE SETTING
+      ========================================================================== */}
+      {activeTab === 'language' && (
+        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-xs space-y-5 text-sm">
+          <div>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+              {isHindi ? 'वेबसाइट भाषा प्राथमिकता' : 'Language Preference'}
+            </h3>
+            <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs">
+              {isHindi
+                ? 'अपनी पसंदीदा भाषा चुनें। अंग्रेजी और हिंदी के बीच कभी भी स्विच कर सकते हैं।'
+                : 'Select your preferred language. You can switch between English and Hindi at any time.'}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setLanguage('en');
+                showToast('Switched to English');
+              }}
+              className={`p-5 rounded-2xl border text-left flex items-center justify-between transition-all cursor-pointer ${
+                language === 'en'
+                  ? 'border-cyan-500 ring-2 ring-cyan-500/20 bg-cyan-50/50 dark:bg-cyan-950/20'
+                  : 'border-slate-200 dark:border-slate-800'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🇬🇧</span>
+                <div>
+                  <p className="font-bold text-slate-900 dark:text-white text-sm">English</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Clinical English terminology</p>
+                </div>
+              </div>
+              {language === 'en' && <CheckCircle2 className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setLanguage('hi');
+                showToast('भाषा हिंदी में बदली गई');
+              }}
+              className={`p-5 rounded-2xl border text-left flex items-center justify-between transition-all cursor-pointer ${
+                language === 'hi'
+                  ? 'border-cyan-500 ring-2 ring-cyan-500/20 bg-cyan-50/50 dark:bg-cyan-950/20'
+                  : 'border-slate-200 dark:border-slate-800'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🇮🇳</span>
+                <div>
+                  <p className="font-bold text-slate-900 dark:text-white text-sm">हिंदी (Hindi)</p>
+                  <p className="text-xs text-slate-500 mt-0.5">स्पष्ट, प्राकृतिक हिंदी अनुवाद</p>
+                </div>
+              </div>
+              {language === 'hi' && <CheckCircle2 className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />}
             </button>
           </div>
         </div>

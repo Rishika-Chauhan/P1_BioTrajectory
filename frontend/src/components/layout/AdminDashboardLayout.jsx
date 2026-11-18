@@ -126,14 +126,14 @@ export default function AdminDashboardLayout() {
             <div className="p-3.5 rounded-2xl bg-slate-100 dark:bg-[#070B14] border border-purple-500/20 text-[14px] text-slate-600 dark:text-slate-400 space-y-1">
               <div className="flex items-center gap-2 font-bold text-purple-700 dark:text-purple-300">
                 <Lock className="w-4 h-4 text-purple-500 dark:text-purple-400" />
-                <span>Private Health Records</span>
+                <span>{t('admin.privateRecordsTag', {}, 'Private Health Records')}</span>
               </div>
               <p className="text-slate-500 dark:text-slate-400 leading-snug">
-                Admins cannot view private patient medical readings.
+                {t('admin.privateRecordsDesc', {}, 'Administrators cannot view private patient medical readings.')}
               </p>
             </div>
           ) : (
-            <div className="flex justify-center p-2 text-purple-400" title="Private Health Records">
+            <div className="flex justify-center p-2 text-purple-400" title={t('admin.privateRecordsTag', {}, 'Private Health Records')}>
               <Lock className="w-5 h-5" />
             </div>
           )}
@@ -144,15 +144,15 @@ export default function AdminDashboardLayout() {
             className="w-full flex items-center justify-center gap-2 py-3 px-3 rounded-2xl text-[16px] font-semibold text-slate-700 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-500/10 border border-slate-200 dark:border-slate-800 transition-colors"
           >
             <ExternalLink className="w-4 h-4" />
-            {!collapsed && <span>Go to User Dashboard</span>}
+            {!collapsed && <span>{t('admin.goToUserDashboard', {}, 'Go to User Dashboard')}</span>}
           </Link>
 
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl text-[16px] font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl text-[16px] font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
-            {!collapsed && <span>Sign Out</span>}
+            {!collapsed && <span>{t('admin.signOut', {}, 'Sign Out')}</span>}
           </button>
         </div>
       </aside>
@@ -171,9 +171,11 @@ export default function AdminDashboardLayout() {
             </button>
 
             <div className="flex items-center gap-3">
-              <span className="text-[17px] font-bold text-slate-900 dark:text-white">Admin Management</span>
+              <span className="text-[17px] font-bold text-slate-900 dark:text-white">
+                {t('admin.adminManagement', {}, 'Admin Management')}
+              </span>
               <span className="text-xs font-semibold bg-purple-500/15 text-purple-700 dark:text-purple-300 px-3 py-1 rounded-full border border-purple-500/30">
-                System Admin
+                {t('admin.systemAdminBadge', {}, 'System Admin')}
               </span>
             </div>
           </div>

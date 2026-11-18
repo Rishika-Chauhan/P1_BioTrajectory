@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { useDoctorAuth } from "../../context/DoctorAuthContext";
+import { useLanguage } from "../../context/LanguageContext";
 import { appointmentService } from "../../services/appointmentService";
 
 function getToday() {
@@ -57,6 +58,7 @@ function statusStyle(status) {
 
 export default function DoctorAppointmentsPage() {
   const { doctor } = useDoctorAuth();
+  const { t, isHindi } = useLanguage();
 
   const [appointments, setAppointments] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
@@ -132,12 +134,12 @@ export default function DoctorAppointmentsPage() {
   };
 
   const tabs = [
-    { id: "all", label: "All Appointments" },
-    { id: "pending", label: "Pending Requests" },
-    { id: "today", label: "Today's Schedule" },
-    { id: "video", label: "Video Consultations" },
-    { id: "in-person", label: "In-Person Visits" },
-    { id: "completed", label: "Completed" },
+    { id: "all", label: isHindi ? "सभी नियुक्तियां" : "All Appointments" },
+    { id: "pending", label: isHindi ? "लंबित अनुरोध" : "Pending Requests" },
+    { id: "today", label: isHindi ? "आज का कार्यक्रम" : "Today's Schedule" },
+    { id: "video", label: isHindi ? "वीडियो परामर्श" : "Video Consultations" },
+    { id: "in-person", label: isHindi ? "प्रत्यक्ष मुलाकात" : "In-Person Visits" },
+    { id: "completed", label: isHindi ? "पूर्ण" : "Completed" },
   ];
 
   return (
@@ -145,15 +147,15 @@ export default function DoctorAppointmentsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <span className="text-xs font-semibold px-3 py-1 rounded-full bg-teal-100 text-teal-700">
-            Practice Scheduling
+            {isHindi ? 'क्लिनिक शेड्यूलिंग' : 'Practice Scheduling'}
           </span>
 
           <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mt-3">
-            Consultation Appointments
+            {isHindi ? 'परामर्श नियुक्तियां' : 'Consultation Appointments'}
           </h1>
 
           <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-            Manage appointment requests from your patients.
+            {isHindi ? 'अपने मरीजों से प्राप्त परामर्श अनुरोध प्रबंधित करें।' : 'Manage appointment requests from your patients.'}
           </p>
         </div>
 
@@ -184,26 +186,26 @@ export default function DoctorAppointmentsPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border dark:border-slate-800">
-          <p className="text-xs text-slate-500">Total</p>
+          <p className="text-xs text-slate-500">{isHindi ? 'कुल' : 'Total'}</p>
           <p className="text-2xl font-bold">{appointments.length}</p>
         </div>
 
         <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border dark:border-slate-800">
-          <p className="text-xs text-slate-500">Pending</p>
+          <p className="text-xs text-slate-500">{isHindi ? 'लंबित' : 'Pending'}</p>
           <p className="text-2xl font-bold text-amber-600">
             {appointments.filter((a) => a.status === "PENDING").length}
           </p>
         </div>
 
         <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border dark:border-slate-800">
-          <p className="text-xs text-slate-500">Accepted</p>
+          <p className="text-xs text-slate-500">{isHindi ? 'स्वीकृत' : 'Accepted'}</p>
           <p className="text-2xl font-bold text-emerald-600">
             {appointments.filter((a) => a.status === "ACCEPTED").length}
           </p>
         </div>
 
         <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border dark:border-slate-800">
-          <p className="text-xs text-slate-500">Completed</p>
+          <p className="text-xs text-slate-500">{isHindi ? 'पूर्ण' : 'Completed'}</p>
           <p className="text-2xl font-bold text-blue-600">
             {appointments.filter((a) => a.status === "COMPLETED").length}
           </p>
@@ -302,7 +304,7 @@ export default function DoctorAppointmentsPage() {
                         className="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs disabled:opacity-50"
                       >
                         <CheckCircle2 size={14} className="inline mr-1" />
-                        Accept
+                        {isHindi ? 'स्वीकार करें' : 'Accept'}
                       </button>
 
                       <button
@@ -313,7 +315,7 @@ export default function DoctorAppointmentsPage() {
                         className="px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs disabled:opacity-50"
                       >
                         <XCircle size={14} className="inline mr-1" />
-                        Reject
+                        {isHindi ? 'अस्वीकार करें' : 'Reject'}
                       </button>
                     </>
                   )}
@@ -326,7 +328,7 @@ export default function DoctorAppointmentsPage() {
                       }
                       className="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs disabled:opacity-50"
                     >
-                      Mark completed
+                      {isHindi ? 'पूर्ण चिह्नित करें' : 'Mark completed'}
                     </button>
                   )}
                 </div>
@@ -338,17 +340,19 @@ export default function DoctorAppointmentsPage() {
             <div className="text-center py-14 bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800">
               <CalendarIcon className="mx-auto mb-3 text-slate-400" size={34} />
               <p className="font-semibold text-slate-800 dark:text-white">
-                No appointments found
+                {isHindi ? 'कोई नियुक्ति नहीं मिली' : 'No appointments found'}
               </p>
               <p className="text-xs text-slate-500 mt-1">
-                New patient requests will appear here automatically.
+                {isHindi
+                  ? 'नए मरीज के अनुरोध यहां अपने आप दिखाई देंगे।'
+                  : 'New patient requests will appear here automatically.'}
               </p>
             </div>
           )}
         </div>
       ) : (
         <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-5">
-          <h3 className="font-bold mb-4">Appointment Calendar</h3>
+          <h3 className="font-bold mb-4">{isHindi ? 'नियुक्ति कैलेंडर' : 'Appointment Calendar'}</h3>
 
           <div className="space-y-3">
             {filteredAppointments
@@ -382,7 +386,7 @@ export default function DoctorAppointmentsPage() {
 
             {filteredAppointments.length === 0 && (
               <p className="text-center text-sm text-slate-500 py-8">
-                No appointments to display.
+                {isHindi ? 'प्रदर्शित करने के लिए कोई नियुक्ति नहीं है।' : 'No appointments to display.'}
               </p>
             )}
           </div>

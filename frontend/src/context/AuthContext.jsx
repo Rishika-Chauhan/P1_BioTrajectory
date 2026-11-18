@@ -504,10 +504,47 @@ export function AuthProvider({ children }) {
   };
 
   const updateHealthProfile = async (updates) => {
+    if (currentUser?.isDemo) {
+      const merged = {
+        ...healthProfile,
+        ...updates,
+        consent: {
+          storeAndProcessHealthData: true,
+          nonDiagnosticScopeAcknowledged: true,
+          ...(healthProfile?.consent || {}),
+          ...(updates?.consent || {})
+        },
+        updatedAt: new Date().toISOString()
+      };
+      trajectoryStorage.saveHealthProfile(merged);
+      setHealthProfile(merged);
+      if (merged?.name) {
+        setCurrentUser((previous) =>
+          previous
+            ? { ...previous, name: merged.name, displayName: merged.name }
+            : previous
+        );
+      }
+      return merged;
+    }
+
     const firebaseUser = auth?.currentUser;
 
     if (!firebaseUser) {
-      throw new Error('Please sign in first.');
+      const merged = {
+        ...healthProfile,
+        ...updates,
+        consent: {
+          storeAndProcessHealthData: true,
+          nonDiagnosticScopeAcknowledged: true,
+          ...(healthProfile?.consent || {}),
+          ...(updates?.consent || {})
+        },
+        updatedAt: new Date().toISOString()
+      };
+      trajectoryStorage.saveHealthProfile(merged);
+      setHealthProfile(merged);
+      return merged;
     }
 
     if (

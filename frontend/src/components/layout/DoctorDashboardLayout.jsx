@@ -180,7 +180,7 @@ export default function DoctorDashboardLayout() {
             className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl text-[15px] font-semibold text-slate-700 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-500/10 border border-slate-200 dark:border-slate-800 transition-colors"
           >
             <ExternalLink className="w-4 h-4" />
-            {!collapsed && <span>Patient Dashboard</span>}
+            {!collapsed && <span>{t('doctor.patientDashboardLink', {}, 'Patient Dashboard')}</span>}
           </Link>
 
           <button
@@ -188,7 +188,7 @@ export default function DoctorDashboardLayout() {
             className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl text-[15px] font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
-            {!collapsed && <span>Sign Out</span>}
+            {!collapsed && <span>{t('doctor.signOut', {}, 'Sign Out')}</span>}
           </button>
         </div>
       </aside>
@@ -208,25 +208,25 @@ export default function DoctorDashboardLayout() {
 
             <div className="flex items-center gap-3">
               <span className="text-[17px] font-bold text-slate-900 dark:text-white">
-                Clinical Workspace
+                {t('doctor.clinicalWorkspace', {}, 'Clinical Workspace')}
               </span>
 
               {isVerifiedDoctor && (
                 <span className="text-xs font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 px-3 py-1 rounded-full border border-emerald-500/30 flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Licensed Practitioner</span>
+                  <span>{isHindi ? 'सत्यापित चिकित्सक' : 'Licensed Practitioner'}</span>
                 </span>
               )}
               {isPendingDoctor && (
                 <span className="text-xs font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-300 px-3 py-1 rounded-full border border-amber-500/30 flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5" />
-                  <span>Credentials Under Verification</span>
+                  <span>{isHindi ? 'प्रमाणपत्र समीक्षाधीन' : 'Credentials Under Verification'}</span>
                 </span>
               )}
               {isSuspendedDoctor && (
                 <span className="text-xs font-semibold bg-red-500/15 text-red-700 dark:text-red-300 px-3 py-1 rounded-full border border-red-500/30 flex items-center gap-1.5">
                   <ShieldAlert className="w-3.5 h-3.5" />
-                  <span>Account Suspended</span>
+                  <span>{isHindi ? 'खाता निलंबित' : 'Account Suspended'}</span>
                 </span>
               )}
             </div>
