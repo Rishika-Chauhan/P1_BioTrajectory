@@ -31,7 +31,7 @@ const VALID_ROLES = new Set([
 
 function AuthLoadingScreen() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F5F8FC] dark:bg-[#070B14]">
+    <div className="min-h-screen flex items-center justify-center bg-[#F6F0E4] dark:bg-[#1F150E]">
       <div className="flex flex-col items-center gap-3">
         <div className="w-9 h-9 rounded-full border-2 border-cyan-500/20 border-t-cyan-500 animate-spin" />
 
@@ -118,6 +118,11 @@ export default function ProtectedRoute({
     allowedRoles.length > 0 &&
     !allowedRoles.includes(userRole)
   ) {
+    // System Administrators have supervisory review access to Doctor and User workspaces
+    if (userRole === USER_ROLES.ADMIN) {
+      return children || <Outlet />;
+    }
+
     const dashboard = getDashboardPath(userRole);
 
     return (

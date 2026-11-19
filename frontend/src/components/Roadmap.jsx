@@ -7,15 +7,15 @@ export default function Roadmap() {
   const { isDark } = useTheme();
 
   return (
-    <section className={`relative py-20 transition-colors ${isDark ? 'bg-[#070b14]' : 'bg-[#faf8ff]'}`} id="roadmap">
+    <section className={`relative py-20 transition-colors ${isDark ? 'bg-[#1F150E]' : 'bg-[#faf8ff]'}`} id="roadmap">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Development Milestones Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-6 border-b border-slate-200 dark:border-slate-800">
           <div className="max-w-2xl">
             <div className="flex items-center gap-2 mb-2">
-              <span className="w-2 h-2 rounded-full bg-[#00685f]"></span>
-              <span className="text-[11px] font-mono uppercase tracking-wider font-bold text-[#00685f] dark:text-[#6bd8cb]">
+              <span className="w-2 h-2 rounded-full bg-[#A9D6F5]"></span>
+              <span className="text-[11px] font-mono uppercase tracking-wider font-bold text-[#2672A8] dark:text-[#A9D6F5]">
                 Platform Lifecycle & Validation Stages
               </span>
             </div>
@@ -42,8 +42,8 @@ export default function Roadmap() {
                 key={phase.phase}
                 className={`p-5 rounded-2xl border transition-all duration-300 flex flex-col justify-between shadow-xs ${isCurrent
                   ? isDark
-                    ? 'bg-[#0d1526] border-[#00685f] shadow-[0_8px_25px_rgba(0,104,95,0.2)] ring-1 ring-[#00685f]/40'
-                    : 'bg-white border-[#00685f] shadow-md ring-1 ring-[#00685f]/30'
+                    ? 'bg-[#0d1526] border-[#A9D6F5] shadow-[0_8px_25px_rgba(0,104,95,0.2)] ring-1 ring-[#A9D6F5]/40'
+                    : 'bg-white border-[#A9D6F5] shadow-md ring-1 ring-[#A9D6F5]/30'
                   : isCompleted
                     ? isDark
                       ? 'bg-[#0a0f1d] border-[#006947]/30'
@@ -55,13 +55,13 @@ export default function Roadmap() {
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <span className={`font-mono text-xs font-bold uppercase ${isCurrent ? 'text-[#00685f] dark:text-[#6bd8cb]' : 'text-slate-500'
+                    <span className={`font-mono text-xs font-bold uppercase ${isCurrent ? 'text-[#2672A8] dark:text-[#A9D6F5]' : 'text-slate-500'
                       }`}>
                       {phase.phase}
                     </span>
                     <span
                       className={`text-[10px] font-mono px-2 py-0.5 rounded border ${isCurrent
-                        ? 'bg-[#00685f]/15 text-[#00685f] dark:text-[#6bd8cb] border-[#00685f]/30 font-bold'
+                        ? 'bg-[#A9D6F5]/15 text-[#2672A8] dark:text-[#A9D6F5] border-[#A9D6F5]/30 font-bold'
                         : isCompleted
                           ? 'bg-[#006947]/15 text-[#006947] dark:text-[#6ffbbe] border-[#006947]/30 font-semibold'
                           : isDark
@@ -83,7 +83,7 @@ export default function Roadmap() {
                   <ul className="space-y-2">
                     {phase.deliverables.map((item, dIdx) => (
                       <li key={dIdx} className="text-[11px] leading-snug flex items-start space-x-1.5 text-slate-600 dark:text-slate-300">
-                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 mt-1 ${isCurrent ? 'bg-[#00685f]' : isCompleted ? 'bg-[#006947]' : 'bg-slate-400'
+                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 mt-1 ${isCurrent ? 'bg-[#A9D6F5]' : isCompleted ? 'bg-[#006947]' : 'bg-slate-400'
                           }`}></span>
                         <span>{item}</span>
                       </li>
@@ -92,9 +92,9 @@ export default function Roadmap() {
                 </div>
 
                 {isCurrent && (
-                  <div className="mt-5 pt-3 border-t text-[10px] font-mono flex items-center justify-between border-slate-200 dark:border-slate-800 text-[#00685f] dark:text-[#6bd8cb] font-semibold">
+                  <div className="mt-5 pt-3 border-t text-[10px] font-mono flex items-center justify-between border-slate-200 dark:border-slate-800 text-[#2672A8] dark:text-[#A9D6F5] font-semibold">
                     <span>Active Prototype Focus</span>
-                    <span className="w-2 h-2 rounded-full bg-[#00685f] animate-ping"></span>
+                    <span className="w-2 h-2 rounded-full bg-[#A9D6F5] animate-ping"></span>
                   </div>
                 )}
               </div>

@@ -99,7 +99,7 @@ export default function PitchRoom({ onOpenDemo, onOpenReport }) {
 
   return (
     <section
-      className={`relative py-20 border-t transition-colors ${isDark ? 'bg-[#070b14] border-slate-800' : 'bg-[#faf8ff] border-slate-200'
+      className={`relative py-20 border-t transition-colors ${isDark ? 'bg-[#1F150E] border-slate-800' : 'bg-[#faf8ff] border-slate-200'
         }`}
       id="pitch"
     >
@@ -109,8 +109,8 @@ export default function PitchRoom({ onOpenDemo, onOpenReport }) {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-6 border-b border-slate-200 dark:border-slate-800">
           <div className="max-w-2xl">
             <div className="flex items-center gap-2 mb-2">
-              <span className="w-2 h-2 rounded-full bg-[#00685f]"></span>
-              <span className="text-[11px] font-mono uppercase tracking-wider font-bold text-[#00685f] dark:text-[#6bd8cb]">
+              <span className="w-2 h-2 rounded-full bg-[#A9D6F5]"></span>
+              <span className="text-[11px] font-mono uppercase tracking-wider font-bold text-[#2672A8] dark:text-[#A9D6F5]">
                 Clinical Verification & Inquiries
               </span>
             </div>
@@ -132,8 +132,8 @@ export default function PitchRoom({ onOpenDemo, onOpenReport }) {
           : 'bg-white border-[#e2e8f0]'
           }`}>
           <div className="flex items-center space-x-2 mb-3">
-            <Sparkles className="w-4 h-4 text-[#00685f] dark:text-[#6bd8cb]" />
-            <span className="text-xs font-mono uppercase tracking-widest font-semibold text-[#00685f] dark:text-[#6bd8cb]">
+            <Sparkles className="w-4 h-4 text-[#2672A8] dark:text-[#A9D6F5]" />
+            <span className="text-xs font-mono uppercase tracking-widest font-semibold text-[#2672A8] dark:text-[#A9D6F5]">
               Executive Platform Summary
             </span>
           </div>
@@ -143,7 +143,7 @@ export default function PitchRoom({ onOpenDemo, onOpenReport }) {
           </p>
 
           <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
-            <span className="font-mono text-[#00685f] dark:text-[#6bd8cb] font-medium">
+            <span className="font-mono text-[#2672A8] dark:text-[#A9D6F5] font-medium">
               One-Line: BioTrajectory turns repeated everyday health measurements into an individualized baseline timeline.
             </span>
             <span className="font-semibold font-mono text-[#006947] dark:text-[#6ffbbe]">
@@ -157,7 +157,7 @@ export default function PitchRoom({ onOpenDemo, onOpenReport }) {
           }`}>
           <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
             <div>
-              <span className="text-xs font-mono uppercase font-semibold text-[#00685f] dark:text-[#6bd8cb]">
+              <span className="text-xs font-mono uppercase font-semibold text-[#2672A8] dark:text-[#A9D6F5]">
                 Guided Experience Flow
               </span>
               <h3 className="text-xl font-bold mt-1 text-slate-900 dark:text-white">
@@ -167,7 +167,7 @@ export default function PitchRoom({ onOpenDemo, onOpenReport }) {
 
             <button
               onClick={handleNextDemoStep}
-              className="px-4 py-2 rounded-xl text-xs font-bold font-mono uppercase flex items-center space-x-2 transition-all shadow-sm bg-[#00685f] hover:bg-[#008378] text-white"
+              className="px-4 py-2 rounded-xl text-xs font-bold font-mono uppercase flex items-center space-x-2 transition-all shadow-sm bg-[#A9D6F5] hover:bg-[#7CBFEA] text-white"
             >
               <span>Advance Step ({demoStep + 1} / 7)</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -187,14 +187,14 @@ export default function PitchRoom({ onOpenDemo, onOpenReport }) {
                   }}
                   className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${isCurrent
                     ? isDark
-                      ? 'bg-[#00685f]/20 border-[#00685f] shadow-sm ring-1 ring-[#00685f]/50'
-                      : 'bg-[#00685f]/10 border-[#00685f] shadow-xs ring-1 ring-[#00685f]/30'
+                      ? 'bg-[#A9D6F5]/20 border-[#A9D6F5] shadow-sm ring-1 ring-[#A9D6F5]/50'
+                      : 'bg-[#A9D6F5]/10 border-[#A9D6F5] shadow-xs ring-1 ring-[#A9D6F5]/30'
                     : isDark
                       ? 'bg-slate-900/50 border-slate-800 text-slate-400 hover:bg-slate-800'
                       : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
                     }`}
                 >
-                  <span className={`text-[10px] font-mono block font-bold mb-1 ${isCurrent ? 'text-[#00685f] dark:text-[#6bd8cb]' : 'text-slate-500'
+                  <span className={`text-[10px] font-mono block font-bold mb-1 ${isCurrent ? 'text-[#2672A8] dark:text-[#A9D6F5]' : 'text-slate-500'
                     }`}>
                     Step 0{step.step}
                   </span>
@@ -217,7 +217,7 @@ export default function PitchRoom({ onOpenDemo, onOpenReport }) {
           {/* Left Column: Judge Q&A */}
           <div className="lg:col-span-7 space-y-3">
             <h3 className="text-lg font-bold mb-3 flex items-center space-x-2 text-slate-900 dark:text-white">
-              <HelpCircle className="w-4 h-4 text-[#00685f] dark:text-[#6bd8cb]" />
+              <HelpCircle className="w-4 h-4 text-[#2672A8] dark:text-[#A9D6F5]" />
               <span>Clinical Inquiries & Frequently Asked Questions</span>
             </h3>
 
@@ -237,7 +237,7 @@ export default function PitchRoom({ onOpenDemo, onOpenReport }) {
                       {item.q}
                     </span>
                     {isOpen ? (
-                      <ChevronUp className="w-4 h-4 shrink-0 text-[#00685f] dark:text-[#6bd8cb]" />
+                      <ChevronUp className="w-4 h-4 shrink-0 text-[#2672A8] dark:text-[#A9D6F5]" />
                     ) : (
                       <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
                     )}
@@ -294,7 +294,7 @@ export default function PitchRoom({ onOpenDemo, onOpenReport }) {
               ))}
             </div>
 
-            <div className={`mt-4 p-3 rounded-xl border text-[11px] leading-relaxed ${isDark ? 'bg-[#00685f]/10 border-[#00685f]/25 text-[#6bd8cb]' : 'bg-[#00685f]/5 border-[#00685f]/20 text-[#00685f]'
+            <div className={`mt-4 p-3 rounded-xl border text-[11px] leading-relaxed ${isDark ? 'bg-[#A9D6F5]/10 border-[#A9D6F5]/25 text-[#A9D6F5]' : 'bg-[#A9D6F5]/5 border-[#A9D6F5]/20 text-[#2672A8]'
               }`}>
               <strong className="block mb-0.5 font-bold">Clinical Governance Mandate:</strong>
               “BioTrajectory is presented as an innovation concept and prototype plan. This platform is not medical advice, a diagnostic claim, or evidence of regulatory approval.”
@@ -316,7 +316,7 @@ export default function PitchRoom({ onOpenDemo, onOpenReport }) {
             {GLOSSARY_TERMS.map((term, idx) => (
               <div key={idx} className={`p-4 rounded-xl border ${isDark ? 'bg-[#0d1526] border-slate-800' : 'bg-white border-slate-200 shadow-xs'
                 }`}>
-                <span className="text-xs font-bold font-mono block mb-1 text-[#00685f] dark:text-[#6bd8cb]">
+                <span className="text-xs font-bold font-mono block mb-1 text-[#2672A8] dark:text-[#A9D6F5]">
                   {term.term}
                 </span>
                 <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
@@ -333,7 +333,7 @@ export default function PitchRoom({ onOpenDemo, onOpenReport }) {
           : 'bg-white border-[#e2e8f0]'
           }`}>
           <div className="max-w-4xl mx-auto text-center">
-            <span className="text-[11px] font-mono uppercase tracking-widest px-4 py-1.5 rounded-full border mb-4 inline-flex items-center space-x-2 bg-[#00685f]/10 text-[#00685f] dark:text-[#6bd8cb] border-[#00685f]/25">
+            <span className="text-[11px] font-mono uppercase tracking-widest px-4 py-1.5 rounded-full border mb-4 inline-flex items-center space-x-2 bg-[#A9D6F5]/10 text-[#2672A8] dark:text-[#A9D6F5] border-[#A9D6F5]/25">
               <span className="w-2 h-2 rounded-full bg-[#006947] animate-pulse"></span>
               <span>Individualized Baseline Intelligence</span>
             </span>
@@ -349,7 +349,7 @@ export default function PitchRoom({ onOpenDemo, onOpenReport }) {
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
               <button
                 onClick={onOpenDemo}
-                className="px-6 py-3.5 rounded-xl font-bold text-xs uppercase font-mono tracking-wider transition-all flex items-center space-x-2 shadow-sm bg-[#00685f] hover:bg-[#008378] text-white hover:scale-[1.02]"
+                className="px-6 py-3.5 rounded-xl font-bold text-xs uppercase font-mono tracking-wider transition-all flex items-center space-x-2 shadow-sm bg-[#A9D6F5] hover:bg-[#7CBFEA] text-white hover:scale-[1.02]"
               >
                 <span>Launch Telemetry Console</span>
                 <ArrowRight className="w-4 h-4" />

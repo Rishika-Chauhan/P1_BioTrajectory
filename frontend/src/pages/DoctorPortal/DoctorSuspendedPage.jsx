@@ -22,7 +22,7 @@ export default function DoctorSuspendedPage() {
 
   return (
     <div className="min-h-[85vh] flex items-center justify-center px-4 py-12">
-      <div className="max-w-xl w-full bg-white dark:bg-[#101827] border border-rose-500/30 rounded-3xl p-8 shadow-2xl space-y-6 relative overflow-hidden">
+      <div className="max-w-xl w-full bg-white dark:bg-[#2B1E15] border border-rose-500/30 rounded-3xl p-8 shadow-2xl space-y-6 relative overflow-hidden">
         {/* Top Warning Banner */}
         <div className="flex items-center gap-3 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-300">
           <ShieldAlert className="w-6 h-6 shrink-0 text-rose-500" />
@@ -45,7 +45,7 @@ export default function DoctorSuspendedPage() {
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
             <div className="flex justify-between py-1 border-b border-slate-200 dark:border-slate-800">
               <span className="text-slate-500">Account:</span>
               <span className="font-semibold text-slate-800 dark:text-slate-200">{currentUser?.name} ({currentUser?.email})</span>

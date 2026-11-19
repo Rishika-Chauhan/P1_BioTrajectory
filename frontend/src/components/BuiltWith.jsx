@@ -91,14 +91,14 @@ const padsRGB = wasmCV.extractPads(cameraFrame);
   ];
 
   return (
-    <section className={`relative py-20 transition-colors border-t ${isDark ? 'bg-[#070b14] border-slate-800' : 'bg-[#faf8ff] border-slate-200'
+    <section className={`relative py-20 transition-colors border-t ${isDark ? 'bg-[#1F150E] border-slate-800' : 'bg-[#faf8ff] border-slate-200'
       }`} id="stack">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Architecture & Engineering Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-5 border-b border-inherit">
           <div className="max-w-2xl">
-            <span className="text-[11px] font-sans uppercase tracking-wider font-bold block mb-1 text-[#00685f] dark:text-[#6bd8cb]">
+            <span className="text-[11px] font-sans uppercase tracking-wider font-bold block mb-1 text-[#2672A8] dark:text-[#A9D6F5]">
               Deterministic Engineering & Privacy Stacks
             </span>
             <h2 className={`font-sans text-2xl sm:text-3xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-[#131b2e]'}`}>
@@ -108,7 +108,7 @@ const padsRGB = wasmCV.extractPads(cameraFrame);
               Engineered with zero raw-image transmission, client-side WebAssembly colorimetry, rolling IQR persistence, and grounded Gemini 3.8 Flash synthesis.
             </p>
           </div>
-          <div className={`text-xs font-sans px-3 py-1.5 rounded-lg border shrink-0 ${isDark ? 'bg-[#0d1526] border-slate-800 text-[#6bd8cb]' : 'bg-white border-slate-200 text-[#00685f] shadow-xs'}`}>
+          <div className={`text-xs font-sans px-3 py-1.5 rounded-lg border shrink-0 ${isDark ? 'bg-[#0d1526] border-slate-800 text-[#A9D6F5]' : 'bg-white border-slate-200 text-[#2672A8] shadow-xs'}`}>
             Click any component to inspect implementation
           </div>
         </div>
@@ -124,8 +124,8 @@ const padsRGB = wasmCV.extractPads(cameraFrame);
                 onClick={() => setActiveStackIndex(idx)}
                 className={`p-5 rounded-xl border cursor-pointer transition-all duration-200 flex flex-col justify-between ${isSelected
                   ? isDark
-                    ? 'bg-[#0d1526] border-[#00685f] shadow-[0_4px_20px_rgba(0,104,95,0.2)] ring-1 ring-[#00685f]'
-                    : 'bg-white border-[#00685f] shadow-xs ring-1 ring-[#00685f]/40'
+                    ? 'bg-[#0d1526] border-[#A9D6F5] shadow-[0_4px_20px_rgba(0,104,95,0.2)] ring-1 ring-[#A9D6F5]'
+                    : 'bg-white border-[#A9D6F5] shadow-xs ring-1 ring-[#A9D6F5]/40'
                   : isDark
                     ? 'bg-[#0d1526]/70 border-slate-800 hover:border-slate-700'
                     : 'bg-white border-[#e2e8f0] hover:border-slate-300 shadow-xs'
@@ -134,13 +134,13 @@ const padsRGB = wasmCV.extractPads(cameraFrame);
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <span className={`text-[10px] font-sans uppercase font-bold tracking-wider ${isSelected
-                      ? 'text-[#00685f] dark:text-[#6bd8cb]'
+                      ? 'text-[#2672A8] dark:text-[#A9D6F5]'
                       : 'text-slate-400'
                       }`}>
                       {item.category}
                     </span>
                     <div className={`w-7 h-7 rounded-md flex items-center justify-center ${isSelected
-                      ? 'bg-[#00685f] text-white'
+                      ? 'bg-[#A9D6F5] text-[#1F150E] font-bold'
                       : isDark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-600'
                       }`}>
                       <Icon className="w-3.5 h-3.5" />
@@ -169,19 +169,19 @@ const padsRGB = wasmCV.extractPads(cameraFrame);
         <div className={`rounded-xl border p-6 mb-10 shadow-xs ${isDark ? 'bg-[#0d1526] border-slate-800' : 'bg-white border-[#e2e8f0]'}`}>
           <div className="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-inherit mb-3">
             <div>
-              <span className="text-[10px] font-sans uppercase font-bold text-[#00685f] dark:text-[#6bd8cb]">
+              <span className="text-[10px] font-sans uppercase font-bold text-[#2672A8] dark:text-[#A9D6F5]">
                 Layer Implementation: {PDF_TECH_STACK[activeStackIndex].category}
               </span>
               <h3 className={`font-sans text-lg font-bold mt-0.5 ${isDark ? 'text-white' : 'text-[#131b2e]'}`}>
                 {stackCodeSamples[activeStackIndex].title}
               </h3>
             </div>
-            <span className={`text-xs font-sans px-2.5 py-1 rounded border ${isDark ? 'bg-[#070b14] text-slate-300 border-slate-800' : 'bg-slate-100 text-slate-700 border-slate-200'}`}>
+            <span className={`text-xs font-sans px-2.5 py-1 rounded border ${isDark ? 'bg-[#1F150E] text-slate-300 border-slate-800' : 'bg-slate-100 text-slate-700 border-slate-200'}`}>
               {PDF_TECH_STACK[activeStackIndex].role}
             </span>
           </div>
 
-          <div className="rounded-lg overflow-hidden bg-slate-950 border border-slate-800 p-4 font-mono text-xs text-[#6bd8cb] overflow-x-auto">
+          <div className="rounded-lg overflow-hidden bg-slate-950 border border-slate-800 p-4 font-mono text-xs text-[#A9D6F5] overflow-x-auto">
             <pre>
               <code>{stackCodeSamples[activeStackIndex].code}</code>
             </pre>
@@ -195,8 +195,8 @@ const padsRGB = wasmCV.extractPads(cameraFrame);
           }`}>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-4xl mx-auto">
             <div className="flex items-center space-x-3 text-left">
-              <div className="w-10 h-10 rounded-lg bg-[#00685f]/10 text-[#00685f] flex items-center justify-center shrink-0">
-                <GitBranch className="w-5 h-5 text-[#00685f]" />
+              <div className="w-10 h-10 rounded-lg bg-[#A9D6F5]/10 text-[#2672A8] flex items-center justify-center shrink-0">
+                <GitBranch className="w-5 h-5 text-[#2672A8]" />
               </div>
               <div>
                 <h4 className={`font-sans text-base font-bold ${isDark ? 'text-white' : 'text-[#131b2e]'}`}>
@@ -212,7 +212,7 @@ const padsRGB = wasmCV.extractPads(cameraFrame);
               href="https://github.com/Rishika-Chauhan/BioTrajectory"
               target="_blank"
               rel="noreferrer"
-              className="px-4 py-2 rounded-lg text-xs font-sans font-bold uppercase tracking-wider flex items-center space-x-1.5 transition-all bg-[#00685f] hover:bg-[#008378] text-white shadow-xs"
+              className="px-4 py-2 rounded-lg text-xs font-sans font-bold uppercase tracking-wider flex items-center space-x-1.5 transition-all bg-[#A9D6F5] hover:bg-[#7CBFEA] text-white shadow-xs"
             >
               <span>Inspect Repository</span>
               <ExternalLink className="w-3.5 h-3.5" />

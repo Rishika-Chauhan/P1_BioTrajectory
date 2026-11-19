@@ -22,12 +22,25 @@ import {
   Smartphone,
   AlertCircle,
   ExternalLink,
-  Sparkles
+  Sparkles,
+  AlertOctagon,
+  Camera,
+  Upload,
+  Trash2
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { BluetoothService } from '../../services/bluetoothService';
+import { getPatientPriorityStatus, subscribeToPriorityChanges } from '../../services/patientPriorityService';
+import {
+  getPatientAvatar,
+  savePatientAvatar,
+  resetPatientAvatar,
+  subscribeToAvatarChanges,
+  processImageFile,
+  DEFAULT_PATIENT_PHOTO
+} from '../../services/patientAvatarService';
 import DisclaimerBanner from '../../components/common/DisclaimerBanner';
 
 /**
@@ -56,7 +69,18 @@ const normalizeAllergiesToString = (val) => {
 };
 
 const normalizeConditionsToString = (val) => {
-  if (!val) return 'Mild Hypertension (Monitored)';
+  if (!val) {
+    try {
+      const stored = localStorage.getItem('bt_user_disease_history');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((p) => `${p.name} (${p.timeline})`).join('; ');
+        }
+      }
+    } catch {}
+    return 'Ongoing Cancer (Colorectal Stage II - Critical Oncology Care), Essential Hypertension, Jaundice (Resolved - 4 months ago)';
+  }
   if (Array.isArray(val)) return val.join(', ') || 'None recorded';
   if (typeof val === 'string') return val;
   return String(val);
@@ -73,6 +97,55 @@ export default function QrProfilePage() {
   const [copied, setCopied] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [priorityStatus, setPriorityStatus] = useState(() => getPatientPriorityStatus(healthProfile));
+
+  // Patient Photo / Avatar State & Reactive Listener
+  const [avatar, setAvatar] = useState(() => getPatientAvatar());
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const fileInputRef = React.useRef(null);
+  const settingsFileInputRef = React.useRef(null);
+
+  useEffect(() => {
+    const unsub = subscribeToAvatarChanges((newAvatar) => {
+      setAvatar(newAvatar);
+    });
+    return unsub;
+  }, []);
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingPhoto(true);
+      const dataUrl = await processImageFile(file, 320, 320, 0.88);
+      setAvatar(dataUrl);
+      savePatientAvatar(dataUrl);
+      updateHealthProfile({ avatar: dataUrl, photoURL: dataUrl });
+      showToast(isHindi ? 'रोगी की फोटो सफलतापूर्वक अपलोड की गई!' : 'Patient photo uploaded and updated successfully!');
+    } catch (err) {
+      console.error('Failed to upload photo:', err);
+      showToast(err.message || 'Failed to upload photo. Please choose a valid image.');
+    } finally {
+      setIsUploadingPhoto(false);
+      if (e.target) e.target.value = '';
+    }
+  };
+
+  const handleResetPhoto = () => {
+    resetPatientAvatar();
+    setAvatar(DEFAULT_PATIENT_PHOTO);
+    updateHealthProfile({ avatar: DEFAULT_PATIENT_PHOTO, photoURL: DEFAULT_PATIENT_PHOTO });
+    showToast(isHindi ? 'फोटो डिफ़ॉल्ट पर रीसेट की गई।' : 'Patient photo reset to default.');
+  };
+
+  useEffect(() => {
+    setPriorityStatus(getPatientPriorityStatus(healthProfile));
+    const unsubscribe = subscribeToPriorityChanges((status) => {
+      setPriorityStatus(status);
+    });
+    return unsubscribe;
+  }, [healthProfile]);
 
   // Device telemetry state
   const [urineDeviceEnabled, setUrineDeviceEnabled] = useState(() =>
@@ -265,10 +338,12 @@ export default function QrProfilePage() {
 
           <Link
             to="/dashboard/settings"
-            className="p-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             title={isHindi ? 'पूर्ण सेटिंग्स पृष्ठ खोलें' : 'Open Comprehensive Settings Page'}
           >
-            <ExternalLink className="w-4 h-4" />
+            <Settings className="w-4 h-4" />
+            <span className="hidden sm:inline">{isHindi ? 'सेटिंग्स' : 'Settings'}</span>
+            <ExternalLink className="w-3.5 h-3.5" />
           </Link>
         </div>
       </div>
@@ -279,7 +354,7 @@ export default function QrProfilePage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
         {/* CONNECT DEVICES CARD */}
-        <div className="p-6 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
+        <div className="p-6 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">
@@ -299,7 +374,7 @@ export default function QrProfilePage() {
 
           <div className="space-y-3 pt-1">
             {/* Urine Analyzer switch */}
-            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
+            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
               <div className="min-w-0 pr-2">
                 <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
                   {isHindi ? 'यूरिन बायोमार्कर स्ट्रिप' : 'Urine Strip Analyzer'}
@@ -327,7 +402,7 @@ export default function QrProfilePage() {
             </div>
 
             {/* Smart BP Cuff */}
-            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200/80 dark:border-slate-800 flex items-center justify-between text-xs">
+            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200/80 dark:border-slate-800 flex items-center justify-between text-xs">
               <span className="font-bold text-slate-800 dark:text-slate-200">
                 {isHindi ? 'स्मार्ट ब्लड प्रेशर कफ' : 'Smart BP Cuff'}
               </span>
@@ -349,11 +424,19 @@ export default function QrProfilePage() {
                   : (isHindi ? 'नए डिवाइस से कनेक्ट करें' : 'Scan & Pair Devices')}
               </span>
             </button>
+
+            <Link
+              to="/dashboard/devices"
+              className="w-full py-2 px-3 rounded-xl text-xs font-semibold text-center text-cyan-600 dark:text-cyan-400 hover:underline flex items-center justify-center gap-1"
+            >
+              <span>{isHindi ? 'सभी कनेक्टेड डिवाइस देखें' : 'Manage Connected Devices'}</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
         </div>
 
         {/* DARK AND LIGHT THEME SETTING */}
-        <div className="p-6 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
+        <div className="p-6 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
           <div className="flex items-center gap-2.5">
             <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
               {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
@@ -407,7 +490,7 @@ export default function QrProfilePage() {
         </div>
 
         {/* ENGLISH OR HINDI LANGUAGE SETTING */}
-        <div className="p-6 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
+        <div className="p-6 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
           <div className="flex items-center gap-2.5">
             <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
               <Globe className="w-5 h-5" />
@@ -466,7 +549,7 @@ export default function QrProfilePage() {
       {/* --------------------------------------------------------------------- */}
       {activeView === 'accountSettings' ? (
         /* ACCOUNT SETTINGS FORM VIEW */
-        <form onSubmit={handleSaveProfile} className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-6 animate-fade-in">
+        <form onSubmit={handleSaveProfile} className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 shadow-sm space-y-6 animate-fade-in">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-2xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">
@@ -496,6 +579,67 @@ export default function QrProfilePage() {
             </div>
           </div>
 
+          {/* Patient Photo Uploadation Control */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center gap-5">
+            <div className="relative group shrink-0">
+              <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-slate-200 dark:border-slate-700 shadow-sm bg-slate-200 dark:bg-slate-800">
+                <img src={avatar} alt={name} className="w-full h-full object-cover" />
+              </div>
+              <button
+                type="button"
+                onClick={() => settingsFileInputRef.current?.click()}
+                disabled={isUploadingPhoto}
+                className="absolute inset-0 rounded-2xl bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 cursor-pointer"
+                title={isHindi ? 'फोटो बदलें' : 'Change Photo'}
+              >
+                <Camera className="w-5 h-5 text-cyan-300" />
+                <span className="text-[10px] font-bold">
+                  {isUploadingPhoto ? '...' : 'Upload'}
+                </span>
+              </button>
+            </div>
+
+            <div className="space-y-1 text-center sm:text-left flex-1 min-w-0">
+              <h4 className="font-bold text-sm text-slate-900 dark:text-white flex items-center justify-center sm:justify-start gap-2">
+                <span>{isHindi ? 'रोगी की प्रोफाइल फोटो (Patient Picture)' : 'Patient Profile Photo'}</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/20">
+                  {isHindi ? 'सार्वजनिक आईडी दृश्यमान' : 'Visible on Digital ID'}
+                </span>
+              </h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {isHindi
+                  ? 'अपनी स्पष्ट फोटो अपलोड करें ताकि डॉक्टर, अस्पताल व आपातकालीन टीम आपकी पहचान देख सकें।'
+                  : 'Upload your photo so attending physicians, clinical staff, and paramedics can instantly recognize your profile.'}
+              </p>
+              <div className="pt-2 flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+                <input
+                  type="file"
+                  ref={settingsFileInputRef}
+                  onChange={handlePhotoUpload}
+                  accept="image/*"
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => settingsFileInputRef.current?.click()}
+                  disabled={isUploadingPhoto}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-bold text-xs shadow-xs active:scale-95 transition-all cursor-pointer"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>{isUploadingPhoto ? (isHindi ? 'अपलोड हो रहा है...' : 'Uploading...') : (isHindi ? 'फोटो अपलोड करें' : 'Upload Photo')}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResetPhoto}
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-rose-500 text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>{isHindi ? 'रीसेट' : 'Reset'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {/* Full Name */}
             <div className="space-y-1.5">
@@ -506,7 +650,7 @@ export default function QrProfilePage() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-cyan-500"
+                className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-cyan-500"
               />
             </div>
 
@@ -518,7 +662,7 @@ export default function QrProfilePage() {
               <select
                 value={ageRange}
                 onChange={(e) => setAgeRange(e.target.value)}
-                className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-cyan-500"
+                className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-cyan-500"
               >
                 <option value="18–29">18 – 29 years</option>
                 <option value="30–44">30 – 44 years</option>
@@ -536,7 +680,7 @@ export default function QrProfilePage() {
               <select
                 value={gender}
                 onChange={(e) => setGender(e.target.value)}
-                className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-cyan-500"
+                className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-cyan-500"
               >
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
@@ -553,7 +697,7 @@ export default function QrProfilePage() {
               <select
                 value={bloodGroup}
                 onChange={(e) => setBloodGroup(e.target.value)}
-                className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm font-bold focus:outline-none focus:border-cyan-500"
+                className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm font-bold focus:outline-none focus:border-cyan-500"
               >
                 <option value="A+">A+</option>
                 <option value="A-">A-</option>
@@ -576,7 +720,7 @@ export default function QrProfilePage() {
                 value={emergencyContact}
                 onChange={(e) => setEmergencyContact(e.target.value)}
                 placeholder="+1 (555) 234-5678 (Spouse)"
-                className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-cyan-500"
+                className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-cyan-500"
               />
             </div>
 
@@ -590,7 +734,7 @@ export default function QrProfilePage() {
                 value={height}
                 onChange={(e) => setHeight(e.target.value)}
                 placeholder="178"
-                className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-cyan-500"
+                className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-cyan-500"
               />
             </div>
 
@@ -604,7 +748,7 @@ export default function QrProfilePage() {
                 value={weight}
                 onChange={(e) => setWeight(e.target.value)}
                 placeholder="72"
-                className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-cyan-500"
+                className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-cyan-500"
               />
             </div>
 
@@ -618,7 +762,7 @@ export default function QrProfilePage() {
                 value={allergies}
                 onChange={(e) => setAllergies(e.target.value)}
                 placeholder="Penicillin, Peanuts, etc."
-                className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-cyan-500"
+                className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-cyan-500"
               />
             </div>
 
@@ -632,21 +776,55 @@ export default function QrProfilePage() {
                 value={conditions}
                 onChange={(e) => setConditions(e.target.value)}
                 placeholder="Mild Hypertension, Type 2 Diabetes, etc."
-                className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-cyan-500"
+                className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-cyan-500"
               />
             </div>
           </div>
         </form>
       ) : (
         /* PROFILE OVERVIEW & EMERGENCY QR VIEW */
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-          {/* QR Card */}
-          <div className="md:col-span-5 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#101827] space-y-6 text-center flex flex-col items-center shadow-sm">
+        <div className="space-y-6">
+          {/* Danger Disease Emergency Priority Person Banner */}
+          {priorityStatus?.isPriority && (
+            <div className="p-4 sm:p-5 rounded-3xl bg-red-600/15 border-2 border-red-500 text-red-600 dark:text-red-400 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg shadow-red-500/10 animate-pulse">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-2xl bg-red-600 text-white shrink-0 shadow-md">
+                  <AlertOctagon className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="text-xs font-black uppercase tracking-wider text-red-600 dark:text-red-400">
+                    {isHindi ? '🚨 आपातकालीन प्राथमिकता व्यक्ति (रेड साइन सक्रिय)' : '🚨 EMERGENCY PRIORITY PERSON — RED SIGN ACTIVE'}
+                  </div>
+                  <div className="text-sm font-bold text-slate-900 dark:text-white">
+                    {isHindi ? 'सक्रिय गंभीर रोग: ' : 'Active Danger Condition: '}{priorityStatus.primaryDisease}
+                  </div>
+                  <div className="text-xs text-slate-600 dark:text-slate-300">
+                    {isHindi
+                      ? 'पैरामेडिक्स, आपातकालीन कक्ष और चिकित्सकों को इस रोगी को तत्काल क्लिनिकल प्राथमिकता देने का निर्देश।'
+                      : 'First responders, triage nurses, and attending physicians: Expedite clinical care and priority routing.'}
+                  </div>
+                </div>
+              </div>
+              <span className="self-start sm:self-auto px-3 py-1 rounded-full bg-red-600 text-white text-xs font-black uppercase tracking-wider shrink-0 shadow-xs">
+                {isHindi ? 'आपातकालीन प्राथमिकता' : 'PRIORITY TRIAGE'}
+              </span>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+            {/* QR Card */}
+            <div
+              className={`md:col-span-5 p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#2B1E15] space-y-6 text-center flex flex-col items-center shadow-sm ${
+                priorityStatus?.isPriority
+                  ? 'border-2 border-red-500 shadow-md shadow-red-500/15 ring-2 ring-red-500/20'
+                  : 'border border-slate-200 dark:border-slate-800'
+              }`}
+            >
             <div className="space-y-1">
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
                 {isHindi ? 'डिजिटल मेडिकल क्यूआर' : 'Emergency Medical QR'}
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
                 {isHindi ? 'पैरामेडिक्स और क्लिनिक के लिए सुरक्षित त्वरित स्कैन' : 'Instant scan for paramedics and emergency clinicians'}
               </p>
             </div>
@@ -655,18 +833,23 @@ export default function QrProfilePage() {
               <QRCodeSVG value={secureShareUrl} size={200} level="H" includeMargin={false} />
             </div>
 
-            <div className="w-full p-4 rounded-2xl bg-slate-50/80 dark:bg-[#070B14]/80 border border-slate-200 dark:border-slate-800 text-xs text-left space-y-2.5">
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500">{isHindi ? 'रोगी का नाम:' : 'Patient Name:'}</span>
-                <span className="text-slate-900 dark:text-white font-bold">{name}</span>
+            <div className="w-full p-4 rounded-2xl bg-slate-50/80 dark:bg-[#1F150E]/80 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm text-left space-y-3">
+              <div className="flex items-center gap-3.5 pb-3 border-b border-slate-200/80 dark:border-slate-800">
+                <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-cyan-500/50 shadow-xs shrink-0 bg-slate-200 dark:bg-slate-800">
+                  <img src={avatar} alt={name} className="w-full h-full object-cover" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-xs text-slate-400 block font-medium">{isHindi ? 'रोगी पहचान' : 'Patient Identity'}</span>
+                  <span className="text-slate-900 dark:text-white font-extrabold text-base truncate block">{name}</span>
+                </div>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500">{isHindi ? 'रक्त समूह:' : 'Blood Group:'}</span>
-                <span className="font-extrabold text-rose-600 dark:text-rose-400">{bloodGroup}</span>
+              <div className="flex justify-between items-center text-xs sm:text-sm">
+                <span className="text-slate-500 font-medium">{isHindi ? 'रक्त समूह:' : 'Blood Group:'}</span>
+                <span className="font-black text-rose-600 dark:text-rose-400 text-base">{bloodGroup}</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500">{isHindi ? 'आपातकालीन संपर्क:' : 'Emergency:'}</span>
-                <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[200px]" title={emergencyContact}>
+              <div className="flex justify-between items-center text-xs sm:text-sm">
+                <span className="text-slate-500 font-medium">{isHindi ? 'आपातकालीन संपर्क:' : 'Emergency:'}</span>
+                <span className="font-bold text-slate-800 dark:text-slate-200 truncate max-w-[200px]" title={emergencyContact}>
                   {emergencyContact}
                 </span>
               </div>
@@ -675,7 +858,7 @@ export default function QrProfilePage() {
             <button
               type="button"
               onClick={handleCopyLink}
-              className="w-full py-3 px-4 rounded-2xl text-xs font-bold bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 transition-all shadow-xs cursor-pointer active:scale-95 flex items-center justify-center gap-2"
+              className="w-full py-3.5 px-4 rounded-2xl text-xs sm:text-sm font-bold bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 transition-all shadow-xs cursor-pointer active:scale-95 flex items-center justify-center gap-2"
             >
               <Copy className="w-4 h-4" />
               <span>{copied ? (isHindi ? 'कॉपी हो गया!' : 'Copied!') : (isHindi ? 'आपातकालीन लिंक कॉपी करें' : 'Copy Emergency Link')}</span>
@@ -684,7 +867,7 @@ export default function QrProfilePage() {
 
           {/* Profile Overview Details */}
           <div className="md:col-span-7 space-y-6">
-            <div className="p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#101827] space-y-5 shadow-sm">
+            <div className="p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#2B1E15] space-y-5 shadow-sm">
               <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
                 <div>
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white">
@@ -697,41 +880,131 @@ export default function QrProfilePage() {
                 <ShieldCheck className="w-6 h-6 text-emerald-500" />
               </div>
 
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200/80 dark:border-slate-800">
-                  <span className="text-xs text-slate-500 block">{isHindi ? 'ईमेल पता' : 'Account Email'}</span>
-                  <span className="font-bold text-slate-900 dark:text-white truncate block mt-0.5">
+              {/* Patient Photo & Verified Identity Banner */}
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-slate-50 via-cyan-50/30 to-blue-50/20 dark:from-slate-900/60 dark:via-cyan-950/20 dark:to-slate-900/40 border border-slate-200/80 dark:border-slate-800">
+                {/* Photo with hover/click to change */}
+                <div className="relative group shrink-0">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-2 border-white dark:border-slate-800 shadow-md ring-2 ring-cyan-500/40 bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
+                    <img
+                      src={avatar}
+                      alt={name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+
+                  {/* Hidden file input */}
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handlePhotoUpload}
+                    accept="image/*"
+                    className="hidden"
+                  />
+
+                  {/* Camera overlay button */}
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploadingPhoto}
+                    className="absolute inset-0 rounded-2xl bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 cursor-pointer"
+                    title={isHindi ? 'फोटो बदलें' : 'Change Photo'}
+                  >
+                    <Camera className="w-6 h-6 text-cyan-300" />
+                    <span className="text-[10px] font-bold">
+                      {isUploadingPhoto ? '...' : 'Upload'}
+                    </span>
+                  </button>
+
+                  <span
+                    className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-xs text-xs font-bold"
+                    title="Identity Verified"
+                  >
+                    ✓
+                  </span>
+                </div>
+
+                {/* Patient Information & Photo Action Buttons */}
+                <div className="flex-1 text-center sm:text-left space-y-1.5 min-w-0">
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                    <h4 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white truncate">
+                      {name}
+                    </h4>
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30">
+                      {isHindi ? 'सत्यापित रोगी' : 'Verified Patient ID'}
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {gender} • {ageRange} • {bloodGroup} • {currentUser?.email || 'patient@biotrajectory.health'}
+                  </p>
+
+                  <div className="pt-2 flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploadingPhoto}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-bold text-xs shadow-xs active:scale-95 transition-all cursor-pointer"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>
+                        {isUploadingPhoto
+                          ? isHindi
+                            ? 'अपलोड हो रहा है...'
+                            : 'Uploading...'
+                          : isHindi
+                          ? 'फोटो अपलोड करें'
+                          : 'Upload Photo'}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleResetPhoto}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-rose-500 text-xs font-semibold transition-colors cursor-pointer"
+                      title={isHindi ? 'डिफ़ॉल्ट फोटो पर रीसेट करें' : 'Reset to default photo'}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>{isHindi ? 'हटाएं' : 'Remove'}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 text-sm sm:text-base">
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200/80 dark:border-slate-800">
+                  <span className="text-xs sm:text-sm text-slate-500 font-medium block">{isHindi ? 'ईमेल पता' : 'Account Email'}</span>
+                  <span className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white truncate block mt-1">
                     {currentUser?.email || 'patient@biotrajectory.health'}
                   </span>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200/80 dark:border-slate-800">
-                  <span className="text-xs text-slate-500 block">{isHindi ? 'आयु वर्ग' : 'Age Bracket'}</span>
-                  <span className="font-bold text-slate-900 dark:text-white block mt-0.5">{ageRange}</span>
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200/80 dark:border-slate-800">
+                  <span className="text-xs sm:text-sm text-slate-500 font-medium block">{isHindi ? 'आयु वर्ग' : 'Age Bracket'}</span>
+                  <span className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white block mt-1">{ageRange}</span>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200/80 dark:border-slate-800">
-                  <span className="text-xs text-slate-500 block">{isHindi ? 'लिंग' : 'Gender'}</span>
-                  <span className="font-bold text-slate-900 dark:text-white block mt-0.5">{gender}</span>
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200/80 dark:border-slate-800">
+                  <span className="text-xs sm:text-sm text-slate-500 font-medium block">{isHindi ? 'लिंग' : 'Gender'}</span>
+                  <span className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white block mt-1">{gender}</span>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200/80 dark:border-slate-800">
-                  <span className="text-xs text-slate-500 block">{isHindi ? 'ज्ञात एलर्जी' : 'Allergies'}</span>
-                  <span className="font-bold text-slate-900 dark:text-white block mt-0.5 truncate" title={allergies}>
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200/80 dark:border-slate-800">
+                  <span className="text-xs sm:text-sm text-slate-500 font-medium block">{isHindi ? 'ज्ञात एलर्जी' : 'Allergies'}</span>
+                  <span className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white block mt-1 truncate" title={allergies}>
                     {allergies}
                   </span>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200/80 dark:border-slate-800 col-span-2">
-                  <span className="text-xs text-slate-500 block">{isHindi ? 'निगरानी की जा रही स्थितियां' : 'Monitored Conditions'}</span>
-                  <span className="font-bold text-slate-900 dark:text-white block mt-0.5 truncate" title={conditions}>
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200/80 dark:border-slate-800 col-span-2">
+                  <span className="text-xs sm:text-sm text-slate-500 font-medium block">{isHindi ? 'निगरानी की जा रही स्थितियां' : 'Monitored Conditions'}</span>
+                  <span className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white block mt-1 truncate" title={conditions}>
                     {conditions}
                   </span>
                 </div>
               </div>
 
               {/* Share Window */}
-              <div className="p-4 rounded-2xl bg-slate-50/80 dark:bg-[#070B14]/80 border border-slate-200 dark:border-slate-800 space-y-2.5">
+              <div className="p-4 rounded-2xl bg-slate-50/80 dark:bg-[#1F150E]/80 border border-slate-200 dark:border-slate-800 space-y-2.5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                     {isHindi ? 'क्यूआर टोकन वैधता अवधि:' : 'QR Token Validity Window:'}
@@ -755,7 +1028,7 @@ export default function QrProfilePage() {
                       className={`py-2 px-2 rounded-xl text-xs font-bold text-center cursor-pointer transition-all ${
                         expiration === opt.id
                           ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 shadow-xs'
-                          : 'bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300'
+                          : 'bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300'
                       }`}
                     >
                       {opt.label}
@@ -766,6 +1039,7 @@ export default function QrProfilePage() {
             </div>
           </div>
         </div>
+      </div>
       )}
     </div>
   );

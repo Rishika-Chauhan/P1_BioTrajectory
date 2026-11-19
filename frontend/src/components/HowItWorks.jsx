@@ -21,9 +21,9 @@ export default function HowItWorks({ onOpenScanner, onOpenReport, onOpenDemo }) 
                         </span>
                         <span className="text-[#00687a] dark:text-[#57dffe]">Lux: 520 (Calibrated)</span>
                     </div>
-                    <div className="h-32 rounded-xl bg-slate-900 border border-[#00685f]/30 flex items-center justify-center relative overflow-hidden">
-                        <div className="absolute inset-4 border border-dashed border-[#00685f]/60 rounded-lg flex items-center justify-center">
-                            <span className="text-[11px] font-mono text-[#6bd8cb]">10-Pad Reagent Strip Alignment Zone</span>
+                    <div className="h-32 rounded-xl bg-slate-900 border border-[#A9D6F5]/30 flex items-center justify-center relative overflow-hidden">
+                        <div className="absolute inset-4 border border-dashed border-[#A9D6F5]/60 rounded-lg flex items-center justify-center">
+                            <span className="text-[11px] font-mono text-[#A9D6F5]">10-Pad Reagent Strip Alignment Zone</span>
                         </div>
                         <div className="w-12 h-24 bg-white/95 rounded shadow flex flex-col justify-around py-1 px-1 z-10">
                             <div className="w-full h-1.5 rounded-xs bg-[#985888]"></div>
@@ -42,9 +42,9 @@ export default function HowItWorks({ onOpenScanner, onOpenReport, onOpenDemo }) 
             content: (
                 <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-                        <div className="p-2.5 rounded-xl bg-[#00685f]/10 border border-[#00685f]/30">
+                        <div className="p-2.5 rounded-xl bg-[#A9D6F5]/10 border border-[#A9D6F5]/30">
                             <span className="block text-[10px] text-slate-400">Protein Pad</span>
-                            <strong className="text-[#00685f] dark:text-[#6bd8cb]">30 mg/dL (1+)</strong>
+                            <strong className="text-[#2672A8] dark:text-[#A9D6F5]">30 mg/dL (1+)</strong>
                         </div>
                         <div className="p-2.5 rounded-xl bg-slate-800/80 border border-white/5">
                             <span className="block text-[10px] text-slate-400">Specific Gravity</span>
@@ -98,8 +98,8 @@ export default function HowItWorks({ onOpenScanner, onOpenReport, onOpenDemo }) 
         {
             title: '05 Explain: Grounded Gemini Explanation',
             content: (
-                <div className="p-3 rounded-xl bg-[#00685f]/10 border border-[#00685f]/25 space-y-2 text-xs">
-                    <div className="flex items-center space-x-1.5 text-[#00685f] dark:text-[#6bd8cb] font-mono text-[11px] font-semibold">
+                <div className="p-3 rounded-xl bg-[#A9D6F5]/10 border border-[#A9D6F5]/25 space-y-2 text-xs">
+                    <div className="flex items-center space-x-1.5 text-[#2672A8] dark:text-[#A9D6F5] font-mono text-[11px] font-semibold">
                         <Sparkles className="w-3.5 h-3.5" />
                         <span>Gemini Clinical Summary</span>
                     </div>
@@ -124,7 +124,7 @@ export default function HowItWorks({ onOpenScanner, onOpenReport, onOpenDemo }) 
                     </div>
                     <button
                         onClick={onOpenReport}
-                        className="w-full py-2.5 rounded-xl bg-[#00685f] hover:bg-[#008378] text-white font-mono text-xs uppercase font-bold transition-all shadow-sm"
+                        className="w-full py-2.5 rounded-xl bg-[#A9D6F5] hover:bg-[#7CBFEA] text-white font-mono text-xs uppercase font-bold transition-all shadow-sm"
                     >
                         Preview Document
                     </button>
@@ -134,15 +134,15 @@ export default function HowItWorks({ onOpenScanner, onOpenReport, onOpenDemo }) 
     ];
 
     return (
-        <section className={`relative py-20 transition-colors ${isDark ? 'bg-[#070b14]' : 'bg-[#faf8ff]'}`} id="how-it-works">
+        <section className={`relative py-20 transition-colors ${isDark ? 'bg-[#1F150E]' : 'bg-[#faf8ff]'}`} id="how-it-works">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* Workflow Pipeline Header */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 pb-6 border-b border-slate-200 dark:border-slate-800">
                     <div className="max-w-2xl">
                         <div className="flex items-center gap-2 mb-2">
-                            <span className="w-2 h-2 rounded-full bg-[#00685f]"></span>
-                            <span className="text-[11px] font-mono uppercase tracking-wider font-bold text-[#00685f] dark:text-[#6bd8cb]">
+                            <span className="w-2 h-2 rounded-full bg-[#A9D6F5]"></span>
+                            <span className="text-[11px] font-mono uppercase tracking-wider font-bold text-[#2672A8] dark:text-[#A9D6F5]">
                                 Deterministic Pipeline
                             </span>
                         </div>
@@ -155,7 +155,7 @@ export default function HowItWorks({ onOpenScanner, onOpenReport, onOpenDemo }) 
                     </div>
                     <button
                         onClick={onOpenDemo}
-                        className="px-4 py-2.5 rounded-xl text-xs font-mono font-bold uppercase tracking-wider border transition-all self-start md:self-auto shrink-0 bg-white dark:bg-[#0d1526] text-[#00685f] dark:text-[#6bd8cb] border-[#00685f]/30 hover:bg-[#00685f]/10 shadow-xs"
+                        className="px-4 py-2.5 rounded-xl text-xs font-mono font-bold uppercase tracking-wider border transition-all self-start md:self-auto shrink-0 bg-white dark:bg-[#0d1526] text-[#2672A8] dark:text-[#A9D6F5] border-[#A9D6F5]/30 hover:bg-[#A9D6F5]/10 shadow-xs"
                     >
                         Open Interactive Flow
                     </button>
@@ -175,23 +175,23 @@ export default function HowItWorks({ onOpenScanner, onOpenReport, onOpenDemo }) 
                                     onClick={() => setActiveStep(idx)}
                                     className={`p-5 rounded-2xl border cursor-pointer transition-all duration-200 flex flex-col justify-between ${isSelected
                                         ? isDark
-                                            ? 'bg-[#0d1526] border-[#00685f] shadow-[0_8px_25px_rgba(0,104,95,0.2)] ring-1 ring-[#00685f]/50'
-                                            : 'bg-white border-[#00685f] shadow-[0_8px_25px_rgba(0,104,95,0.1)] ring-1 ring-[#00685f]/30'
+                                            ? 'bg-[#0d1526] border-[#A9D6F5] shadow-[0_8px_25px_rgba(0,104,95,0.2)] ring-1 ring-[#A9D6F5]/50'
+                                            : 'bg-white border-[#A9D6F5] shadow-[0_8px_25px_rgba(0,104,95,0.1)] ring-1 ring-[#A9D6F5]/30'
                                         : isDark
                                             ? 'bg-[#0a0f1d] border-slate-800 hover:border-slate-700'
-                                            : 'bg-white border-slate-200 hover:border-[#00685f]/40 shadow-xs'
+                                            : 'bg-white border-slate-200 hover:border-[#A9D6F5]/40 shadow-xs'
                                         }`}
                                 >
                                     <div>
                                         <div className="flex items-center justify-between mb-3">
                                             <span className={`text-2xl font-mono font-bold ${isSelected
-                                                ? 'text-[#00685f] dark:text-[#6bd8cb]'
+                                                ? 'text-[#2672A8] dark:text-[#A9D6F5]'
                                                 : 'text-slate-300 dark:text-slate-700'
                                                 }`}>
                                                 {item.step}
                                             </span>
                                             <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${isSelected
-                                                ? 'bg-[#00685f] text-white border-[#00685f]'
+                                                ? 'bg-[#A9D6F5] text-[#1F150E] font-bold border-[#A9D6F5]'
                                                 : isDark ? 'bg-slate-900 text-slate-400 border-slate-800' : 'bg-slate-50 text-slate-600 border-slate-200'
                                                 }`}>
                                                 <Icon className="w-4 h-4" />
@@ -207,7 +207,7 @@ export default function HowItWorks({ onOpenScanner, onOpenReport, onOpenDemo }) 
                                         </p>
                                     </div>
 
-                                    <div className={`mt-4 pt-3 border-t text-[11px] font-mono flex items-center justify-between ${isDark ? 'border-slate-800 text-[#6bd8cb]' : 'border-slate-100 text-[#00685f]'
+                                    <div className={`mt-4 pt-3 border-t text-[11px] font-mono flex items-center justify-between ${isDark ? 'border-slate-800 text-[#A9D6F5]' : 'border-slate-100 text-[#2672A8]'
                                         }`}>
                                         <span>{item.actionLabel}</span>
                                         <ArrowRight className={`w-3 h-3 transition-transform ${isSelected ? 'translate-x-1' : ''}`} />
@@ -222,8 +222,8 @@ export default function HowItWorks({ onOpenScanner, onOpenReport, onOpenDemo }) 
                         }`}>
                         <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800 mb-6">
                             <div className="flex items-center space-x-2">
-                                <span className="w-2.5 h-2.5 rounded-full bg-[#00685f] animate-pulse"></span>
-                                <span className="text-xs font-mono uppercase font-semibold text-[#00685f] dark:text-[#6bd8cb]">
+                                <span className="w-2.5 h-2.5 rounded-full bg-[#A9D6F5] animate-pulse"></span>
+                                <span className="text-xs font-mono uppercase font-semibold text-[#2672A8] dark:text-[#A9D6F5]">
                                     Live Simulator: Step 0{activeStep + 1}
                                 </span>
                             </div>
@@ -243,7 +243,7 @@ export default function HowItWorks({ onOpenScanner, onOpenReport, onOpenDemo }) 
 
                         <div className={`p-4 rounded-xl border text-xs leading-relaxed ${isDark ? 'bg-slate-900/60 border-slate-800 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'
                             }`}>
-                            <strong className="block text-[11px] font-mono uppercase mb-1 text-[#00685f] dark:text-[#6bd8cb]">
+                            <strong className="block text-[11px] font-mono uppercase mb-1 text-[#2672A8] dark:text-[#A9D6F5]">
                                 Architectural Guarantee:
                             </strong>
                             {PDF_HOW_IT_WORKS_STEPS[activeStep].details}
@@ -259,7 +259,7 @@ export default function HowItWorks({ onOpenScanner, onOpenReport, onOpenDemo }) 
                             </button>
                             <button
                                 onClick={() => setActiveStep((prev) => (prev < 5 ? prev + 1 : 0))}
-                                className="px-4 py-1.5 rounded-lg bg-[#00685f] hover:bg-[#008378] text-white text-xs font-mono font-bold transition-all shadow-sm"
+                                className="px-4 py-1.5 rounded-lg bg-[#A9D6F5] hover:bg-[#7CBFEA] text-white text-xs font-mono font-bold transition-all shadow-sm"
                             >
                                 Next Step →
                             </button>
@@ -274,11 +274,11 @@ export default function HowItWorks({ onOpenScanner, onOpenReport, onOpenDemo }) 
                     : 'bg-white border-[#e2e8f0]'
                     }`}>
                     <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 rounded-xl bg-[#00685f]/15 text-[#00685f] dark:text-[#6bd8cb] border border-[#00685f]/30 flex items-center justify-center shrink-0">
+                        <div className="w-12 h-12 rounded-xl bg-[#A9D6F5]/15 text-[#2672A8] dark:text-[#A9D6F5] border border-[#A9D6F5]/30 flex items-center justify-center shrink-0">
                             <ShieldAlert className="w-6 h-6" />
                         </div>
                         <div>
-                            <span className="text-[10px] font-mono uppercase tracking-widest font-bold block mb-1 text-[#00685f] dark:text-[#6bd8cb]">
+                            <span className="text-[10px] font-mono uppercase tracking-widest font-bold block mb-1 text-[#2672A8] dark:text-[#A9D6F5]">
                                 Clinical Governance Mandate
                             </span>
                             <p className="text-base sm:text-lg font-semibold leading-relaxed text-slate-900 dark:text-white">
@@ -289,7 +289,7 @@ export default function HowItWorks({ onOpenScanner, onOpenReport, onOpenDemo }) 
 
                     <button
                         onClick={onOpenDemo}
-                        className="px-5 py-2.5 rounded-xl text-xs font-mono uppercase font-bold shrink-0 transition-all border bg-[#00685f]/10 hover:bg-[#00685f]/20 text-[#00685f] dark:text-[#6bd8cb] border-[#00685f]/30"
+                        className="px-5 py-2.5 rounded-xl text-xs font-mono uppercase font-bold shrink-0 transition-all border bg-[#A9D6F5]/10 hover:bg-[#A9D6F5]/20 text-[#2672A8] dark:text-[#A9D6F5] border-[#A9D6F5]/30"
                     >
                         Audit Safety Rules
                     </button>

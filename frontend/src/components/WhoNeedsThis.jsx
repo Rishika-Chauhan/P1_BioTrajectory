@@ -37,15 +37,15 @@ export default function WhoNeedsThis({ onOpenDemo }) {
   ];
 
   return (
-    <section className={`relative py-20 transition-colors ${isDark ? 'bg-[#070b14]' : 'bg-[#faf8ff]'}`} id="who-needs-this">
+    <section className={`relative py-20 transition-colors ${isDark ? 'bg-[#1F150E]' : 'bg-[#faf8ff]'}`} id="who-needs-this">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Target Population Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 pb-6 border-b border-slate-200 dark:border-slate-800">
           <div className="max-w-2xl">
             <div className="flex items-center gap-2 mb-2">
-              <span className="w-2 h-2 rounded-full bg-[#00685f]"></span>
-              <span className="text-[11px] font-mono uppercase tracking-wider font-bold text-[#00685f] dark:text-[#6bd8cb]">
+              <span className="w-2 h-2 rounded-full bg-[#A9D6F5]"></span>
+              <span className="text-[11px] font-mono uppercase tracking-wider font-bold text-[#2672A8] dark:text-[#A9D6F5]">
                 Clinical Indications & Cohorts
               </span>
             </div>
@@ -56,7 +56,7 @@ export default function WhoNeedsThis({ onOpenDemo }) {
               Addressing the silent progression of chronic disease across individual at-home users, rural clinics, attending physicians, and health systems.
             </p>
           </div>
-          <div className="text-xs font-mono px-3.5 py-1.5 rounded-xl border shrink-0 bg-white dark:bg-[#0d1526] border-slate-200 dark:border-slate-800 text-[#00685f] dark:text-[#6bd8cb] shadow-xs">
+          <div className="text-xs font-mono px-3.5 py-1.5 rounded-xl border shrink-0 bg-white dark:bg-[#0d1526] border-slate-200 dark:border-slate-800 text-[#2672A8] dark:text-[#A9D6F5] shadow-xs">
             Select a cohort to inspect impact
           </div>
         </div>
@@ -72,23 +72,23 @@ export default function WhoNeedsThis({ onOpenDemo }) {
                 onClick={() => setSelectedAudience(idx)}
                 className={`p-6 rounded-2xl border cursor-pointer transition-all duration-200 flex flex-col justify-between ${isSelected
                   ? isDark
-                    ? 'bg-[#0d1526] border-[#00685f] shadow-[0_8px_25px_rgba(0,104,95,0.2)] ring-1 ring-[#00685f]/50'
-                    : 'bg-white border-[#00685f] shadow-[0_8px_25px_rgba(0,104,95,0.1)] ring-1 ring-[#00685f]/30'
+                    ? 'bg-[#0d1526] border-[#A9D6F5] shadow-[0_8px_25px_rgba(0,104,95,0.2)] ring-1 ring-[#A9D6F5]/50'
+                    : 'bg-white border-[#A9D6F5] shadow-[0_8px_25px_rgba(0,104,95,0.1)] ring-1 ring-[#A9D6F5]/30'
                   : isDark
                     ? 'bg-[#0a0f1d] border-slate-800 hover:border-slate-700'
-                    : 'bg-white border-slate-200 hover:border-[#00685f]/40 shadow-xs'
+                    : 'bg-white border-slate-200 hover:border-[#A9D6F5]/40 shadow-xs'
                   }`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${isSelected
-                      ? 'bg-[#00685f] text-white border-[#00685f]'
+                      ? 'bg-[#A9D6F5] text-[#1F150E] font-bold border-[#A9D6F5]'
                       : isDark ? 'bg-slate-900 text-slate-400 border-slate-800' : 'bg-slate-50 text-slate-600 border-slate-200'
                       }`}>
                       <Icon className="w-5 h-5" />
                     </div>
                     <span className={`text-[10px] font-mono uppercase px-2 py-0.5 rounded border ${isSelected
-                      ? 'bg-[#00685f]/15 text-[#00685f] dark:text-[#6bd8cb] border-[#00685f]/30 font-bold'
+                      ? 'bg-[#A9D6F5]/15 text-[#2672A8] dark:text-[#A9D6F5] border-[#A9D6F5]/30 font-bold'
                       : isDark ? 'bg-slate-800 text-slate-400 border-transparent' : 'bg-slate-100 text-slate-600 border-slate-200'
                       }`}>
                       {aud.metric}
@@ -104,7 +104,7 @@ export default function WhoNeedsThis({ onOpenDemo }) {
                   </p>
                 </div>
 
-                <div className={`mt-6 pt-3 border-t text-[11px] font-mono flex items-center justify-between ${isDark ? 'border-slate-800 text-[#6bd8cb]' : 'border-slate-100 text-[#00685f]'
+                <div className={`mt-6 pt-3 border-t text-[11px] font-mono flex items-center justify-between ${isDark ? 'border-slate-800 text-[#A9D6F5]' : 'border-slate-100 text-[#2672A8]'
                   }`}>
                   <span>{isSelected ? 'Viewing Persona' : 'Click to explore'}</span>
                   <ArrowRight className={`w-3.5 h-3.5 transition-transform ${isSelected ? 'translate-x-1' : ''}`} />
@@ -119,7 +119,7 @@ export default function WhoNeedsThis({ onOpenDemo }) {
           }`}>
           <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800 mb-6">
             <div className="flex items-center space-x-3">
-              <span className="w-3 h-3 rounded-full bg-[#00685f]"></span>
+              <span className="w-3 h-3 rounded-full bg-[#A9D6F5]"></span>
               <h4 className="text-xl font-bold text-slate-900 dark:text-white">
                 {audienceDeepDives[selectedAudience].role}
               </h4>
@@ -131,7 +131,7 @@ export default function WhoNeedsThis({ onOpenDemo }) {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <div className="lg:col-span-7">
-              <blockquote className={`text-base sm:text-lg italic p-5 rounded-2xl border leading-relaxed mb-4 ${isDark ? 'bg-slate-900/50 border-slate-800 text-slate-200' : 'bg-[#00685f]/5 border-[#00685f]/15 text-slate-800'
+              <blockquote className={`text-base sm:text-lg italic p-5 rounded-2xl border leading-relaxed mb-4 ${isDark ? 'bg-slate-900/50 border-slate-800 text-slate-200' : 'bg-[#A9D6F5]/5 border-[#A9D6F5]/15 text-slate-800'
                 }`}>
                 {audienceDeepDives[selectedAudience].userStory}
               </blockquote>
@@ -160,7 +160,7 @@ export default function WhoNeedsThis({ onOpenDemo }) {
             ? 'bg-[#0d1526] border-slate-800'
             : 'bg-white border-[#e2e8f0]'
             }`}>
-            <span className="text-5xl sm:text-6xl font-extrabold text-[#00685f] dark:text-[#6bd8cb] block mb-2 font-mono">
+            <span className="text-5xl sm:text-6xl font-extrabold text-[#2672A8] dark:text-[#A9D6F5] block mb-2 font-mono">
               136M
             </span>
             <h4 className="text-lg font-bold mb-2 text-slate-900 dark:text-white">
@@ -191,7 +191,7 @@ export default function WhoNeedsThis({ onOpenDemo }) {
         <div className="mt-12 text-center">
           <button
             onClick={onOpenDemo}
-            className="inline-flex items-center space-x-2 px-6 py-3 rounded-xl text-xs font-mono uppercase font-bold tracking-wider transition-all shadow-sm bg-[#00685f] hover:bg-[#008378] text-white"
+            className="inline-flex items-center space-x-2 px-6 py-3 rounded-xl text-xs font-mono uppercase font-bold tracking-wider transition-all shadow-sm bg-[#A9D6F5] hover:bg-[#7CBFEA] text-white"
           >
             <Activity className="w-4 h-4" />
             <span>Launch Trajectory Engine for Patient Cohorts</span>

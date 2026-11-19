@@ -28,7 +28,7 @@ export default function BrandLogo({
     >
       {/* Official BioTrajectory Logo Emblem */}
       <div
-        className={`${boxSize} bg-white dark:bg-white rounded-2xl shadow-md shadow-cyan-500/15 group-hover:shadow-cyan-500/30 transition-all duration-300 group-hover:scale-105 shrink-0 border border-slate-200 dark:border-slate-700/80 flex items-center justify-center overflow-hidden p-1`}
+        className={`${boxSize} bg-white dark:bg-[#2B1E15] rounded-2xl shadow-md shadow-[#A9D6F5]/25 group-hover:shadow-[#A9D6F5]/40 transition-all duration-300 group-hover:scale-105 shrink-0 border border-[#E5DACB] dark:border-[#4A3728] flex items-center justify-center overflow-hidden p-1`}
       >
         <img
           src="/biotrajectory-emblem.png"
@@ -42,15 +42,15 @@ export default function BrandLogo({
       {showText && (
         <div className="flex flex-col justify-center">
           <span
-            className={`font-extrabold ${textSize} tracking-tight text-slate-900 dark:text-white leading-none transition-colors`}
+            className={`font-extrabold ${textSize} tracking-tight text-[#3D291A] dark:text-[#F6F0E4] leading-none transition-colors`}
           >
             Bio
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 via-teal-600 to-blue-600 dark:from-cyan-400 dark:to-blue-500 font-extrabold ml-[1px]">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6B4F3A] to-[#2672A8] dark:from-[#A9D6F5] dark:to-[#E4F3FD] font-extrabold ml-[1px]">
               Trajectory
             </span>
           </span>
           {subtitle && (
-            <span className="text-[11px] font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider mt-1 leading-none">
+            <span className="text-[11px] font-bold text-[#2672A8] dark:text-[#A9D6F5] uppercase tracking-wider mt-1 leading-none">
               {subtitle}
             </span>
           )}

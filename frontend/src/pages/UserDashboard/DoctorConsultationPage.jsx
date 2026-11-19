@@ -16,10 +16,13 @@ import {
   Clock,
   MapPin,
   ClipboardList,
+  AlertOctagon,
+  Zap
 } from "lucide-react";
 
 import { approvedDoctorService } from "../../services/approvedDoctorService";
 import { appointmentService } from "../../services/appointmentService";
+import { getPatientPriorityStatus, subscribeToPriorityChanges } from "../../services/patientPriorityService";
 import DisclaimerBanner from "../../components/common/DisclaimerBanner";
 
 function getLocalDate() {
@@ -85,6 +88,14 @@ function getStatusDescription(status) {
 
 export default function DoctorConsultationPage() {
   const [activeTab, setActiveTab] = useState("browse");
+  const [priorityStatus, setPriorityStatus] = useState(() => getPatientPriorityStatus());
+
+  useEffect(() => {
+    const unsubscribe = subscribeToPriorityChanges((status) => {
+      setPriorityStatus(status);
+    });
+    return unsubscribe;
+  }, []);
 
   // Doctor discovery
   const [doctors, setDoctors] = useState([]);
@@ -236,7 +247,9 @@ export default function DoctorConsultationPage() {
     };
   }, [appointments]);
 
-  const handleRetry = () => {
+  const handleRetry = async () => {
+    setLoading(true);
+    await new Promise((r) => setTimeout(r, 450));
     setReloadKey((previous) => previous + 1);
   };
 
@@ -323,7 +336,7 @@ export default function DoctorConsultationPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 text-sm font-semibold">
+        <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 text-sm font-semibold">
           <button
             onClick={() => setActiveTab("browse")}
             className={`px-5 py-2.5 rounded-xl ${
@@ -347,6 +360,31 @@ export default function DoctorConsultationPage() {
           </button>
         </div>
       </div>
+
+      {/* PRIORITY PATIENT FAST-TRACK NOTICE */}
+      {priorityStatus?.isPriority && (
+        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-red-600/15 via-rose-600/10 to-red-600/5 border-2 border-red-500 text-red-600 dark:text-red-400 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-md shadow-red-500/10 animate-pulse">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-red-600 text-white shrink-0 shadow-sm">
+              <AlertOctagon className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-xs font-black uppercase tracking-wider text-red-600 dark:text-red-400">
+                🚨 FAST-TRACK CLINICAL PRIORITY ROUTING ACTIVE
+              </div>
+              <p className="text-sm font-bold text-slate-900 dark:text-white mt-0.5">
+                Danger Condition: {priorityStatus.primaryDisease}
+              </p>
+              <p className="text-xs text-slate-600 dark:text-slate-300">
+                Because you are flagged with an active critical condition, your consultation requests are routed with zero-minute hold emergency physician priority.
+              </p>
+            </div>
+          </div>
+          <span className="self-start sm:self-auto px-3 py-1 rounded-full bg-red-600 text-white text-xs font-black uppercase tracking-wider shrink-0 shadow-xs">
+            EXPEDITED QUEUE
+          </span>
+        </div>
+      )}
 
       {/* SUCCESS MESSAGE */}
       {bookingSuccess && (
@@ -382,7 +420,7 @@ export default function DoctorConsultationPage() {
           </div>
 
           {/* SEARCH */}
-          <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row gap-4 items-center justify-between shadow-sm">
+          <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row gap-4 items-center justify-between shadow-sm">
             <div className="relative w-full md:w-96">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input
@@ -390,7 +428,7 @@ export default function DoctorConsultationPage() {
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder="Search doctor or specialty..."
-                className="w-full pl-11 pr-4 py-3 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
+                className="w-full pl-11 pr-4 py-3 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
               />
             </div>
 
@@ -402,7 +440,7 @@ export default function DoctorConsultationPage() {
                   className={`px-4 py-2.5 rounded-2xl text-sm font-semibold whitespace-nowrap ${
                     selectedSpecialty === specialty
                       ? "bg-cyan-500 text-slate-950"
-                      : "bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
+                      : "bg-slate-50 dark:bg-[#1F150E] border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
                   }`}
                 >
                   {specialty}
@@ -445,7 +483,7 @@ export default function DoctorConsultationPage() {
 
           {/* EMPTY */}
           {!loading && !error && doctors.length === 0 && (
-            <div className="p-10 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 text-center">
+            <div className="p-10 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 text-center">
               <Stethoscope className="w-12 h-12 text-slate-400 mx-auto mb-4" />
               <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                 No approved doctors yet
@@ -455,10 +493,11 @@ export default function DoctorConsultationPage() {
               </p>
               <button
                 onClick={handleRetry}
-                className="mt-5 inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-slate-300 dark:border-slate-700"
+                disabled={loading}
+                className="mt-5 inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-slate-300 dark:border-slate-700 hover:border-cyan-500 cursor-pointer active:scale-95 transition-all disabled:opacity-60"
               >
-                <RefreshCw className="w-4 h-4" />
-                Refresh
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-cyan-500' : ''}`} />
+                <span>{loading ? 'Refreshing...' : 'Refresh'}</span>
               </button>
             </div>
           )}
@@ -468,7 +507,7 @@ export default function DoctorConsultationPage() {
             !error &&
             doctors.length > 0 &&
             filteredDoctors.length === 0 && (
-              <div className="p-10 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 text-center">
+              <div className="p-10 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 text-center">
                 <Search className="w-10 h-10 text-slate-400 mx-auto mb-3" />
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                   No matching doctors
@@ -499,10 +538,11 @@ export default function DoctorConsultationPage() {
 
                 <button
                   onClick={handleRetry}
-                  className="flex items-center gap-2 text-sm font-semibold text-cyan-600 dark:text-cyan-400"
+                  disabled={loading}
+                  className="flex items-center gap-2 text-sm font-semibold text-cyan-600 dark:text-cyan-400 hover:underline cursor-pointer active:scale-95 transition-all disabled:opacity-60"
                 >
-                  <RefreshCw className="w-4 h-4" />
-                  Refresh
+                  <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-cyan-500' : ''}`} />
+                  <span>{loading ? 'Refreshing...' : 'Refresh'}</span>
                 </button>
               </div>
 
@@ -510,7 +550,7 @@ export default function DoctorConsultationPage() {
                 {filteredDoctors.map((doctor) => (
                   <div
                     key={doctor.uid}
-                    className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-sm hover:border-cyan-500/40 transition-all space-y-5"
+                    className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 shadow-sm hover:border-cyan-500/40 transition-all space-y-5"
                   >
                     <div className="flex items-start gap-4">
                       <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
@@ -630,7 +670,7 @@ export default function DoctorConsultationPage() {
                 className={`p-4 rounded-2xl border text-left transition ${
                   historyFilter === item.key
                     ? "border-cyan-500 bg-cyan-500/10"
-                    : "border-slate-200 dark:border-slate-800 bg-white dark:bg-[#101827]"
+                    : "border-slate-200 dark:border-slate-800 bg-white dark:bg-[#2B1E15]"
                 }`}
               >
                 <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -645,7 +685,7 @@ export default function DoctorConsultationPage() {
 
           {/* HISTORY LOADING */}
           {historyLoading && (
-            <div className="py-16 text-center rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800">
+            <div className="py-16 text-center rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800">
               <RefreshCw className="w-9 h-9 text-cyan-500 animate-spin mx-auto mb-3" />
               <p className="font-semibold text-slate-800 dark:text-white">
                 Loading your appointments...
@@ -677,7 +717,7 @@ export default function DoctorConsultationPage() {
           {!historyLoading &&
             !historyError &&
             appointments.length === 0 && (
-              <div className="p-10 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 text-center">
+              <div className="p-10 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 text-center">
                 <History className="w-12 h-12 text-slate-400 mx-auto mb-4" />
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                   No appointments yet
@@ -699,7 +739,7 @@ export default function DoctorConsultationPage() {
             !historyError &&
             appointments.length > 0 &&
             filteredAppointments.length === 0 && (
-              <div className="p-8 rounded-2xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 text-center">
+              <div className="p-8 rounded-2xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 text-center">
                 <ClipboardList className="w-10 h-10 text-slate-400 mx-auto mb-3" />
                 <h3 className="font-bold text-slate-900 dark:text-white">
                   No {historyFilter.toLowerCase()} appointments
@@ -718,7 +758,7 @@ export default function DoctorConsultationPage() {
                 {filteredAppointments.map((appointment) => (
                   <div
                     key={appointment.id}
-                    className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-sm"
+                    className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 shadow-sm"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                       <div className="flex items-start gap-3">

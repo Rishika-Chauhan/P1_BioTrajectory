@@ -314,7 +314,7 @@ export default function UrineAnalysisPage() {
 
           <Link
             to="/dashboard/devices"
-            className="inline-flex items-center gap-2 h-10 px-4 rounded-xl text-xs font-bold bg-white dark:bg-[#101827] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 hover:border-cyan-500/40 transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
+            className="inline-flex items-center gap-2 h-10 px-4 rounded-xl text-xs font-bold bg-white dark:bg-[#2B1E15] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 hover:border-cyan-500/40 transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
           >
             <Droplet className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
             <span>View Devices</span>

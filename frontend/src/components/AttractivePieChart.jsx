@@ -82,32 +82,32 @@ export default function AttractivePieChart() {
     : segmentsWithAngles[0];
 
   return (
-    <div className={`p-6 sm:p-7 rounded-xl border shadow-xs relative overflow-hidden transition-all ${isDark ? 'bg-[#2B0B0E] border-[#D5BF86]/20' : 'bg-white border-[#D5BF86]/70'
+    <div className={`p-6 sm:p-7 rounded-xl border shadow-xs relative overflow-hidden transition-all ${isDark ? 'bg-[#2B1E15] border-[#E5DACB]/20' : 'bg-white border-[#E5DACB]/70'
       }`}>
       {/* Top Header & Preset Switchers */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-[#D5BF86]/30">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-[#E5DACB]/30">
         <div>
           <div className="flex items-center space-x-2">
-            <div className="w-6 h-6 rounded-md bg-[#A71D31]/10 text-[#A71D31] flex items-center justify-center">
+            <div className="w-6 h-6 rounded-md bg-[#A9D6F5]/10 text-[#A9D6F5] flex items-center justify-center">
               <PieIcon className="w-3.5 h-3.5" />
             </div>
-            <span className="text-[11px] font-sans font-bold uppercase tracking-wider text-[#A71D31] dark:text-[#D5BF86]">
+            <span className="text-[11px] font-sans font-bold uppercase tracking-wider text-[#A9D6F5] dark:text-[#E5DACB]">
               Longitudinal Proportion Analytics
             </span>
           </div>
-          <h3 className={`font-sans text-xl font-bold mt-1 ${isDark ? 'text-[#FAF9EB]' : 'text-[#3F0D12]'}`}>
+          <h3 className={`font-sans text-xl font-bold mt-1 ${isDark ? 'text-[#FAF6EE]' : 'text-[#3D291A]'}`}>
             {preset.title}
           </h3>
-          <p className={`text-xs mt-0.5 ${isDark ? 'text-[#D5BF86]' : 'text-[#8D775F]'}`}>
+          <p className={`text-xs mt-0.5 ${isDark ? 'text-[#E5DACB]' : 'text-[#846752]'}`}>
             {preset.subtitle}
           </p>
-          <p className={`text-[11px] mt-1 ${isDark ? 'text-[#D5BF86]' : 'text-[#8D775F]'}`}>
+          <p className={`text-[11px] mt-1 ${isDark ? 'text-[#E5DACB]' : 'text-[#846752]'}`}>
             Illustrative demo-only chart. This component does not represent a real patient record.
           </p>
         </div>
 
         {/* Preset Selector Buttons */}
-        <div className={`inline-flex p-1 rounded-lg border text-xs font-sans self-start md:self-auto shrink-0 ${isDark ? 'bg-[#050814] border-[#D5BF86]/30' : 'bg-[#FAF9EB] border-[#D5BF86]'
+        <div className={`inline-flex p-1 rounded-lg border text-xs font-sans self-start md:self-auto shrink-0 ${isDark ? 'bg-[#18100A] border-[#E5DACB]/30' : 'bg-[#FAF6EE] border-[#E5DACB]'
           }`}>
           {PIE_CHART_PRESETS.map((p, idx) => (
             <button
@@ -117,8 +117,8 @@ export default function AttractivePieChart() {
                 setHoveredSegmentId(null);
               }}
               className={`px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer ${activePresetIndex === idx
-                  ? 'bg-[#A71D31] text-white shadow-xs font-bold'
-                  : 'text-[#8D775F] dark:text-[#D5BF86] hover:text-[#3F0D12]'
+                  ? 'bg-[#A9D6F5]-[#1F150E] shadow-xs font-bold'
+                  : 'text-[#846752] dark:text-[#E5DACB] hover:text-[#3D291A]'
                 }`}
             >
               {idx === 0 ? 'Time in Corridor (TIC)' : idx === 1 ? 'Data Ingestion Sources' : 'Organ Systems'}
@@ -166,7 +166,7 @@ export default function AttractivePieChart() {
                     fill={seg.color}
                     transform={`translate(${dx}, ${dy})`}
                     className="cursor-pointer transition-all duration-300"
-                    stroke={isDark ? '#050814' : '#FAF9EB'}
+                    stroke={isDark ? '#18100A' : '#FAF6EE'}
                     strokeWidth="2.5"
                     filter={isHovered ? 'url(#activePieGlow)' : 'none'}
                     onMouseEnter={() => setHoveredSegmentId(seg.id)}
@@ -178,10 +178,10 @@ export default function AttractivePieChart() {
 
             {/* Central Circular HUD Display */}
             <div
-              className={`absolute w-44 h-44 rounded-full flex flex-col items-center justify-center text-center p-4 shadow-inner border pointer-events-none transition-all ${isDark ? 'bg-[#050814]/95 border-[#D5BF86]/30' : 'bg-[#FAF9EB]/95 border-[#D5BF86]'
+              className={`absolute w-44 h-44 rounded-full flex flex-col items-center justify-center text-center p-4 shadow-inner border pointer-events-none transition-all ${isDark ? 'bg-[#18100A]/95 border-[#E5DACB]/30' : 'bg-[#FAF6EE]/95 border-[#E5DACB]'
                 }`}
             >
-              <span className="text-[10px] font-mono-code uppercase font-bold tracking-wider text-[#8D775F]">
+              <span className="text-[10px] font-mono-code uppercase font-bold tracking-wider text-[#846752]">
                 Proportion
               </span>
               <strong
@@ -190,25 +190,25 @@ export default function AttractivePieChart() {
               >
                 {activeSegment.value}%
               </strong>
-              <span className="text-xs font-semibold leading-tight max-w-[130px] truncate text-[#3F0D12] dark:text-[#FAF9EB]">
+              <span className="text-xs font-semibold leading-tight max-w-[130px] truncate text-[#3D291A] dark:text-[#FAF6EE]">
                 {activeSegment.label}
               </span>
-              <span className="text-[10px] font-mono-code text-[#8D775F] mt-0.5">
+              <span className="text-[10px] font-mono-code text-[#846752] mt-0.5">
                 {activeSegment.count}
               </span>
             </div>
           </div>
 
-          <span className="text-[11px] font-mono-code text-[#8D775F] mt-4 text-center">
+          <span className="text-[11px] font-mono-code text-[#846752] mt-4 text-center">
             Hover or click any segment above to inspect telemetry mechanics
           </span>
         </div>
 
         {/* Right 6 Cols: Detailed Breakdown & Clinical Significance Cards */}
         <div className="lg:col-span-6 space-y-3.5">
-          <div className="flex items-center justify-between pb-2 border-b border-[#D5BF86]/30 text-xs font-mono-code">
-            <span className="text-[#8D775F] uppercase font-semibold">Segment Breakdown & Rationale</span>
-            <span className="text-[#A71D31] font-bold">Total: {totalValue}%</span>
+          <div className="flex items-center justify-between pb-2 border-b border-[#E5DACB]/30 text-xs font-mono-code">
+            <span className="text-[#846752] uppercase font-semibold">Segment Breakdown & Rationale</span>
+            <span className="text-[#A9D6F5] font-bold">Total: {totalValue}%</span>
           </div>
 
           {segmentsWithAngles.map((seg) => {
@@ -221,11 +221,11 @@ export default function AttractivePieChart() {
                 onClick={() => setHoveredSegmentId(seg.id)}
                 className={`p-4 rounded-2xl border cursor-pointer transition-all duration-300 ${isHovered
                     ? isDark
-                      ? 'bg-[#050814] border-[#A71D31] shadow-md ring-1 ring-[#A71D31]/40 scale-[1.02]'
-                      : 'bg-[#FAF9EB] border-[#A71D31] shadow-sm ring-1 ring-[#A71D31]/50 scale-[1.02]'
+                      ? 'bg-[#18100A] border-[#A9D6F5] shadow-md ring-1 ring-[#A9D6F5]/40 scale-[1.02]'
+                      : 'bg-[#FAF6EE] border-[#A9D6F5] shadow-sm ring-1 ring-[#A9D6F5]/50 scale-[1.02]'
                     : isDark
-                      ? 'bg-[#050814]/60 border-[#D5BF86]/20 hover:border-[#D5BF86]/40'
-                      : 'bg-[#FAF9EB]/40 border-[#D5BF86]/40 hover:border-[#D5BF86]'
+                      ? 'bg-[#18100A]/60 border-[#E5DACB]/20 hover:border-[#E5DACB]/40'
+                      : 'bg-[#FAF6EE]/40 border-[#E5DACB]/40 hover:border-[#E5DACB]'
                   }`}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -234,7 +234,7 @@ export default function AttractivePieChart() {
                       className="w-3.5 h-3.5 rounded-full shrink-0 shadow-xs"
                       style={{ backgroundColor: seg.color }}
                     ></span>
-                    <h4 className={`text-xs sm:text-sm font-bold ${isDark ? 'text-[#FAF9EB]' : 'text-[#3F0D12]'}`}>
+                    <h4 className={`text-xs sm:text-sm font-bold ${isDark ? 'text-[#FAF6EE]' : 'text-[#3D291A]'}`}>
                       {seg.label}
                     </h4>
                   </div>
@@ -243,12 +243,12 @@ export default function AttractivePieChart() {
                     <strong className="text-base font-extrabold" style={{ color: seg.color }}>
                       {seg.value}%
                     </strong>
-                    <span className="text-[10px] text-[#8D775F]">({seg.count})</span>
+                    <span className="text-[10px] text-[#846752]">({seg.count})</span>
                   </div>
                 </div>
 
                 {/* Progress Indicator Bar */}
-                <div className="w-full h-1.5 rounded-full bg-[#D5BF86]/20 overflow-hidden mb-2">
+                <div className="w-full h-1.5 rounded-full bg-[#E5DACB]/20 overflow-hidden mb-2">
                   <div
                     className="h-full rounded-full transition-all duration-700"
                     style={{
@@ -258,7 +258,7 @@ export default function AttractivePieChart() {
                   ></div>
                 </div>
 
-                <p className={`text-xs leading-relaxed ${isDark ? 'text-[#E8E5BA]' : 'text-[#473228]'}`}>
+                <p className={`text-xs leading-relaxed ${isDark ? 'text-[#E8E5BA]' : 'text-[#553C2A]'}`}>
                   {seg.description}
                 </p>
               </div>
@@ -269,9 +269,9 @@ export default function AttractivePieChart() {
       </div>
 
       {/* Bottom Clinical Regulatory Note */}
-      <div className={`mt-8 p-4 rounded-2xl border flex items-start space-x-3 text-xs ${isDark ? 'bg-[#050814] border-[#D5BF86]/20 text-[#D5BF86]' : 'bg-[#FAF9EB] border-[#D5BF86]/60 text-[#473228]'
+      <div className={`mt-8 p-4 rounded-2xl border flex items-start space-x-3 text-xs ${isDark ? 'bg-[#18100A] border-[#E5DACB]/20 text-[#E5DACB]' : 'bg-[#FAF6EE] border-[#E5DACB]/60 text-[#553C2A]'
         }`}>
-        <ShieldCheck className="w-4 h-4 text-[#A71D31] shrink-0 mt-0.5" />
+        <ShieldCheck className="w-4 h-4 text-[#A9D6F5] shrink-0 mt-0.5" />
         <span className="leading-relaxed">
           <strong>Multi-Modal PGHD Integrity:</strong> BioTrajectory synthesizes dry-chemistry urinalysis with continuous Bluetooth peripherals under a unified patient timeline. Reagent kinetics and Bluetooth vitals validate each other, eliminating single-device false positives.
         </span>

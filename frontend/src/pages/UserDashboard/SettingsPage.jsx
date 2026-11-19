@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   User,
   Lock,
-  Moon,
-  Sun,
   Bell,
   ShieldCheck,
   Bot,
@@ -22,13 +20,31 @@ import {
   Info,
   Check,
   RotateCcw,
-  Globe
+  Globe,
+  Plus,
+  AlertOctagon,
+  ShieldAlert,
+  Camera,
+  Upload
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { trajectoryStorage } from '../../services/trajectoryStorage';
 import { BluetoothService } from '../../services/bluetoothService';
+import {
+  notifyPriorityChanged,
+  DEFAULT_DISEASE_HISTORY,
+  normalizeDisease
+} from '../../services/patientPriorityService';
+import {
+  getPatientAvatar,
+  savePatientAvatar,
+  resetPatientAvatar,
+  subscribeToAvatarChanges,
+  processImageFile,
+  DEFAULT_PATIENT_PHOTO
+} from '../../services/patientAvatarService';
 
 const AGE_RANGES = [
   { id: '< 18', label: 'Under 18' },
@@ -96,6 +112,36 @@ export default function SettingsPage() {
   // Profile Form (Hydrated from healthProfile)
   const [name, setName] = useState(healthProfile?.name || currentUser?.name || 'User');
   const [ageRange, setAgeRange] = useState(healthProfile?.ageRange || '30–44');
+  const [avatar, setAvatar] = useState(() => getPatientAvatar());
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const photoInputRef = React.useRef(null);
+
+  useEffect(() => {
+    const unsub = subscribeToAvatarChanges((newAvatar) => {
+      setAvatar(newAvatar);
+    });
+    return unsub;
+  }, []);
+
+  const handleSettingsPhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingPhoto(true);
+      const dataUrl = await processImageFile(file, 320, 320, 0.88);
+      setAvatar(dataUrl);
+      savePatientAvatar(dataUrl);
+      updateHealthProfile({ avatar: dataUrl, photoURL: dataUrl });
+      showToast(isHindi ? 'रोगी की फोटो अपडेट हो गई!' : 'Patient photo uploaded successfully!');
+    } catch (err) {
+      console.error('Failed to upload photo:', err);
+      showToast(err.message || 'Failed to upload photo.');
+    } finally {
+      setIsUploadingPhoto(false);
+      if (e.target) e.target.value = '';
+    }
+  };
   const [gender, setGender] = useState(healthProfile?.gender || 'Prefer not to say');
   const [units, setUnits] = useState(healthProfile?.units || 'metric');
   const [height, setHeight] = useState(healthProfile?.height || '');
@@ -114,6 +160,156 @@ export default function SettingsPage() {
     ]
   );
   const [customGoal, setCustomGoal] = useState(healthProfile?.customGoal || '');
+
+  // Medical History: Diseases Faced & Facing
+  const [diseaseHistory, setDiseaseHistory] = useState(() => {
+    try {
+      const stored = localStorage.getItem('bt_user_disease_history');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed.map(normalizeDisease);
+      }
+    } catch {}
+    return healthProfile?.medicalHistory?.map(normalizeDisease) || DEFAULT_DISEASE_HISTORY;
+  });
+
+  const [diseaseFilter, setDiseaseFilter] = useState('all'); // 'all', 'ongoing', 'resolved'
+  const [showAddDiseaseModal, setShowAddDiseaseModal] = useState(false);
+  const [newDisease, setNewDisease] = useState({
+    name: '',
+    stage: 'Stage II',
+    status: 'ongoing',
+    timeline: 'Ongoing',
+    isDanger: false,
+    category: 'General',
+    notes: '',
+    editableBy: 'both' // 'both' | 'doctor' | 'patient'
+  });
+
+  const handleToggleDiseaseStatus = (id) => {
+    setDiseaseHistory((prev) => {
+      const target = prev.find(d => d.id === id);
+      if (target && target.editableBy === 'doctor') {
+        showToast(isHindi 
+          ? 'यह स्थिति केवल डॉक्टर द्वारा प्रबंधित है। स्थिति बदलने के लिए अपने डॉक्टर से संपर्क करें।' 
+          : 'This condition is set to Doctor-Only management. Consult Dr. Patel to modify.');
+        return prev;
+      }
+
+      const updated = prev.map((d) => {
+        if (d.id === id) {
+          const nextStatus = d.status === 'ongoing' ? 'resolved' : 'ongoing';
+          return {
+            ...d,
+            status: nextStatus,
+            timeline: nextStatus === 'resolved' ? (d.timeline && !d.timeline.includes('Ongoing') ? d.timeline : 'Resolved') : 'Ongoing',
+            lastUpdatedBy: 'Patient (Alex Johnson)',
+            updatedAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          };
+        }
+        return d;
+      });
+      try {
+        localStorage.setItem('bt_user_disease_history', JSON.stringify(updated));
+      } catch {}
+      notifyPriorityChanged();
+      showToast(isHindi ? 'स्थिति अपडेट की गई!' : 'Disease status updated!');
+      return updated;
+    });
+  };
+
+  const handleUpdateAuthority = (id, newAuthority) => {
+    setDiseaseHistory((prev) => {
+      const updated = prev.map((d) => {
+        if (d.id === id) {
+          return {
+            ...d,
+            editableBy: newAuthority,
+            lastUpdatedBy: 'Patient (Alex Johnson)',
+            updatedAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          };
+        }
+        return d;
+      });
+      try {
+        localStorage.setItem('bt_user_disease_history', JSON.stringify(updated));
+      } catch {}
+      notifyPriorityChanged();
+      showToast(isHindi 
+        ? `परिवर्तन अनुमति सेट: ${newAuthority === 'both' ? 'डॉक्टर और रोगी दोनों' : newAuthority === 'doctor' ? 'केवल डॉक्टर' : 'केवल रोगी'}` 
+        : `Permission updated: ${newAuthority === 'both' ? 'Both Doctor & Patient' : newAuthority === 'doctor' ? 'Doctor Only' : 'Patient Only'}`);
+      return updated;
+    });
+  };
+
+  const handleDeleteDisease = (id) => {
+    setDiseaseHistory((prev) => {
+      const target = prev.find(d => d.id === id);
+      if (target && target.editableBy === 'doctor') {
+        showToast(isHindi 
+          ? 'यह स्थिति केवल डॉक्टर द्वारा प्रबंधित है। केवल डॉक्टर इसे हटा सकते हैं।' 
+          : 'This condition is set to Doctor-Only. Only your clinician can remove it.');
+        return prev;
+      }
+
+      const updated = prev.filter((d) => d.id !== id);
+      try {
+        localStorage.setItem('bt_user_disease_history', JSON.stringify(updated));
+      } catch {}
+      notifyPriorityChanged();
+      showToast('Condition removed from medical history.');
+      return updated;
+    });
+  };
+
+  const handleAddDisease = (e) => {
+    e.preventDefault();
+    if (!newDisease.name.trim()) return;
+
+    const isDanger = Boolean(newDisease.isDanger);
+    const entry = {
+      id: `dis-${Date.now()}`,
+      name: newDisease.name.trim(),
+      stage: newDisease.stage?.trim() || (isDanger ? 'Stage II' : 'Active'),
+      status: newDisease.status,
+      timeline: newDisease.timeline.trim() || (newDisease.status === 'ongoing' ? 'Ongoing' : 'Resolved'),
+      isDanger,
+      dangerLevel: isDanger ? 'critical' : newDisease.status === 'ongoing' ? 'moderate' : 'resolved',
+      category: newDisease.category.trim() || 'General',
+      notes: newDisease.notes.trim() || (isDanger ? 'Active clinical oncology/critical care.' : ''),
+      editableBy: newDisease.editableBy || 'both',
+      lastUpdatedBy: 'Patient (Alex Johnson)',
+      updatedAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    };
+
+    setDiseaseHistory((prev) => {
+      const updated = [entry, ...prev];
+      try {
+        localStorage.setItem('bt_user_disease_history', JSON.stringify(updated));
+      } catch {}
+      notifyPriorityChanged();
+      return updated;
+    });
+
+    setNewDisease({
+      name: '',
+      stage: 'Stage II',
+      status: 'ongoing',
+      timeline: 'Ongoing',
+      isDanger: false,
+      category: 'General',
+      notes: '',
+      editableBy: 'both'
+    });
+    setShowAddDiseaseModal(false);
+    showToast('New condition added to your medical history.');
+  };
+
+  const filteredDiseases = diseaseHistory.filter((d) => {
+    if (diseaseFilter === 'ongoing') return d.status === 'ongoing';
+    if (diseaseFilter === 'resolved') return d.status === 'resolved';
+    return true;
+  });
 
   // Consent Preferences
   const [consentStore, setConsentStore] = useState(healthProfile?.consent?.storeAndProcessHealthData ?? true);
@@ -174,6 +370,10 @@ export default function SettingsPage() {
 
   const handleProfileSave = (e) => {
     e.preventDefault();
+    try {
+      localStorage.setItem('bt_user_disease_history', JSON.stringify(diseaseHistory));
+      notifyPriorityChanged();
+    } catch {}
     const updated = updateHealthProfile({
       name,
       ageRange,
@@ -186,13 +386,15 @@ export default function SettingsPage() {
         hydrationHabit,
         testingSchedule
       },
+      medicalHistory: diseaseHistory,
+      conditions: diseaseHistory.filter(d => d.status === 'ongoing').map(d => d.name),
       goals: selectedGoals,
       customGoal,
       onboardingCompleted: true,
       updatedAt: new Date().toISOString()
     });
     if (updated) {
-      showToast('Health profile and baseline parameters updated successfully!');
+      showToast('Health profile and disease history updated successfully!');
     }
   };
 
@@ -221,7 +423,7 @@ export default function SettingsPage() {
     <div className="space-y-8 max-w-5xl mx-auto">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-[#00685f] text-white font-bold text-sm shadow-2xl animate-fade-in border border-teal-300/30">
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-[#A9D6F5] text-[#1F150E] font-bold font-bold text-sm shadow-2xl animate-fade-in border border-teal-300/30">
           <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-300" />
           <span>{toastMessage}</span>
         </div>
@@ -234,20 +436,18 @@ export default function SettingsPage() {
         </h1>
         <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 mt-2">
           {isHindi
-            ? 'अपनी व्यक्तिगत स्वास्थ्य प्रोफाइल, इकाइयां, डार्क/लाइट थीम, भाषा और कनेक्टेड उपकरण प्रबंधित करें।'
-            : 'Manage your personal health profile, units, baseline goals, dark/light theme, language, and connected devices.'}
+            ? 'अपनी व्यक्तिगत स्वास्थ्य प्रोफाइल, इकाइयां, भाषा और कनेक्टेड उपकरण प्रबंधित करें।'
+            : 'Manage your personal health profile, units, baseline goals, language, and connected devices.'}
         </p>
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 text-sm font-semibold overflow-x-auto shadow-xs">
+      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 text-sm font-semibold overflow-x-auto shadow-xs">
         {[
           { id: 'profile', label: isHindi ? 'स्वास्थ्य प्रोफाइल' : 'Health Profile & Goals', icon: User },
           { id: 'devices', label: isHindi ? 'कनेक्टेड डिवाइसेस' : 'Connected Devices', icon: Droplet },
-          { id: 'theme', label: isHindi ? 'थीम एवं दिखावट' : 'Appearance', icon: Sun },
           { id: 'language', label: isHindi ? 'भाषा (Language)' : 'Language / भाषा', icon: Globe },
           { id: 'security', label: isHindi ? 'गोपनीयता व सहमति' : 'Privacy & Consent', icon: ShieldCheck },
-          { id: 'ai', label: isHindi ? 'एआई सहायक' : 'AI Assistant', icon: Bot },
           { id: 'notifications', label: isHindi ? 'सूचनाएं' : 'Notifications', icon: Bell }
         ].map(tab => {
           const Icon = tab.icon;
@@ -271,16 +471,61 @@ export default function SettingsPage() {
           TAB 1: HEALTH PROFILE & BASELINE GOALS
       ========================================================================== */}
       {activeTab === 'profile' && (
-        <form onSubmit={handleProfileSave} className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-xs space-y-6">
-          <div className="flex items-center gap-4 pb-5 border-b border-slate-200 dark:border-slate-800">
-            <div className="w-16 h-16 rounded-2xl bg-[#00685f]/15 text-[#00685f] dark:text-[#6bd8cb] text-3xl font-extrabold flex items-center justify-center">
-              {name ? name[0].toUpperCase() : 'P'}
+        <form onSubmit={handleProfileSave} className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 pb-5 border-b border-slate-200 dark:border-slate-800">
+            {/* Patient Photo Container with Upload Overlay */}
+            <div className="relative group shrink-0">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-slate-200 dark:border-slate-700 shadow-md bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
+                <img
+                  src={avatar}
+                  alt={name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              <input
+                type="file"
+                ref={photoInputRef}
+                onChange={handleSettingsPhotoUpload}
+                accept="image/*"
+                className="hidden"
+              />
+
+              <button
+                type="button"
+                onClick={() => photoInputRef.current?.click()}
+                disabled={isUploadingPhoto}
+                className="absolute inset-0 rounded-2xl bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 cursor-pointer"
+                title="Change Photo"
+              >
+                <Camera className="w-5 h-5 text-cyan-300" />
+                <span className="text-[10px] font-bold">
+                  {isUploadingPhoto ? '...' : 'Upload'}
+                </span>
+              </button>
             </div>
-            <div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white">{name}</h3>
+
+            <div className="text-center sm:text-left flex-1 min-w-0 space-y-1">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white truncate">{name}</h3>
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30">
+                  {isHindi ? 'सत्यापित रोगी' : 'Patient Ledger Active'}
+                </span>
+              </div>
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 Age Bracket: {ageRange} • Units: {units.toUpperCase()} • Patient Ledger Active
               </p>
+              <div className="pt-1.5 flex items-center justify-center sm:justify-start gap-2">
+                <button
+                  type="button"
+                  onClick={() => photoInputRef.current?.click()}
+                  disabled={isUploadingPhoto}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/25 font-bold text-xs transition-all cursor-pointer"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>{isUploadingPhoto ? (isHindi ? 'अपलोड हो रहा है...' : 'Uploading...') : (isHindi ? 'फोटो अपलोड करें' : 'Upload Photo')}</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -294,7 +539,7 @@ export default function SettingsPage() {
                 type="text"
                 value={name}
                 onChange={e => setName(e.target.value)}
-                className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00685f]"
+                className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#A9D6F5]"
               />
             </div>
 
@@ -307,7 +552,7 @@ export default function SettingsPage() {
               <select
                 value={ageRange}
                 onChange={e => setAgeRange(e.target.value)}
-                className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00685f] font-medium"
+                className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#A9D6F5] font-medium"
               >
                 {AGE_RANGES.map(r => (
                   <option key={r.id} value={r.id}>{r.label}</option>
@@ -323,7 +568,7 @@ export default function SettingsPage() {
               <select
                 value={gender}
                 onChange={e => setGender(e.target.value)}
-                className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00685f] font-medium"
+                className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#A9D6F5] font-medium"
               >
                 {['Male', 'Female', 'Other', 'Prefer not to say'].map(g => (
                   <option key={g} value={g}>{g}</option>
@@ -336,12 +581,12 @@ export default function SettingsPage() {
               <label className="font-semibold text-slate-700 dark:text-slate-300 text-xs uppercase tracking-wider block">
                 Preferred Measurement Units
               </label>
-              <div className="flex items-center gap-2 p-1 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700">
+              <div className="flex items-center gap-2 p-1 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700">
                 <button
                   type="button"
                   onClick={() => setUnits('metric')}
                   className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${units === 'metric'
-                      ? 'bg-[#00685f] text-white shadow-xs'
+                      ? 'bg-[#A9D6F5] text-[#1F150E] font-bold shadow-xs'
                       : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
                     }`}
                 >
@@ -351,7 +596,7 @@ export default function SettingsPage() {
                   type="button"
                   onClick={() => setUnits('imperial')}
                   className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${units === 'imperial'
-                      ? 'bg-[#00685f] text-white shadow-xs'
+                      ? 'bg-[#A9D6F5] text-[#1F150E] font-bold shadow-xs'
                       : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
                     }`}
                 >
@@ -371,7 +616,7 @@ export default function SettingsPage() {
                 value={height}
                 onChange={e => setHeight(e.target.value)}
                 placeholder={units === 'metric' ? 'e.g. 175' : 'e.g. 69'}
-                className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00685f]"
+                className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#A9D6F5]"
               />
             </div>
 
@@ -386,14 +631,194 @@ export default function SettingsPage() {
                 value={weight}
                 onChange={e => setWeight(e.target.value)}
                 placeholder={units === 'metric' ? 'e.g. 70' : 'e.g. 154'}
-                className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00685f]"
+                className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#A9D6F5]"
               />
+            </div>
+          </div>
+
+          {/* =========================================================================
+              MEDICAL HISTORY: DISEASES FACED & FACING
+          ========================================================================== */}
+          <div className="pt-6 border-t border-slate-200 dark:border-slate-800 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Stethoscope className="w-5 h-5 text-[#2672A8] dark:text-[#A9D6F5]" />
+                  <h4 className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white">
+                    {isHindi ? 'चिकित्सीय इतिहास: रोग (भूतपूर्व एवं वर्तमान)' : 'Medical History: Diseases Faced & Facing'}
+                  </h4>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-0.5">
+                  {isHindi
+                    ? 'वर्तमान में जारी स्थितियां (Facing) एवं पूर्व में ठीक हो चुकी बीमारियां (Faced) जैसे Jaundice, Cancer आदि।'
+                    : 'Track active conditions under treatment (Facing) and past resolved medical episodes (Faced).'}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowAddDiseaseModal(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#A9D6F5] text-[#1F150E] font-extrabold text-xs sm:text-sm hover:bg-[#7CBFEA] transition-all shadow-xs cursor-pointer self-start sm:self-auto"
+              >
+                <Plus className="w-4 h-4" />
+                <span>{isHindi ? '+ नई बीमारी जोड़ें' : '+ Add Disease / Condition'}</span>
+              </button>
+            </div>
+
+            {/* Filter Tabs */}
+            <div className="flex items-center gap-2 pt-1">
+              {[
+                { id: 'all', label: isHindi ? `सभी (${diseaseHistory.length})` : `All (${diseaseHistory.length})` },
+                {
+                  id: 'ongoing',
+                  label: isHindi
+                    ? `वर्तमान / सक्रिय (${diseaseHistory.filter(d => d.status === 'ongoing').length})`
+                    : `Facing (Ongoing) (${diseaseHistory.filter(d => d.status === 'ongoing').length})`,
+                  hasDanger: diseaseHistory.some(d => d.status === 'ongoing' && d.isDanger)
+                },
+                {
+                  id: 'resolved',
+                  label: isHindi
+                    ? `भूतपूर्व / ठीक हुए (${diseaseHistory.filter(d => d.status === 'resolved').length})`
+                    : `Faced (Past / Resolved) (${diseaseHistory.filter(d => d.status === 'resolved').length})`
+                }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setDiseaseFilter(tab.id)}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    diseaseFilter === tab.id
+                      ? 'bg-[#A9D6F5] text-[#1F150E] font-extrabold shadow-xs'
+                      : 'bg-slate-100 dark:bg-[#1F150E] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#2A1D15] border border-slate-200 dark:border-slate-800'
+                  }`}
+                >
+                  {tab.hasDanger && (
+                    <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+                  )}
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Disease Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+              {filteredDiseases.map((disease) => {
+                const isOngoing = disease.status === 'ongoing';
+                const isDanger = (disease.isDanger || disease.dangerLevel === 'critical') && isOngoing;
+
+                return (
+                  <div
+                    key={disease.id}
+                    className={`p-5 rounded-3xl border transition-all space-y-2.5 relative shadow-xs ${
+                      isDanger
+                        ? 'bg-rose-500/10 dark:bg-rose-950/30 border-rose-500/60 dark:border-rose-500/70 shadow-sm ring-1 ring-rose-500/20'
+                        : isOngoing
+                        ? 'bg-amber-500/5 dark:bg-[#1F150E] border-amber-500/30 dark:border-[#4A3525]'
+                        : 'bg-slate-50/80 dark:bg-[#1F150E]/60 border-slate-200 dark:border-[#4A3525]'
+                    }`}
+                  >
+                    {/* Header: Disease Name & State Toggle */}
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2 flex-wrap min-w-0">
+                        <h5 className={`font-extrabold text-base sm:text-lg tracking-tight ${
+                          isDanger ? 'text-rose-950 dark:text-rose-100' : 'text-slate-900 dark:text-white'
+                        }`}>
+                          {disease.name}
+                        </h5>
+                        {disease.stage && (
+                          <span className="px-2 py-0.5 rounded-md text-[11px] font-extrabold bg-[#A9D6F5]/30 text-[#1F150E] dark:text-[#A9D6F5] border border-[#A9D6F5]/40">
+                            {disease.stage}
+                          </span>
+                        )}
+                        {isDanger && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-600 text-white font-extrabold text-[10px] tracking-wide uppercase shadow-xs">
+                            <AlertOctagon className="w-3 h-3" />
+                            {isHindi ? '🚨 गंभीर खतरा' : '🚨 Danger'}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* State Badge (Interactive Toggle) & Delete */}
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleDiseaseStatus(disease.id)}
+                          className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs ${
+                            isOngoing
+                              ? 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-900 dark:text-amber-200 border border-amber-500/40'
+                              : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-900 dark:text-emerald-200 border border-emerald-500/40'
+                          }`}
+                          title={isHindi ? 'स्थिति बदलने के लिए क्लिक करें' : 'Click to toggle Facing / Faced state'}
+                        >
+                          {isOngoing ? (
+                            <>
+                              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                              <span>{isHindi ? 'सक्रिय (Facing)' : 'Facing (Ongoing)'}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                              <span>{isHindi ? `भूतपूर्व (${disease.timeline || 'Faced'})` : `Faced (${disease.timeline || 'Past'})`}</span>
+                            </>
+                          )}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteDisease(disease.id)}
+                          className="text-slate-400 hover:text-rose-500 transition-colors p-1.5 rounded-xl cursor-pointer"
+                          title={isHindi ? 'हटाएं' : 'Delete'}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* 2-Line Direction / Description */}
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
+                      {disease.notes || disease.description || (isHindi ? 'नैदानिक निगरानी एवं परामर्श दर्ज।' : 'Clinical management and continuous trajectory monitoring documented.')}
+                    </p>
+
+                    {/* Modifier & Authority Control: Doctor / Patient / Both */}
+                    <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800/60 flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-semibold text-slate-500 dark:text-slate-400 text-[11px]">
+                          {isHindi ? 'परिवर्तन अनुमति:' : 'Can be changed by:'}
+                        </span>
+                        <select
+                          value={disease.editableBy || 'both'}
+                          onChange={(e) => handleUpdateAuthority(disease.id, e.target.value)}
+                          className={`px-2.5 py-1 rounded-xl text-xs font-bold border transition-colors cursor-pointer focus:outline-none ${
+                            disease.editableBy === 'doctor'
+                              ? 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/40'
+                              : disease.editableBy === 'patient'
+                              ? 'bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/40'
+                              : 'bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border-emerald-500/40'
+                          }`}
+                        >
+                          <option value="both">👨‍⚕️👤 Both (Doctor & Patient)</option>
+                          <option value="doctor">👨‍⚕️ Doctor Only</option>
+                          <option value="patient">👤 Patient Only</option>
+                        </select>
+                      </div>
+
+                      <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                        {isHindi ? 'अंतिम बदलाव:' : 'Last updated:'}{' '}
+                        <span className="font-bold text-slate-700 dark:text-slate-300">
+                          {disease.lastUpdatedBy || 'Doctor & Patient'}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
           {/* Lifestyle Information */}
           <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-4">
-            <h4 className="font-bold text-sm uppercase tracking-wider text-[#00685f] dark:text-[#6bd8cb]">
+            <h4 className="font-bold text-sm uppercase tracking-wider text-[#2672A8] dark:text-[#A9D6F5]">
               Optional Lifestyle Context (Calibrates Confounder Sensitivity)
             </h4>
 
@@ -403,7 +828,7 @@ export default function SettingsPage() {
                 <select
                   value={activityLevel}
                   onChange={e => setActivityLevel(e.target.value)}
-                  className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-medium"
+                  className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-medium"
                 >
                   <option value="Sedentary">Sedentary (Minimal)</option>
                   <option value="Lightly Active">Lightly Active (1-2x/wk)</option>
@@ -417,7 +842,7 @@ export default function SettingsPage() {
                 <select
                   value={hydrationHabit}
                   onChange={e => setHydrationHabit(e.target.value)}
-                  className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-medium"
+                  className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-medium"
                 >
                   <option value="Low (< 1.5 L/day)">Low (&lt; 1.5 L/day)</option>
                   <option value="Moderate (1.5–2.5 L/day)">Moderate (1.5–2.5 L/day)</option>
@@ -430,7 +855,7 @@ export default function SettingsPage() {
                 <select
                   value={testingSchedule}
                   onChange={e => setTestingSchedule(e.target.value)}
-                  className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-medium"
+                  className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-medium"
                 >
                   <option value="Second Morning Void (Recommended)">Second Morning Void (Recommended)</option>
                   <option value="First Morning Void">First Morning Void</option>
@@ -443,7 +868,7 @@ export default function SettingsPage() {
 
           {/* Health-Monitoring Goals */}
           <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
-            <h4 className="font-bold text-sm uppercase tracking-wider text-[#00685f] dark:text-[#6bd8cb]">
+            <h4 className="font-bold text-sm uppercase tracking-wider text-[#2672A8] dark:text-[#A9D6F5]">
               Health-Monitoring Goals
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -455,11 +880,11 @@ export default function SettingsPage() {
                     key={g.id}
                     onClick={() => toggleGoal(g.title)}
                     className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex items-start gap-3 ${isSelected
-                        ? 'bg-[#00685f]/10 border-[#00685f]'
-                        : 'bg-slate-50 dark:bg-[#070B14] border-slate-200 dark:border-slate-800'
+                        ? 'bg-[#A9D6F5]/10 border-[#A9D6F5]'
+                        : 'bg-slate-50 dark:bg-[#1F150E] border-slate-200 dark:border-slate-800'
                       }`}
                   >
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isSelected ? 'bg-[#00685f] text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isSelected ? 'bg-[#A9D6F5] text-[#1F150E] font-bold' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'
                       }`}>
                       <Icon className="w-4 h-4" />
                     </div>
@@ -470,7 +895,7 @@ export default function SettingsPage() {
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => { }}
-                          className="accent-[#00685f] rounded"
+                          className="accent-[#2672A8] rounded"
                         />
                       </div>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">{g.desc}</p>
@@ -489,7 +914,7 @@ export default function SettingsPage() {
                 value={customGoal}
                 onChange={e => setCustomGoal(e.target.value)}
                 placeholder="e.g. Track hydration recovery during summer training"
-                className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs"
+                className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs"
               />
             </div>
           </div>
@@ -497,12 +922,179 @@ export default function SettingsPage() {
           <div className="flex justify-end pt-5 border-t border-slate-200 dark:border-slate-800">
             <button
               type="submit"
-              className="inline-flex items-center gap-2 px-7 py-3 rounded-2xl text-sm font-bold bg-[#00685f] text-white hover:bg-[#008378] transition-all shadow-md active:scale-95"
+              className="inline-flex items-center gap-2 px-7 py-3 rounded-2xl text-sm font-bold bg-[#A9D6F5] text-[#1F150E] font-bold hover:bg-[#7CBFEA] transition-all shadow-md active:scale-95"
             >
               <Save className="w-4 h-4" />
               <span>Save Health Profile</span>
             </button>
           </div>
+
+          {/* ADD DISEASE MODAL */}
+          {showAddDiseaseModal && (
+            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+              <div className="w-full max-w-lg rounded-3xl bg-[#F6F0E4] dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525] p-6 sm:p-7 shadow-2xl space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-[#E8DFD1] dark:border-[#4A3525]">
+                  <div className="flex items-center gap-2">
+                    <Stethoscope className="w-5 h-5 text-[#2672A8] dark:text-[#A9D6F5]" />
+                    <h3 className="text-lg font-extrabold text-[#1F150E] dark:text-white">
+                      {isHindi ? 'नई बीमारी / स्थिति जोड़ें' : 'Add Disease / Medical Condition'}
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddDiseaseModal(false)}
+                    className="p-1 rounded-xl hover:bg-slate-200 dark:hover:bg-[#2A1D15] text-slate-500 cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="space-y-3.5 text-xs">
+                  {/* Name */}
+                  <div className="space-y-1">
+                    <label className="font-bold text-[#1F150E] dark:text-white uppercase tracking-wider text-[11px]">
+                      {isHindi ? 'बीमारी का नाम' : 'Disease / Condition Name'}
+                    </label>
+                    <input
+                      type="text"
+                      value={newDisease.name}
+                      onChange={(e) => setNewDisease({ ...newDisease, name: e.target.value })}
+                      placeholder={isHindi ? 'उदा. Jaundice, Cancer, Hypertension' : 'e.g. Jaundice, Cancer, Hypertension, Asthma'}
+                      className="w-full p-3 rounded-2xl bg-white dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525] text-sm text-[#1F150E] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#A9D6F5]"
+                      required
+                    />
+                  </div>
+
+                  {/* Status & Timeline */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="font-bold text-[#1F150E] dark:text-white uppercase tracking-wider text-[11px]">
+                        {isHindi ? 'स्थिति (Status)' : 'Status'}
+                      </label>
+                      <select
+                        value={newDisease.status}
+                        onChange={(e) => setNewDisease({ ...newDisease, status: e.target.value })}
+                        className="w-full p-3 rounded-2xl bg-white dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525] text-sm text-[#1F150E] dark:text-white focus:outline-none"
+                      >
+                        <option value="ongoing">{isHindi ? 'वर्तमान में जारी (Facing)' : 'Facing (Ongoing / Active)'}</option>
+                        <option value="resolved">{isHindi ? 'भूतपूर्व / ठीक हुआ (Faced)' : 'Faced (Past / Resolved)'}</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="font-bold text-[#1F150E] dark:text-white uppercase tracking-wider text-[11px]">
+                        {isHindi ? 'समयसीमा (कब हुआ / अवधि)' : 'Timeline / When'}
+                      </label>
+                      <input
+                        type="text"
+                        value={newDisease.timeline}
+                        onChange={(e) => setNewDisease({ ...newDisease, timeline: e.target.value })}
+                        placeholder={isHindi ? 'उदा. 4 months ago, Ongoing' : 'e.g. 4 months ago, Ongoing, 1 year ago'}
+                        className="w-full p-3 rounded-2xl bg-white dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525] text-sm text-[#1F150E] dark:text-white focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Danger Disease Toggle */}
+                  <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      id="isDangerCheckbox"
+                      checked={newDisease.isDanger}
+                      onChange={(e) => setNewDisease({ ...newDisease, isDanger: e.target.checked })}
+                      className="mt-0.5 accent-rose-600 rounded cursor-pointer"
+                    />
+                    <label htmlFor="isDangerCheckbox" className="cursor-pointer space-y-0.5 flex-1">
+                      <strong className="block text-rose-700 dark:text-rose-300 font-extrabold text-xs">
+                        {isHindi ? '🚨 गंभीर खतरा बीमारी (Sign of Danger Disease)' : '🚨 Mark as Danger Disease (High Risk)'}
+                      </strong>
+                      <p className="text-[11px] text-rose-800/80 dark:text-rose-200/80">
+                        {isHindi
+                          ? 'कैंसर, गंभीर हृदय रोग, अंग विफलता जैसी गंभीर बीमारियों के लिए चुनें।'
+                          : 'Select for life-threatening or critical illnesses like Cancer, Cardiac Failure, or Malignancy.'}
+                      </p>
+                    </label>
+                  </div>
+
+                  {/* Stage & Who Can Change */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="font-bold text-[#1F150E] dark:text-white uppercase tracking-wider text-[11px]">
+                        {isHindi ? 'रोग का चरण / स्टेज (Stage)' : 'Clinical Stage / Severity'}
+                      </label>
+                      <input
+                        type="text"
+                        value={newDisease.stage || ''}
+                        onChange={(e) => setNewDisease({ ...newDisease, stage: e.target.value })}
+                        placeholder="e.g. Stage II, Stage 1, Acute, Chronic"
+                        className="w-full p-3 rounded-2xl bg-white dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525] text-sm text-[#1F150E] dark:text-white focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="font-bold text-[#1F150E] dark:text-white uppercase tracking-wider text-[11px]">
+                        {isHindi ? 'बदलने की अनुमति (Can be changed by)' : 'Who Can Change This?'}
+                      </label>
+                      <select
+                        value={newDisease.editableBy || 'both'}
+                        onChange={(e) => setNewDisease({ ...newDisease, editableBy: e.target.value })}
+                        className="w-full p-3 rounded-2xl bg-white dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525] text-sm text-[#1F150E] dark:text-white focus:outline-none"
+                      >
+                        <option value="both">👨‍⚕️👤 Both (Doctor & Patient)</option>
+                        <option value="doctor">👨‍⚕️ Doctor Only</option>
+                        <option value="patient">👤 Patient Only</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Category & Notes */}
+                  <div className="space-y-1">
+                    <label className="font-bold text-[#1F150E] dark:text-white uppercase tracking-wider text-[11px]">
+                      {isHindi ? 'चिकित्सीय श्रेणी' : 'Clinical Category'}
+                    </label>
+                    <input
+                      type="text"
+                      value={newDisease.category}
+                      onChange={(e) => setNewDisease({ ...newDisease, category: e.target.value })}
+                      placeholder="e.g. Oncology, Hepatic (Liver), Cardiovascular, Pulmonary"
+                      className="w-full p-3 rounded-2xl bg-white dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525] text-sm text-[#1F150E] dark:text-white focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-[#1F150E] dark:text-white uppercase tracking-wider text-[11px]">
+                      {isHindi ? 'चिकित्सीय विवरण / नोट्स' : 'Clinical Notes / Treatment'}
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={newDisease.notes}
+                      onChange={(e) => setNewDisease({ ...newDisease, notes: e.target.value })}
+                      placeholder={isHindi ? 'उदा. ऑन्कोलॉजी फॉलोअप जारी, लिवर एंजाइम सामान्य' : 'e.g. Oncology follow-up active, periodic biomarker tests'}
+                      className="w-full p-3 rounded-2xl bg-white dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525] text-sm text-[#1F150E] dark:text-white focus:outline-none resize-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2.5 pt-3 border-t border-[#E8DFD1] dark:border-[#4A3525]">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddDiseaseModal(false)}
+                    className="px-5 py-2.5 rounded-2xl border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#2A1D15] cursor-pointer"
+                  >
+                    {isHindi ? 'रद्द करें' : 'Cancel'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleAddDisease}
+                    disabled={!newDisease.name.trim()}
+                    className="px-6 py-2.5 rounded-2xl bg-[#A9D6F5] text-[#1F150E] text-xs font-extrabold hover:bg-[#7CBFEA] disabled:opacity-50 transition-all shadow-sm cursor-pointer"
+                  >
+                    {isHindi ? 'बीमारी जोड़ें' : 'Add Disease'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </form>
       )}
 
@@ -510,7 +1102,7 @@ export default function SettingsPage() {
           TAB: URINE DIAGNOSTIC DEVICE & SENSORS (SETTINGS MODE)
       ========================================================================== */}
       {activeTab === 'devices' && (
-        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-xs space-y-7 text-sm">
+        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 shadow-xs space-y-7 text-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
             <div>
               <div className="flex items-center gap-3">
@@ -535,8 +1127,8 @@ export default function SettingsPage() {
             <button
               type="button"
               onClick={handleToggleUrineDevice}
-              className={`relative inline-flex h-9 w-18 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#00685f] focus:ring-offset-2 ${
-                urineDeviceEnabled ? 'bg-[#00685f]' : 'bg-slate-300 dark:bg-slate-700'
+              className={`relative inline-flex h-9 w-18 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#A9D6F5] focus:ring-offset-2 ${
+                urineDeviceEnabled ? 'bg-[#A9D6F5]' : 'bg-slate-300 dark:bg-slate-700'
               }`}
               role="switch"
               aria-checked={urineDeviceEnabled}
@@ -544,7 +1136,7 @@ export default function SettingsPage() {
               <span
                 aria-hidden="true"
                 className={`pointer-events-none inline-block h-8 w-8 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out flex items-center justify-center text-xs font-bold ${
-                  urineDeviceEnabled ? 'translate-x-9 text-[#00685f]' : 'translate-x-0 text-slate-400'
+                  urineDeviceEnabled ? 'translate-x-9 text-[#2672A8]' : 'translate-x-0 text-slate-400'
                 }`}
               >
                 {urineDeviceEnabled ? 'ON' : 'OFF'}
@@ -562,7 +1154,7 @@ export default function SettingsPage() {
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-800 space-y-1.5">
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200 dark:border-slate-800 space-y-1.5">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-slate-900 dark:text-white">1. Protein (Albumin)</span>
                   <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-500 font-bold">mg/dL</span>
@@ -572,7 +1164,7 @@ export default function SettingsPage() {
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-800 space-y-1.5">
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200 dark:border-slate-800 space-y-1.5">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-slate-900 dark:text-white">2. pH Level</span>
                   <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 font-bold">pH 6.0 – 7.0</span>
@@ -582,7 +1174,7 @@ export default function SettingsPage() {
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-800 space-y-1.5">
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200 dark:border-slate-800 space-y-1.5">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-slate-900 dark:text-white">3. Glucose Level</span>
                   <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-500 font-bold">mg/dL</span>
@@ -592,7 +1184,7 @@ export default function SettingsPage() {
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-800 space-y-1.5">
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200 dark:border-slate-800 space-y-1.5">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-slate-900 dark:text-white">4. Nitrite Level</span>
                   <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-purple-500/10 text-purple-500 font-bold">Indicator</span>
@@ -621,7 +1213,7 @@ export default function SettingsPage() {
               className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs ${
                 urineDeviceEnabled
                   ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 hover:bg-rose-500/25'
-                  : 'bg-[#00685f] text-white hover:bg-[#00524b]'
+                  : 'bg-[#A9D6F5] text-[#1F150E] font-bold hover:bg-[#7CBFEA]'
               }`}
             >
               {urineDeviceEnabled ? 'Turn Device OFF' : 'Turn Device ON'}
@@ -634,7 +1226,7 @@ export default function SettingsPage() {
           TAB 2: PRIVACY & INFORMED CONSENT PREFERENCES
       ========================================================================== */}
       {activeTab === 'security' && (
-        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-xs space-y-6 text-sm">
+        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 shadow-xs space-y-6 text-sm">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-xl font-bold text-slate-900 dark:text-white">Privacy, Security &amp; Informed Consent</h3>
@@ -645,10 +1237,10 @@ export default function SettingsPage() {
           </div>
 
           {/* Clear Scope Disclaimer: What BioTrajectory Does & Does NOT Do */}
-          <div className={`p-4 rounded-2xl border ${isDark ? 'bg-[#070B14] border-slate-800' : 'bg-slate-50 border-slate-200'
+          <div className={`p-4 rounded-2xl border ${isDark ? 'bg-[#1F150E] border-slate-800' : 'bg-slate-50 border-slate-200'
             }`}>
             <div className="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-slate-400 mb-3">
-              <ShieldCheck className="w-4 h-4 text-[#00685f]" />
+              <ShieldCheck className="w-4 h-4 text-[#2672A8]" />
               <span>What BioTrajectory Does and Does NOT Do</span>
             </div>
 
@@ -687,14 +1279,14 @@ export default function SettingsPage() {
 
             {/* Consent 1: Local Storage (Required for feature operation) */}
             <label className={`p-4 rounded-2xl border flex items-start gap-4 cursor-pointer transition-colors ${consentStore
-                ? 'bg-[#00685f]/5 border-[#00685f]/40'
-                : 'bg-slate-50 dark:bg-[#070B14] border-slate-200 dark:border-slate-800'
+                ? 'bg-[#A9D6F5]/5 border-[#A9D6F5]/40'
+                : 'bg-slate-50 dark:bg-[#1F150E] border-slate-200 dark:border-slate-800'
               }`}>
               <input
                 type="checkbox"
                 checked={consentStore}
                 onChange={e => setConsentStore(e.target.checked)}
-                className="w-4 h-4 mt-0.5 accent-[#00685f] rounded"
+                className="w-4 h-4 mt-0.5 accent-[#2672A8] rounded"
               />
               <div className="flex-1">
                 <p className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
@@ -709,7 +1301,7 @@ export default function SettingsPage() {
             {/* Consent 2: Voluntary Doctor Sharing (Separate & Optional) */}
             <label className={`p-4 rounded-2xl border flex items-start gap-4 cursor-pointer transition-colors ${consentDoctor
                 ? 'bg-[#00687a]/5 border-[#00687a]/40'
-                : 'bg-slate-50 dark:bg-[#070B14] border-slate-200 dark:border-slate-800'
+                : 'bg-slate-50 dark:bg-[#1F150E] border-slate-200 dark:border-slate-800'
               }`}>
               <input
                 type="checkbox"
@@ -730,7 +1322,7 @@ export default function SettingsPage() {
             {/* Consent 3: AI Assistant (Separate & Optional) */}
             <label className={`p-4 rounded-2xl border flex items-start gap-4 cursor-pointer transition-colors ${consentAI
                 ? 'bg-[#006947]/5 border-[#006947]/40'
-                : 'bg-slate-50 dark:bg-[#070B14] border-slate-200 dark:border-slate-800'
+                : 'bg-slate-50 dark:bg-[#1F150E] border-slate-200 dark:border-slate-800'
               }`}>
               <input
                 type="checkbox"
@@ -752,7 +1344,7 @@ export default function SettingsPage() {
               <button
                 type="button"
                 onClick={handleConsentSave}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold bg-[#00685f] text-white hover:bg-[#008378] transition-all shadow-xs"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold bg-[#A9D6F5] text-[#1F150E] font-bold hover:bg-[#7CBFEA] transition-all shadow-xs"
               >
                 <Save className="w-3.5 h-3.5" />
                 <span>Update Consent Preferences</span>
@@ -782,60 +1374,10 @@ export default function SettingsPage() {
       )}
 
       {/* =========================================================================
-          TAB 3: AI ASSISTANT PERMISSIONS
-      ========================================================================== */}
-      {activeTab === 'ai' && (
-        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-xs space-y-5 text-sm">
-          <div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white">AI Assistant Settings</h3>
-            <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs">
-              Configure how the Gemini-powered intelligence engine assists in explaining baseline corridors and test strip trends.
-            </p>
-          </div>
-
-          <div className="space-y-3 pt-2">
-            {[
-              {
-                key: 'analyzeDocuments',
-                title: 'Allow Assistant to Interpret Longitudinal Logs',
-                desc: 'Permits the AI to summarize multi-day trends and correlate specific gravity with protein readings.'
-              },
-              {
-                key: 'continuousModeling',
-                title: 'Track Health Trajectories',
-                desc: 'Allows the system to calculate non-parametric rolling median corridors over 7-day and 30-day windows.'
-              },
-              {
-                key: 'shareAnonymousResearch',
-                title: 'Share Anonymized Research Numbers (Optional)',
-                desc: 'Contribute de-identified numerical distributions to open science without any names or personal IDs.'
-              }
-            ].map(item => (
-              <label key={item.key} className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-800 cursor-pointer hover:border-[#00685f]/40 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={aiSettings[item.key]}
-                  onChange={e => {
-                    setAiSettings({ ...aiSettings, [item.key]: e.target.checked });
-                    showToast('AI permissions updated.');
-                  }}
-                  className="w-4 h-4 mt-0.5 rounded accent-[#00685f]"
-                />
-                <div>
-                  <p className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">{item.title}</p>
-                  <p className="text-slate-600 dark:text-slate-400 text-xs leading-relaxed mt-0.5">{item.desc}</p>
-                </div>
-              </label>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* =========================================================================
           TAB 4: NOTIFICATIONS
       ========================================================================== */}
       {activeTab === 'notifications' && (
-        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-xs space-y-5 text-sm">
+        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 shadow-xs space-y-5 text-sm">
           <div>
             <h3 className="text-xl font-bold text-slate-900 dark:text-white">Notification Preferences</h3>
             <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs">
@@ -849,7 +1391,7 @@ export default function SettingsPage() {
               { key: 'weeklyReportEmail', title: 'Weekly Baseline Summary', desc: 'Receive a concise digest of your rolling corridor stability every Monday morning.' },
               { key: 'appointmentReminders', title: 'Test Strip Schedule Reminders', desc: 'Helpful reminder timed to your selected void window (e.g., second morning void).' }
             ].map(item => (
-              <label key={item.key} className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-800 cursor-pointer hover:border-[#00685f]/40 transition-colors">
+              <label key={item.key} className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200 dark:border-slate-800 cursor-pointer hover:border-[#A9D6F5]/40 transition-colors">
                 <input
                   type="checkbox"
                   checked={notifications[item.key]}
@@ -857,7 +1399,7 @@ export default function SettingsPage() {
                     setNotifications({ ...notifications, [item.key]: e.target.checked });
                     showToast('Notification preference saved.');
                   }}
-                  className="w-4 h-4 mt-0.5 rounded accent-[#00685f]"
+                  className="w-4 h-4 mt-0.5 rounded accent-[#2672A8]"
                 />
                 <div>
                   <p className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">{item.title}</p>
@@ -870,62 +1412,10 @@ export default function SettingsPage() {
       )}
 
       {/* =========================================================================
-          TAB 5: APPEARANCE
-      ========================================================================== */}
-      {activeTab === 'theme' && (
-        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-xs space-y-5 text-sm">
-          <div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white">Visual Theme</h3>
-            <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs">
-              Switch between Light Mode and High-Contrast Dark Mode for optimal chart reading.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-            <button
-              type="button"
-              onClick={() => { if (isDark) toggleTheme(); }}
-              className={`p-5 rounded-2xl border text-left flex items-center justify-between transition-all ${!isDark
-                  ? 'border-[#00685f] ring-2 ring-[#00685f]/20 bg-teal-50/50'
-                  : 'border-slate-200 dark:border-slate-800'
-                }`}
-            >
-              <div className="flex items-center gap-3">
-                <Sun className="w-5 h-5 text-amber-500" />
-                <div>
-                  <p className="font-bold text-slate-900 dark:text-white text-sm">Light Theme</p>
-                  <p className="text-xs text-slate-500 mt-0.5">High-contrast daytime clinical styling</p>
-                </div>
-              </div>
-              {!isDark && <CheckCircle2 className="w-5 h-5 text-[#00685f]" />}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => { if (!isDark) toggleTheme(); }}
-              className={`p-5 rounded-2xl border text-left flex items-center justify-between transition-all ${isDark
-                  ? 'border-[#00685f] ring-2 ring-[#00685f]/20 bg-[#070b14]'
-                  : 'border-slate-200 dark:border-slate-800'
-                }`}
-            >
-              <div className="flex items-center gap-3">
-                <Moon className="w-5 h-5 text-[#57dffe]" />
-                <div>
-                  <p className="font-bold text-slate-900 dark:text-white text-sm">Dark Theme</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Low-glare clinical night palette</p>
-                </div>
-              </div>
-              {isDark && <CheckCircle2 className="w-5 h-5 text-[#6bd8cb]" />}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* =========================================================================
           TAB: LANGUAGE SETTING
       ========================================================================== */}
       {activeTab === 'language' && (
-        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-xs space-y-5 text-sm">
+        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 shadow-xs space-y-5 text-sm">
           <div>
             <h3 className="text-xl font-bold text-slate-900 dark:text-white">
               {isHindi ? 'वेबसाइट भाषा प्राथमिकता' : 'Language Preference'}
@@ -988,7 +1478,7 @@ export default function SettingsPage() {
       {/* Confirmation Modal for Account & Health Data Deletion */}
       {deleteModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-          <div className="max-w-md w-full p-6 sm:p-7 rounded-3xl bg-white dark:bg-[#101827] border border-rose-500/30 shadow-2xl space-y-4">
+          <div className="max-w-md w-full p-6 sm:p-7 rounded-3xl bg-white dark:bg-[#2B1E15] border border-rose-500/30 shadow-2xl space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
               <AlertTriangle className="w-6 h-6" />
             </div>

@@ -200,7 +200,7 @@ export default function AdminDiseasesPage() {
         {diseases.map(disease => (
           <div
             key={disease.id}
-            className={`p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#101827] border transition-all space-y-4 flex flex-col justify-between shadow-sm ${
+            className={`p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#2B1E15] border transition-all space-y-4 flex flex-col justify-between shadow-sm ${
               disease.isPublished !== false
                 ? 'border-slate-200 dark:border-slate-800'
                 : 'border-dashed border-slate-300 dark:border-slate-700 opacity-75'
@@ -296,7 +296,7 @@ export default function AdminDiseasesPage() {
       {/* Add / Edit Disease Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-2xl p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5 my-8">
+          <div className="w-full max-w-2xl p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5 my-8">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
               <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
                 {editingDisease ? `Edit: ${editingDisease.name}` : 'Add New Health Condition'}
@@ -319,7 +319,7 @@ export default function AdminDiseasesPage() {
                     placeholder="e.g. Dengue"
                     value={name}
                     onChange={e => setName(e.target.value)}
-                    className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                   />
                 </div>
 
@@ -330,7 +330,7 @@ export default function AdminDiseasesPage() {
                     placeholder="e.g. Dengue Virus (DENV)"
                     value={medicalName}
                     onChange={e => setMedicalName(e.target.value)}
-                    className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                   />
                 </div>
               </div>
@@ -341,7 +341,7 @@ export default function AdminDiseasesPage() {
                   <select
                     value={categoryGroup}
                     onChange={e => setCategoryGroup(e.target.value)}
-                    className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium"
+                    className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium"
                   >
                     <option value="Common Illnesses">Common Illnesses</option>
                     <option value="Other Health Problems">Other Health Problems</option>
@@ -356,7 +356,7 @@ export default function AdminDiseasesPage() {
                     placeholder="e.g. dengue or tb"
                     value={datasetKey}
                     onChange={e => setDatasetKey(e.target.value)}
-                    className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                   />
                 </div>
               </div>
@@ -369,7 +369,7 @@ export default function AdminDiseasesPage() {
                   placeholder="One sentence plain explanation of what this illness is..."
                   value={shortDescription}
                   onChange={e => setShortDescription(e.target.value)}
-                  className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
 
@@ -380,7 +380,7 @@ export default function AdminDiseasesPage() {
                   placeholder="Explain in simple, everyday words that anyone can understand..."
                   value={whatIsIt}
                   onChange={e => setWhatIsIt(e.target.value)}
-                  className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
 
@@ -391,7 +391,7 @@ export default function AdminDiseasesPage() {
                   placeholder="e.g. World Health Organization (WHO), CDC, ICMR"
                   value={reliableSourcesInput}
                   onChange={e => setReliableSourcesInput(e.target.value)}
-                  className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
 
@@ -402,7 +402,7 @@ export default function AdminDiseasesPage() {
                     type="date"
                     value={lastReviewedDate}
                     onChange={e => setLastReviewedDate(e.target.value)}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm"
                   />
                 </div>
 

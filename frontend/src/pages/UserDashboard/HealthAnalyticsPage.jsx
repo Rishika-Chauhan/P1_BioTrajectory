@@ -9,6 +9,11 @@ import {
   ResponsiveContainer,
   LineChart,
   Line,
+  BarChart,
+  Bar,
+  AreaChart,
+  Area,
+  ComposedChart,
   XAxis,
   YAxis,
   Tooltip,
@@ -29,7 +34,11 @@ import {
   Flame,
   ShieldCheck,
   TrendingUp,
-  Info
+  Info,
+  Footprints,
+  Sparkles,
+  HelpCircle,
+  ArrowRight
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
@@ -37,8 +46,89 @@ import { useLanguage } from '../../context/LanguageContext';
 import { healthReadingService } from '../../services/healthReadingService';
 import DisclaimerBanner from '../../components/common/DisclaimerBanner';
 
+// Plain-language easy subtitles and guidance for each metric
+const EASY_SUBS_CONFIG = {
+  bp: {
+    title: { en: 'Understanding Blood Pressure', hi: 'रक्तचाप (BP) समझें' },
+    sub: {
+      en: 'Tracks pumping pressure (systolic) and resting pressure (diastolic) in arteries.',
+      hi: 'धमनियों में पंपिंग दबाव (सिस्टोलिक) और विश्राम दबाव (डायस्टोलिक) को मापता है।'
+    },
+    normal: { en: '<120/80 mmHg (Optimal resting level)', hi: '<120/80 mmHg (आदर्श विश्राम सीमा)' },
+    warning: { en: '130–139 or 80–89 mmHg (Elevated — rest & re-test)', hi: '130–139 या 80–89 mmHg (बढ़ा हुआ — आराम कर पुनः मापें)' },
+    danger: { en: '≥140/90 mmHg (Stage 2 — seek medical advice)', hi: '≥140/90 mmHg (गंभीर स्तर — डॉक्टर से परामर्श लें)' },
+    tip: { en: 'Sit quietly for 5 minutes with uncrossed feet before taking a reading.', hi: 'रीडिंग लेने से पहले 5 मिनट शांत बैठें और पैर सीधे रखें।' }
+  },
+  hr: {
+    title: { en: 'Understanding Resting Heart Rate', hi: 'विश्राम हृदय गति (HR) समझें' },
+    sub: {
+      en: 'Heartbeats per minute (bpm) while relaxed and stationary.',
+      hi: 'विश्राम अवस्था में प्रति मिनट दिल की धड़कनों की संख्या (bpm)।'
+    },
+    normal: { en: '60–100 bpm (Healthy resting corridor)', hi: '60–100 bpm (स्वस्थ विश्राम दायरा)' },
+    warning: { en: '>100 bpm (Elevated from stress, caffeine, or dehydration)', hi: '>100 bpm (तनाव, कैफीन या पानी की कमी से बढ़ी हुई)' },
+    danger: { en: '≥120 bpm (Sustained tachycardia — clinical review recommended)', hi: '≥120 bpm (लगातार उच्च धड़कन — चिकित्सीय जांच आवश्यक)' },
+    tip: { en: 'Slow deep breaths and adequate hydration help normalize pulse.', hi: 'धीमी गहरी सांसें और पर्याप्त पानी पल्स को सामान्य करने में मदद करते हैं।' }
+  },
+  spo2: {
+    title: { en: 'Understanding Blood Oxygen (SpO2)', hi: 'रक्त ऑक्सीजन (SpO2) समझें' },
+    sub: {
+      en: 'Percentage of oxygen carrying hemoglobin circulating in your bloodstream.',
+      hi: 'रक्त में ऑक्सीजन ले जाने वाले हीमोग्लोबिन का प्रतिशत।'
+    },
+    normal: { en: '95%–100% (Optimal tissue oxygenation)', hi: '95%–100% (उत्कृष्ट ऑक्सीजन स्तर)' },
+    warning: { en: '90%–94% (Mild hypoxia — sit upright and breathe deeply)', hi: '90%–94% (हल्की कमी — सीधे बैठकर गहरी सांसें लें)' },
+    danger: { en: '<90% (Critical hypoxia — requires urgent attention)', hi: '<90% (गंभीर खतरा — तत्काल चिकित्सीय सहायता लें)' },
+    tip: { en: 'Ensure finger is warm and pulse oximeter sensor is clean.', hi: 'सटीक ऑक्सीमीटर रीडिंग के लिए उंगली गर्म और साफ रखें।' }
+  },
+  glucose: {
+    title: { en: 'Understanding Blood Glucose', hi: 'रक्त शर्करा (ग्लूकोज) समझें' },
+    sub: {
+      en: 'Fasting blood sugar measured after 8 hours without food intake.',
+      hi: '8 घंटे खाली पेट रहने के बाद मापा गया रक्त शर्करा स्तर।'
+    },
+    normal: { en: '70–99 mg/dL (Normal fasting metabolic range)', hi: '70–99 mg/dL (सामान्य फास्टिंग स्तर)' },
+    warning: { en: '100–125 mg/dL (Pre-diabetes / impaired fasting)', hi: '100–125 mg/dL (पूर्व-मधुमेह चेतावनी सीमा)' },
+    danger: { en: '≥126 mg/dL or <70 mg/dL (Diabetes threshold or low sugar)', hi: '≥126 mg/dL या <70 mg/dL (मधुमेह सीमा या कम शर्करा)' },
+    tip: { en: 'A 15-minute gentle stroll after eating helps stabilize glucose.', hi: 'भोजन के बाद 15 मिनट टहलना ग्लूकोज को स्थिर रखने में मदद करता है।' }
+  },
+  urine: {
+    title: { en: 'Understanding Urine Protein & Kidney Health', hi: 'मूत्र प्रोटीन एवं गुर्दा स्वास्थ्य समझें' },
+    sub: {
+      en: 'Measures kidney filtration efficiency and retention of essential proteins.',
+      hi: 'गुर्दे की फिल्टर क्षमता और आवश्यक प्रोटीन के ठहराव को मापता है।'
+    },
+    normal: { en: 'Negative / Trace (<15 mg/dL — healthy kidneys)', hi: 'नेगेटिव / ट्रेस (<15 mg/dL — स्वस्थ गुर्दे)' },
+    warning: { en: '30 mg/dL (Microalbuminuria — recheck after hydrating)', hi: '30 mg/dL (माइक्रोअल्बुमिन्यूरिया — पानी पीकर पुनः जांचें)' },
+    danger: { en: '≥100 mg/dL (Clinical proteinuria — consult doctor if persistent)', hi: '≥100 mg/dL (प्रोटीन रिसाव — बने रहने पर डॉक्टर से परामर्श करें)' },
+    tip: { en: 'Drink 2 to 2.5 liters of water daily to support kidney function.', hi: 'गुर्दों के स्वस्थ कार्य के लिए रोजाना 2 से 2.5 लीटर पानी पिएं।' }
+  },
+  steps: {
+    title: { en: 'Understanding Daily Steps & Walking', hi: 'दैनिक कदम एवं शारीरिक सक्रियता समझें' },
+    sub: {
+      en: 'Daily walking distance building cardiovascular and metabolic resilience.',
+      hi: 'हृदय और चयापचय को स्वस्थ रखने के लिए दैनिक पैदल चलना।'
+    },
+    normal: { en: '≥8,000 steps/day (Target daily active goal)', hi: '≥8,000 कदम/दिन (आदर्श दैनिक लक्ष्य)' },
+    warning: { en: '4,000–7,999 steps/day (Moderate activity corridor)', hi: '4,000–7,999 कदम/दिन (मध्यम सक्रियता सीमा)' },
+    danger: { en: '<3,000 steps/day (Sedentary — prolonged stillness)', hi: '<3,000 कदम/दिन (निष्क्रिय — लंबे समय बैठना)' },
+    tip: { en: 'Take a quick 3-minute stroll or stretch every hour of sitting.', hi: 'हर घंटे 3 मिनट का छोटा ब्रेक लेकर टहलें या खिंचाव करें।' }
+  },
+  all: {
+    title: { en: 'Understanding Multi-Vital Trajectory', hi: 'समग्र स्वास्थ्य रुझान समझें' },
+    sub: {
+      en: 'Synchronized view of circulatory, pulmonary, and metabolic biomarkers.',
+      hi: 'रक्तचाप, दिल की धड़कन, ऑक्सीजन और शर्करा का संयुक्त रुझान।'
+    },
+    normal: { en: 'All monitored biomarkers within certified clinical ranges.', hi: 'सभी बायोमार्कर अपने प्रमाणित सामान्य स्तर पर हैं।' },
+    warning: { en: 'Amber markers indicate readings approaching upper limits.', hi: 'पीले रंग के मार्कर चेतावनी सीमा के करीब मान दर्शाते हैं।' },
+    danger: { en: 'Red points indicate sustained clinical threshold elevation.', hi: 'लाल बिंदु गंभीर नैदानिक सीमा पार करने का संकेत देते हैं।' },
+    tip: { en: 'Consistent logging creates clear longitudinal trends for your doctor.', hi: 'नियमित रिकॉर्डिंग आपके डॉक्टर को सटीक निर्णय लेने में मदद करती है।' }
+  }
+};
+
 const DAY_MS = 24 * 60 * 60 * 1000;
-const MAX_READINGS = 100;
+const MAX_READINGS = 1000;
 
 // Convert Firestore Timestamp, Date, or date string to JavaScript Date.
 const toDate = (value) => {
@@ -132,7 +222,7 @@ const buildChartData = (readings, isHindi) => {
     }
   });
 
-  return [...dailyMap.values()].slice(-30);
+  return [...dailyMap.values()];
 };
 
 export default function HealthAnalyticsPage() {
@@ -140,60 +230,49 @@ export default function HealthAnalyticsPage() {
   const { t, isHindi } = useLanguage();
 
   const uid = currentUser?.uid;
+  const activeUid = uid || 'demo-user-123';
 
   const [readings, setReadings] = useState([]);
   const [timeRange, setTimeRange] = useState('30D');
   const [selectedMetric, setSelectedMetric] = useState('bp'); // 'bp', 'hr', 'spo2', 'steps', 'all'
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Fetch actual patient measurements
-  const loadReadings = useCallback(async () => {
-    if (!uid) {
-      setReadings([]);
-      setLoading(false);
-      setError('');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-
-    try {
-      const result = await healthReadingService.list(uid, MAX_READINGS);
-      setReadings(Array.isArray(result) ? result : []);
-    } catch (loadError) {
-      console.error('Analytics load failed:', loadError);
-      setError(loadError.message || 'Unable to load your health analytics.');
-      setReadings([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [uid]);
-
   useEffect(() => {
-    loadReadings();
-  }, [loadReadings, refreshKey]);
-
-  // Determine selected time range in ms
-  const rangeMs = useMemo(() => {
-    switch (timeRange) {
-      case '7D':
-        return 7 * DAY_MS;
-      case '30D':
-        return 30 * DAY_MS;
-      case '90D':
-        return 90 * DAY_MS;
-      case 'All':
-      default:
-        return Number.MAX_SAFE_INTEGER;
+    let ignore = false;
+    async function fetchReadings() {
+      try {
+        const result = await healthReadingService.list(activeUid, MAX_READINGS);
+        if (!ignore) {
+          setReadings(Array.isArray(result) ? result : []);
+        }
+      } catch (loadError) {
+        if (!ignore) {
+          console.error('Analytics load failed:', loadError);
+          setError(loadError.message || 'Unable to load your health analytics.');
+          setReadings([]);
+        }
+      } finally {
+        if (!ignore) {
+          setLoading(false);
+        }
+      }
     }
-  }, [timeRange]);
+    fetchReadings();
+    return () => {
+      ignore = true;
+    };
+  }, [activeUid]);
 
-  // Filter readings by selected range
+  // Filter readings by selected calendar range (7D, 30D, 90D, or All)
   const filteredReadings = useMemo(() => {
     if (!readings.length) return [];
+    if (timeRange === 'All') return readings;
+
+    const daysCount = timeRange === '7D' ? 7 : timeRange === '30D' ? 30 : timeRange === '90D' ? 90 : null;
+    if (!daysCount) return readings;
 
     const validDates = readings
       .map((r) => toDate(r.measuredAt)?.getTime())
@@ -201,16 +280,23 @@ export default function HealthAnalyticsPage() {
 
     if (!validDates.length) return [];
 
-    const latest = Math.max(...validDates);
-    const cutoff = rangeMs === Number.MAX_SAFE_INTEGER
-      ? Number.NEGATIVE_INFINITY
-      : latest - rangeMs;
+    const latestMs = Math.max(...validDates);
+    const latestDate = new Date(latestMs);
+    // Align to the start of the latest calendar day (00:00:00)
+    const startOfLatestDay = new Date(
+      latestDate.getFullYear(),
+      latestDate.getMonth(),
+      latestDate.getDate()
+    ).getTime();
+
+    // Include (daysCount - 1) prior full calendar days
+    const cutoff = startOfLatestDay - ((daysCount - 1) * DAY_MS);
 
     return readings.filter((r) => {
       const date = toDate(r.measuredAt);
       return date && date.getTime() >= cutoff;
     });
-  }, [readings, rangeMs]);
+  }, [readings, timeRange]);
 
   // Generate chart data points
   const chartData = useMemo(
@@ -385,8 +471,18 @@ export default function HealthAnalyticsPage() {
     return { dangerList, warningList };
   }, [filteredReadings, isHindi]);
 
-  const handleRefresh = () => {
-    setRefreshKey((prev) => prev + 1);
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await new Promise((r) => setTimeout(r, 450));
+      const result = await healthReadingService.list(activeUid, MAX_READINGS);
+      setReadings(Array.isArray(result) ? result : []);
+    } catch (loadError) {
+      console.error('Analytics load failed:', loadError);
+      setError(loadError.message || 'Unable to load your health analytics.');
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const hasReadings = readings.length > 0;
@@ -409,77 +505,29 @@ export default function HealthAnalyticsPage() {
         </div>
 
         {/* Time Range Filter */}
-        <div className="flex items-center gap-1.5 p-1 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#101827] shadow-xs">
-          {['7D', '30D', '90D', 'All'].map((range) => (
-            <button
-              key={range}
-              onClick={() => setTimeRange(range)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                timeRange === range
-                  ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              {range === 'All' ? (isHindi ? 'सभी' : 'All') : range}
-            </button>
-          ))}
+        <div className="flex items-center">
+          <div className="flex items-center gap-1 p-1 rounded-2xl border border-[#E8DFD1] dark:border-[#4A3525] bg-[#F6F0E4]/60 dark:bg-[#2B1E15] shadow-xs">
+            {[
+              { id: '7D', label: isHindi ? '7 दिन' : '7D' },
+              { id: '30D', label: isHindi ? '30 दिन' : '30D' },
+              { id: '90D', label: isHindi ? '90 दिन' : '90D' },
+              { id: 'All', label: isHindi ? 'सभी' : 'All' }
+            ].map(({ id, label }) => (
+              <button
+                key={id}
+                onClick={() => setTimeRange(id)}
+                className={`px-3.5 sm:px-4 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                  timeRange === id
+                    ? 'bg-[#A9D6F5] text-[#1F150E] dark:bg-[#A9D6F5] dark:text-[#1F150E] shadow-sm font-extrabold ring-1 ring-[#A9D6F5]/50'
+                    : 'text-[#6B4F3A] dark:text-[#D5BF86] hover:bg-white/60 dark:hover:bg-[#3D2B1E]'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
-
-      {/* DYNAMIC THRESHOLD WARNING & DANGER NOTIFICATION BANNER */}
-      {thresholdAlerts.dangerList.length > 0 ? (
-        <div className="p-5 rounded-3xl bg-rose-500/10 border-2 border-rose-500/40 text-rose-800 dark:text-rose-200 space-y-2.5 shadow-md">
-          <div className="flex items-center gap-2.5 font-bold text-lg text-rose-700 dark:text-rose-300">
-            <AlertTriangle className="w-6 h-6 text-rose-600 dark:text-rose-400 shrink-0" />
-            <span>{t('analytics.dangerAlertTitle', {}, 'Critical Danger Threshold Notification')}</span>
-            <span className="px-2.5 py-0.5 rounded-full text-xs bg-rose-500/20 text-rose-700 dark:text-rose-300 uppercase tracking-wider font-extrabold">
-              {isHindi ? 'खतरे की सीमा पार' : 'Danger Triggered'}
-            </span>
-          </div>
-          <div className="space-y-1.5 pl-8 text-sm leading-relaxed">
-            {thresholdAlerts.dangerList.slice(0, 2).map((alert, idx) => (
-              <p key={idx}>
-                <strong>{alert.title}</strong> — {alert.message}
-              </p>
-            ))}
-            <p className="text-xs font-medium text-rose-600 dark:text-rose-300 pt-1">
-              {t('analytics.recommendConsult', {}, 'Please rest, avoid intense exertion, and consult a qualified physician immediately if critical elevation persists.')}
-            </p>
-          </div>
-        </div>
-      ) : thresholdAlerts.warningList.length > 0 ? (
-        <div className="p-5 rounded-3xl bg-amber-500/10 border-2 border-amber-500/40 text-amber-800 dark:text-amber-200 space-y-2.5 shadow-md">
-          <div className="flex items-center gap-2.5 font-bold text-lg text-amber-700 dark:text-amber-300">
-            <AlertCircle className="w-6 h-6 text-amber-600 dark:text-amber-400 shrink-0" />
-            <span>{t('analytics.warningAlertTitle', {}, 'Vital Elevation Warning Alert')}</span>
-            <span className="px-2.5 py-0.5 rounded-full text-xs bg-amber-500/20 text-amber-800 dark:text-amber-300 uppercase tracking-wider font-extrabold">
-              {isHindi ? 'चेतावनी स्तर' : 'Limit Crossed'}
-            </span>
-          </div>
-          <div className="space-y-1.5 pl-8 text-sm leading-relaxed">
-            {thresholdAlerts.warningList.slice(0, 2).map((alert, idx) => (
-              <p key={idx}>
-                <strong>{alert.title}</strong> — {alert.message}
-              </p>
-            ))}
-            <p className="text-xs font-medium text-amber-700 dark:text-amber-300 pt-1">
-              {t('analytics.recommendConsult', {}, 'Take a break, hydrate, and re-test in 30 minutes to confirm whether your reading stabilizes.')}
-            </p>
-          </div>
-        </div>
-      ) : hasReadings ? (
-        <div className="p-4 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 flex items-center gap-3 text-sm shadow-xs">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-          <div>
-            <p className="font-bold">
-              {t('analytics.allNormalTitle', {}, 'All Vitals Within Normal Biological Limits')}
-            </p>
-            <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">
-              {t('analytics.allNormalDesc', {}, 'Recent readings for blood pressure, pulse, oxygen saturation, and activity are safely inside clinical baseline zones.')}
-            </p>
-          </div>
-        </div>
-      ) : null}
 
       {/* Loading & Error States */}
       {loading ? (
@@ -524,22 +572,22 @@ export default function HealthAnalyticsPage() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+                <p className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
                   {t('analytics.latestBP', {}, 'Latest BP')}
                 </p>
                 <div className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">
                   <Activity className="w-4 h-4" />
                 </div>
               </div>
-              <p className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white font-mono">
+              <p className="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white font-mono">
                 {latestSummary.blood_pressure?.values?.systolic != null
                   ? `${latestSummary.blood_pressure.values.systolic}/${latestSummary.blood_pressure.values.diastolic}`
                   : '118/78'}
-                <span className="text-xs font-normal text-slate-500 ml-1.5">mmHg</span>
+                <span className="text-sm font-medium text-slate-500 ml-1.5">mmHg</span>
               </p>
-              <div className="mt-2 flex items-center justify-between text-xs">
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
+              <div className="mt-2 flex items-center justify-between text-xs sm:text-sm font-semibold">
+                <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4" />
                   {isHindi ? 'सामान्य सीमा (≤120/80)' : 'Optimal (≤120/80)'}
                 </span>
               </div>
@@ -555,22 +603,22 @@ export default function HealthAnalyticsPage() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+                <p className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
                   {t('analytics.latestHR', {}, 'Latest Heart Rate')}
                 </p>
                 <div className="p-1.5 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400">
                   <Heart className="w-4 h-4" />
                 </div>
               </div>
-              <p className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white font-mono">
+              <p className="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white font-mono">
                 {latestSummary.heart_rate?.values?.bpm != null
                   ? latestSummary.heart_rate.values.bpm
                   : '72'}
-                <span className="text-xs font-normal text-slate-500 ml-1.5">bpm</span>
+                <span className="text-sm font-medium text-slate-500 ml-1.5">bpm</span>
               </p>
-              <div className="mt-2 flex items-center justify-between text-xs">
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
+              <div className="mt-2 flex items-center justify-between text-xs sm:text-sm font-semibold">
+                <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4" />
                   {isHindi ? 'सामान्य सीमा (60–100)' : 'Resting (60–100 bpm)'}
                 </span>
               </div>
@@ -586,22 +634,22 @@ export default function HealthAnalyticsPage() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+                <p className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
                   {t('analytics.latestSpO2', {}, 'Latest SpO2')}
                 </p>
                 <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
                   <Droplet className="w-4 h-4" />
                 </div>
               </div>
-              <p className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white font-mono">
+              <p className="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white font-mono">
                 {latestSummary.oxygen_saturation?.values?.spo2 != null
                   ? latestSummary.oxygen_saturation.values.spo2
                   : '99'}
-                <span className="text-xs font-normal text-slate-500 ml-1.5">%</span>
+                <span className="text-sm font-medium text-slate-500 ml-1.5">%</span>
               </p>
-              <div className="mt-2 flex items-center justify-between text-xs">
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
+              <div className="mt-2 flex items-center justify-between text-xs sm:text-sm font-semibold">
+                <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4" />
                   {isHindi ? 'सुरक्षित सीमा (≥95%)' : 'Healthy (≥95%)'}
                 </span>
               </div>
@@ -617,22 +665,22 @@ export default function HealthAnalyticsPage() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+                <p className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
                   {t('analytics.latestSteps', {}, 'Daily Steps')}
                 </p>
                 <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                   <TrendingUp className="w-4 h-4" />
                 </div>
               </div>
-              <p className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white font-mono">
+              <p className="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white font-mono">
                 {latestSummary.activity?.values?.steps != null
                   ? Number(latestSummary.activity.values.steps).toLocaleString()
                   : '8,420'}
-                <span className="text-xs font-normal text-slate-500 ml-1.5">{isHindi ? 'कदम' : 'steps'}</span>
+                <span className="text-sm font-medium text-slate-500 ml-1.5">{isHindi ? 'कदम' : 'steps'}</span>
               </p>
-              <div className="mt-2 flex items-center justify-between text-xs">
-                <span className="text-cyan-600 dark:text-cyan-400 font-bold flex items-center gap-1">
-                  <Flame className="w-3.5 h-3.5" />
+              <div className="mt-2 flex items-center justify-between text-xs sm:text-sm font-semibold">
+                <span className="text-cyan-600 dark:text-cyan-400 flex items-center gap-1.5">
+                  <Flame className="w-4 h-4" />
                   {isHindi ? 'दैनिक लक्ष्य: 8,000' : 'Goal: 8,000 steps'}
                 </span>
               </div>
@@ -665,7 +713,7 @@ export default function HealthAnalyticsPage() {
                   <button
                     key={tab.id}
                     onClick={() => setSelectedMetric(tab.id)}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                       selectedMetric === tab.id
                         ? 'bg-cyan-500 text-slate-950 shadow-sm'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -677,30 +725,31 @@ export default function HealthAnalyticsPage() {
 
                 <button
                   onClick={handleRefresh}
-                  disabled={loading}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer ml-1"
+                  disabled={loading || isRefreshing}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer ml-1 active:scale-95 transition-all disabled:opacity-60"
+                  title={isHindi ? 'आंकड़े पुनः लोड करें' : 'Refresh analytics'}
                 >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  <span>{t('analytics.refresh', {}, 'Refresh')}</span>
+                  <RefreshCw className={`w-4 h-4 ${isRefreshing || loading ? 'animate-spin text-cyan-500' : ''}`} />
+                  <span>{isRefreshing ? (isHindi ? 'रीफ्रेश...' : 'Refreshing...') : t('analytics.refresh', {}, 'Refresh')}</span>
                 </button>
               </div>
             </div>
 
             {/* Threshold Legend Bar */}
-            <div className="flex flex-wrap items-center gap-4 text-xs font-medium px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200/80 dark:border-slate-800/80">
-              <span className="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+            <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm font-semibold px-4 py-3 rounded-2xl bg-[#F6F0E4]/60 dark:bg-[#1F150E]/80 border border-[#E8DFD1] dark:border-[#4A3525]">
+              <span className="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-xs">
                 {isHindi ? 'संदर्भ रेखाएं:' : 'Reference Guide:'}
               </span>
-              <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
-                <span className="w-3 h-0.5 bg-emerald-500 rounded-full" />
+              <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                <span className="w-3.5 h-1 bg-emerald-500 rounded-full" />
                 <span>{isHindi ? 'सामान्य सुरक्षित रेखा (Normal Limit)' : 'Normal Safe Limit'}</span>
               </div>
-              <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
-                <span className="w-3 h-0.5 bg-amber-500 rounded-full border-dashed" />
+              <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                <span className="w-3.5 h-1 bg-amber-500 rounded-full border-dashed" />
                 <span>{isHindi ? 'चेतावनी स्तर (Warning Threshold)' : 'Warning Elevation Threshold'}</span>
               </div>
-              <div className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400">
-                <span className="w-3 h-0.5 bg-rose-500 rounded-full" />
+              <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400">
+                <span className="w-3.5 h-1 bg-rose-500 rounded-full" />
                 <span>{isHindi ? 'खतरा स्तर (Danger / Crisis)' : 'Danger / Critical Level'}</span>
               </div>
             </div>
@@ -712,538 +761,248 @@ export default function HealthAnalyticsPage() {
                   : 'No measurements found in the selected time range.'}
               </div>
             ) : (
-              <div className="w-full h-80">
+              <div className="w-full h-84">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={chartData}
-                    margin={{ top: 16, right: 24, left: -10, bottom: 0 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.18)" />
-
-                    <XAxis
-                      dataKey="date"
-                      tickLine={false}
-                      axisLine={false}
-                      tick={{ fontSize: 11, fill: '#94A3B8' }}
-                    />
-
-                    {/* Dynamic YAxis Domains per Metric */}
-                    {selectedMetric === 'bp' && (
-                      <YAxis
-                        domain={[60, 160]}
-                        tickLine={false}
-                        axisLine={false}
-                        tick={{ fontSize: 11, fill: '#94A3B8' }}
+                  {/* 1. DAILY STEPS -> BARCHART */}
+                  {selectedMetric === 'steps' ? (
+                    <BarChart data={chartData} margin={{ top: 16, right: 24, left: -10, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.18)" />
+                      <XAxis dataKey="date" minTickGap={20} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} />
+                      <YAxis domain={[0, 15000]} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} />
+                      <Tooltip contentStyle={{ backgroundColor: '#1F150E', borderRadius: 12, border: '1px solid #4A3525', color: '#F6F0E4' }} />
+                      <Legend wrapperStyle={{ fontSize: 12 }} />
+                      <ReferenceLine
+                        y={8000}
+                        stroke="#06b6d4"
+                        strokeDasharray="4 4"
+                        strokeWidth={2}
+                        label={{
+                          value: isHindi ? 'दैनिक लक्ष्य (8,000 कदम)' : 'Daily Target Goal (8,000 steps)',
+                          position: 'insideTopRight',
+                          fill: '#06b6d4',
+                          fontSize: 10,
+                          fontWeight: 'bold'
+                        }}
                       />
-                    )}
-                    {selectedMetric === 'hr' && (
-                      <YAxis
-                        domain={[40, 140]}
-                        tickLine={false}
-                        axisLine={false}
-                        tick={{ fontSize: 11, fill: '#94A3B8' }}
-                      />
-                    )}
-                    {selectedMetric === 'spo2' && (
-                      <YAxis
-                        domain={[85, 100]}
-                        tickLine={false}
-                        axisLine={false}
-                        tick={{ fontSize: 11, fill: '#94A3B8' }}
-                      />
-                    )}
-                    {selectedMetric === 'glucose' && (
-                      <YAxis
-                        domain={[50, 180]}
-                        tickLine={false}
-                        axisLine={false}
-                        tick={{ fontSize: 11, fill: '#94A3B8' }}
-                      />
-                    )}
-                    {selectedMetric === 'urine' && (
-                      <YAxis
-                        domain={[0, 150]}
-                        tickLine={false}
-                        axisLine={false}
-                        tick={{ fontSize: 11, fill: '#94A3B8' }}
-                      />
-                    )}
-                    {selectedMetric === 'steps' && (
-                      <YAxis
-                        domain={[0, 'auto']}
-                        tickLine={false}
-                        axisLine={false}
-                        tick={{ fontSize: 11, fill: '#94A3B8' }}
-                      />
-                    )}
-                    {selectedMetric === 'all' && (
-                      <YAxis
-                        tickLine={false}
-                        axisLine={false}
-                        tick={{ fontSize: 11, fill: '#94A3B8' }}
-                      />
-                    )}
-
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#0F172A',
-                        borderRadius: '1rem',
-                        borderColor: '#334155',
-                        color: '#F8FAFC',
-                        fontSize: '12px'
-                      }}
-                    />
-
-                    <Legend verticalAlign="top" height={36} />
-
-                    {/* BLOOD PRESSURE REFERENCE LINES */}
-                    {selectedMetric === 'bp' && (
-                      <>
-                        {/* Normal Line (120 mmHg) */}
-                        <ReferenceLine
-                          y={120}
-                          stroke="#10b981"
-                          strokeDasharray="4 4"
-                          strokeWidth={2}
-                          label={{
-                            value: isHindi ? 'सामान्य सिस्टोलिक ≤120' : 'Normal Limit (≤120)',
-                            position: 'insideTopRight',
-                            fill: '#10b981',
-                            fontSize: 10,
-                            fontWeight: 'bold'
-                          }}
-                        />
-                        {/* Warning Line (130 mmHg) */}
-                        <ReferenceLine
-                          y={130}
-                          stroke="#f59e0b"
-                          strokeDasharray="4 4"
-                          strokeWidth={2}
-                          label={{
-                            value: isHindi ? 'चेतावनी स्तर 130' : 'Warning Level (130)',
-                            position: 'insideTopRight',
-                            fill: '#f59e0b',
-                            fontSize: 10,
-                            fontWeight: 'bold'
-                          }}
-                        />
-                        {/* Danger Line (140 mmHg) */}
-                        <ReferenceLine
-                          y={140}
-                          stroke="#ef4444"
-                          strokeDasharray="5 5"
-                          strokeWidth={2}
-                          label={{
-                            value: isHindi ? 'खतरा स्तर (Stage 2) ≥140' : 'Danger Crisis (≥140)',
-                            position: 'insideTopRight',
-                            fill: '#ef4444',
-                            fontSize: 10,
-                            fontWeight: 'bold'
-                          }}
-                        />
-                        {/* Diastolic Normal Line (80 mmHg) */}
-                        <ReferenceLine
-                          y={80}
-                          stroke="#06b6d4"
-                          strokeDasharray="3 3"
-                          strokeWidth={1.5}
-                          label={{
-                            value: isHindi ? 'सामान्य डायस्टोलिक ≤80' : 'Normal Diastolic (≤80)',
-                            position: 'insideBottomRight',
-                            fill: '#06b6d4',
-                            fontSize: 10
-                          }}
-                        />
-
-                        {/* Actual Data Lines */}
-                        <Line
-                          type="monotone"
-                          dataKey="systolic"
-                          stroke="#38bdf8"
-                          strokeWidth={3}
-                          dot={{ r: 4, fill: '#38bdf8' }}
-                          activeDot={{ r: 6 }}
-                          name={isHindi ? 'सिस्टोलिक (Systolic)' : 'Systolic BP (mmHg)'}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="diastolic"
-                          stroke="#818cf8"
-                          strokeWidth={2.5}
-                          dot={{ r: 4, fill: '#818cf8' }}
-                          activeDot={{ r: 6 }}
-                          name={isHindi ? 'डायस्टोलिक (Diastolic)' : 'Diastolic BP (mmHg)'}
-                        />
-                      </>
-                    )}
-
-                    {/* HEART RATE REFERENCE LINES */}
-                    {selectedMetric === 'hr' && (
-                      <>
-                        <ReferenceLine
-                          y={60}
-                          stroke="#10b981"
-                          strokeDasharray="4 4"
-                          strokeWidth={2}
-                          label={{
-                            value: isHindi ? 'सामान्य न्यूनतम 60' : 'Normal Min (60 bpm)',
-                            position: 'insideBottomRight',
-                            fill: '#10b981',
-                            fontSize: 10
-                          }}
-                        />
-                        <ReferenceLine
-                          y={100}
-                          stroke="#f59e0b"
-                          strokeDasharray="4 4"
-                          strokeWidth={2}
-                          label={{
-                            value: isHindi ? 'सामान्य अधिकतम / चेतावनी 100' : 'Normal Max / Warning (100 bpm)',
-                            position: 'insideTopRight',
-                            fill: '#f59e0b',
-                            fontSize: 10,
-                            fontWeight: 'bold'
-                          }}
-                        />
-                        <ReferenceLine
-                          y={120}
-                          stroke="#ef4444"
-                          strokeDasharray="5 5"
-                          strokeWidth={2}
-                          label={{
-                            value: isHindi ? 'खतरा स्तर (Tachycardia) ≥120' : 'Danger Crisis (≥120 bpm)',
-                            position: 'insideTopRight',
-                            fill: '#ef4444',
-                            fontSize: 10,
-                            fontWeight: 'bold'
-                          }}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="heartRate"
-                          stroke="#f43f5e"
-                          strokeWidth={3}
-                          dot={{ r: 4, fill: '#f43f5e' }}
-                          activeDot={{ r: 6 }}
-                          name={isHindi ? 'हृदय गति (Heart Rate bpm)' : 'Heart Rate (bpm)'}
-                        />
-                      </>
-                    )}
-
-                    {/* SpO2 REFERENCE LINES */}
-                    {selectedMetric === 'spo2' && (
-                      <>
-                        <ReferenceLine
-                          y={95}
-                          stroke="#10b981"
-                          strokeDasharray="4 4"
-                          strokeWidth={2}
-                          label={{
-                            value: isHindi ? 'सुरक्षित न्यूनतम (≥95%)' : 'Normal Safe (≥95%)',
-                            position: 'insideBottomRight',
-                            fill: '#10b981',
-                            fontSize: 10,
-                            fontWeight: 'bold'
-                          }}
-                        />
-                        <ReferenceLine
-                          y={92}
-                          stroke="#f59e0b"
-                          strokeDasharray="4 4"
-                          strokeWidth={2}
-                          label={{
-                            value: isHindi ? 'चेतावनी स्तर (92%)' : 'Low Warning (92%)',
-                            position: 'insideTopRight',
-                            fill: '#f59e0b',
-                            fontSize: 10
-                          }}
-                        />
-                        <ReferenceLine
-                          y={90}
-                          stroke="#ef4444"
-                          strokeDasharray="5 5"
-                          strokeWidth={2}
-                          label={{
-                            value: isHindi ? 'गंभीर खतरा (<90%)' : 'Critical Hypoxia Danger (<90%)',
-                            position: 'insideTopRight',
-                            fill: '#ef4444',
-                            fontSize: 10,
-                            fontWeight: 'bold'
-                          }}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="spo2"
-                          stroke="#a855f7"
-                          strokeWidth={3}
-                          dot={{ r: 4, fill: '#a855f7' }}
-                          activeDot={{ r: 6 }}
-                          name={isHindi ? 'ऑक्सीजन संतृप्ति (SpO2 %)' : 'Oxygen Saturation (SpO2 %)'}
-                        />
-                      </>
-                    )}
-
-                    {/* FASTING GLUCOSE REFERENCE LINES (ADA 2026 GUIDELINES) */}
-                    {selectedMetric === 'glucose' && (
-                      <>
-                        <ReferenceLine
-                          y={99}
-                          stroke="#10b981"
-                          strokeDasharray="4 4"
-                          strokeWidth={2}
-                          label={{
-                            value: isHindi ? 'सामान्य फास्टिंग सीमा (≤99 mg/dL - ADA)' : 'Normal Fasting (≤99 mg/dL - ADA)',
-                            position: 'insideTopRight',
-                            fill: '#10b981',
-                            fontSize: 10,
-                            fontWeight: 'bold'
-                          }}
-                        />
-                        <ReferenceLine
-                          y={100}
-                          stroke="#f59e0b"
-                          strokeDasharray="4 4"
-                          strokeWidth={2}
-                          label={{
-                            value: isHindi ? 'पूर्व-मधुमेह चेतावनी (100–125 mg/dL)' : 'Pre-diabetes Warning (100–125 mg/dL)',
-                            position: 'insideBottomRight',
-                            fill: '#f59e0b',
-                            fontSize: 10
-                          }}
-                        />
-                        <ReferenceLine
-                          y={126}
-                          stroke="#ef4444"
-                          strokeDasharray="5 5"
-                          strokeWidth={2}
-                          label={{
-                            value: isHindi ? 'मधुमेह सीमा खतरा (≥126 mg/dL - ADA)' : 'Diabetes Danger (≥126 mg/dL - ADA)',
-                            position: 'insideTopRight',
-                            fill: '#ef4444',
-                            fontSize: 10,
-                            fontWeight: 'bold'
-                          }}
-                        />
-                        <ReferenceLine
-                          y={70}
-                          stroke="#ef4444"
-                          strokeDasharray="3 3"
-                          strokeWidth={1.5}
-                          label={{
-                            value: isHindi ? 'हाइपोग्लाइसीमिया खतरा (<70 mg/dL)' : 'Hypoglycemia Danger (<70 mg/dL)',
-                            position: 'insideBottomRight',
-                            fill: '#ef4444',
-                            fontSize: 10
-                          }}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="glucose"
-                          stroke="#f59e0b"
-                          strokeWidth={3}
-                          dot={{ r: 4, fill: '#f59e0b' }}
-                          activeDot={{ r: 6 }}
-                          name={isHindi ? 'फास्टिंग रक्त शर्करा (Glucose mg/dL)' : 'Fasting Blood Glucose (mg/dL)'}
-                        />
-                      </>
-                    )}
-
-                    {/* URINE TEST REFERENCE LINES (NKF KDOQI GUIDELINES) */}
-                    {selectedMetric === 'urine' && (
-                      <>
-                        <ReferenceLine
-                          y={15}
-                          stroke="#10b981"
-                          strokeDasharray="4 4"
-                          strokeWidth={2}
-                          label={{
-                            value: isHindi ? 'सामान्य सुरक्षित सीमा (≤15 mg/dL - NKF)' : 'Normal Protein Safe (≤15 mg/dL - NKF)',
-                            position: 'insideBottomRight',
-                            fill: '#10b981',
-                            fontSize: 10,
-                            fontWeight: 'bold'
-                          }}
-                        />
-                        <ReferenceLine
-                          y={30}
-                          stroke="#f59e0b"
-                          strokeDasharray="4 4"
-                          strokeWidth={2}
-                          label={{
-                            value: isHindi ? 'माइक्रोअल्बुमिन्यूरिया चेतावनी (30 mg/dL)' : 'Microalbuminuria Warning (30 mg/dL)',
-                            position: 'insideTopRight',
-                            fill: '#f59e0b',
-                            fontSize: 10,
-                            fontWeight: 'bold'
-                          }}
-                        />
-                        <ReferenceLine
-                          y={100}
-                          stroke="#ef4444"
-                          strokeDasharray="5 5"
-                          strokeWidth={2}
-                          label={{
-                            value: isHindi ? 'क्लिनिकल प्रोटीन्यूरिया खतरा (≥100 mg/dL)' : 'Clinical Proteinuria Danger (≥100 mg/dL)',
-                            position: 'insideTopRight',
-                            fill: '#ef4444',
-                            fontSize: 10,
-                            fontWeight: 'bold'
-                          }}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="urineProtein"
-                          stroke="#06b6d4"
-                          strokeWidth={3}
-                          dot={{ r: 4, fill: '#06b6d4' }}
-                          activeDot={{ r: 6 }}
-                          name={isHindi ? 'मूत्र प्रोटीन (Protein mg/dL)' : 'Urine Protein (mg/dL)'}
-                        />
-                      </>
-                    )}
-
-                    {/* STEPS REFERENCE LINE */}
-                    {selectedMetric === 'steps' && (
-                      <>
-                        <ReferenceLine
-                          y={8000}
-                          stroke="#06b6d4"
-                          strokeDasharray="4 4"
-                          strokeWidth={2}
-                          label={{
-                            value: isHindi ? 'दैनिक लक्ष्य (8,000 कदम)' : 'Daily Target Goal (8,000 steps)',
-                            position: 'insideTopRight',
-                            fill: '#06b6d4',
-                            fontSize: 10,
-                            fontWeight: 'bold'
-                          }}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="steps"
-                          stroke="#10b981"
-                          strokeWidth={3}
-                          dot={{ r: 4, fill: '#10b981' }}
-                          activeDot={{ r: 6 }}
-                          name={isHindi ? 'दैनिक कदम (Steps)' : 'Daily Steps'}
-                        />
-                      </>
-                    )}
-
-                    {/* ALL METRICS OVERVIEW */}
-                    {selectedMetric === 'all' && (
-                      <>
-                        <Line
-                          type="monotone"
-                          dataKey="systolic"
-                          stroke="#38bdf8"
-                          strokeWidth={2.5}
-                          dot={false}
-                          name={isHindi ? 'सिस्टोलिक (Systolic)' : 'Systolic BP'}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="diastolic"
-                          stroke="#818cf8"
-                          strokeWidth={2.5}
-                          dot={false}
-                          name={isHindi ? 'डायस्टोलिक (Diastolic)' : 'Diastolic BP'}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="heartRate"
-                          stroke="#f43f5e"
-                          strokeWidth={2.5}
-                          dot={false}
-                          name={isHindi ? 'हृदय गति (Heart Rate)' : 'Heart Rate'}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="spo2"
-                          stroke="#a855f7"
-                          strokeWidth={2.5}
-                          dot={false}
-                          name={isHindi ? 'ऑक्सीजन (SpO2)' : 'SpO2'}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="glucose"
-                          stroke="#f59e0b"
-                          strokeWidth={2.5}
-                          dot={false}
-                          name={isHindi ? 'शर्करा (Glucose)' : 'Blood Glucose'}
-                        />
-                      </>
-                    )}
-                  </LineChart>
+                      <Bar dataKey="steps" fill="#10B981" radius={[6, 6, 0, 0]} maxBarSize={timeRange === '7D' ? 36 : timeRange === '30D' ? 14 : 7} name={isHindi ? 'दैनिक कदम (Steps)' : 'Daily Walking Steps'} />
+                    </BarChart>
+                  ) : selectedMetric === 'hr' ? (
+                    /* 2. HEART RATE -> AREACHART WITH GRADIENT */
+                    <AreaChart data={chartData} margin={{ top: 16, right: 24, left: -10, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="hrGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.35} />
+                          <stop offset="95%" stopColor="#f43f5e" stopOpacity={0.0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.18)" />
+                      <XAxis dataKey="date" minTickGap={20} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} />
+                      <YAxis domain={[40, 140]} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} />
+                      <Tooltip contentStyle={{ backgroundColor: '#1F150E', borderRadius: 12, border: '1px solid #4A3525', color: '#F6F0E4' }} />
+                      <Legend wrapperStyle={{ fontSize: 12 }} />
+                      <ReferenceLine y={60} stroke="#10b981" strokeDasharray="4 4" strokeWidth={2} label={{ value: isHindi ? 'सामान्य 60 bpm' : 'Normal Min (60 bpm)', position: 'insideBottomRight', fill: '#10b981', fontSize: 10 }} />
+                      <ReferenceLine y={100} stroke="#f59e0b" strokeDasharray="4 4" strokeWidth={2} label={{ value: isHindi ? 'चेतावनी 100 bpm' : 'Warning Max (100 bpm)', position: 'insideTopRight', fill: '#f59e0b', fontSize: 10, fontWeight: 'bold' }} />
+                      <ReferenceLine y={120} stroke="#ef4444" strokeDasharray="5 5" strokeWidth={2} label={{ value: isHindi ? 'खतरा ≥120 bpm' : 'Danger Crisis (≥120 bpm)', position: 'insideTopRight', fill: '#ef4444', fontSize: 10, fontWeight: 'bold' }} />
+                      <Area type="monotone" dataKey="heartRate" stroke="#f43f5e" strokeWidth={3} fill="url(#hrGradient)" dot={chartData.length <= 14 ? { r: 4, fill: '#f43f5e' } : chartData.length <= 35 ? { r: 2.5, fill: '#f43f5e' } : false} activeDot={{ r: 6 }} name={isHindi ? 'हृदय गति (Heart Rate bpm)' : 'Heart Rate (bpm)'} />
+                    </AreaChart>
+                  ) : selectedMetric === 'spo2' ? (
+                    /* 3. SpO2 -> AREACHART WITH GRADIENT */
+                    <AreaChart data={chartData} margin={{ top: 16, right: 24, left: -10, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="spo2Gradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#a855f7" stopOpacity={0.35} />
+                          <stop offset="95%" stopColor="#a855f7" stopOpacity={0.0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.18)" />
+                      <XAxis dataKey="date" minTickGap={20} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} />
+                      <YAxis domain={[85, 100]} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} />
+                      <Tooltip contentStyle={{ backgroundColor: '#1F150E', borderRadius: 12, border: '1px solid #4A3525', color: '#F6F0E4' }} />
+                      <Legend wrapperStyle={{ fontSize: 12 }} />
+                      <ReferenceLine y={95} stroke="#10b981" strokeDasharray="4 4" strokeWidth={2} label={{ value: isHindi ? 'सुरक्षित ≥95%' : 'Optimal (≥95%)', position: 'insideBottomRight', fill: '#10b981', fontSize: 10, fontWeight: 'bold' }} />
+                      <ReferenceLine y={92} stroke="#f59e0b" strokeDasharray="4 4" strokeWidth={2} label={{ value: isHindi ? 'चेतावनी 92%' : 'Warning (92%)', position: 'insideTopRight', fill: '#f59e0b', fontSize: 10 }} />
+                      <ReferenceLine y={90} stroke="#ef4444" strokeDasharray="5 5" strokeWidth={2} label={{ value: isHindi ? 'गंभीर खतरा <90%' : 'Severe Hypoxia (<90%)', position: 'insideTopRight', fill: '#ef4444', fontSize: 10, fontWeight: 'bold' }} />
+                      <Area type="monotone" dataKey="spo2" stroke="#a855f7" strokeWidth={3} fill="url(#spo2Gradient)" dot={chartData.length <= 14 ? { r: 4, fill: '#a855f7' } : chartData.length <= 35 ? { r: 2.5, fill: '#a855f7' } : false} activeDot={{ r: 6 }} name={isHindi ? 'ऑक्सीजन संतृप्ति (SpO2 %)' : 'Oxygen Saturation (SpO2 %)'} />
+                    </AreaChart>
+                  ) : selectedMetric === 'glucose' ? (
+                    /* 4. GLUCOSE -> AREACHART WITH AMBER GRADIENT */
+                    <AreaChart data={chartData} margin={{ top: 16, right: 24, left: -10, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="glucoseGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.35} />
+                          <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.18)" />
+                      <XAxis dataKey="date" minTickGap={20} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} />
+                      <YAxis domain={[50, 180]} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} />
+                      <Tooltip contentStyle={{ backgroundColor: '#1F150E', borderRadius: 12, border: '1px solid #4A3525', color: '#F6F0E4' }} />
+                      <Legend wrapperStyle={{ fontSize: 12 }} />
+                      <ReferenceLine y={99} stroke="#10b981" strokeDasharray="4 4" strokeWidth={2} label={{ value: isHindi ? 'सामान्य ≤99 mg/dL' : 'Normal Fasting (≤99)', position: 'insideTopRight', fill: '#10b981', fontSize: 10, fontWeight: 'bold' }} />
+                      <ReferenceLine y={100} stroke="#f59e0b" strokeDasharray="4 4" strokeWidth={2} label={{ value: isHindi ? 'पूर्व-मधुमेह 100–125' : 'Pre-diabetes (100–125)', position: 'insideBottomRight', fill: '#f59e0b', fontSize: 10 }} />
+                      <ReferenceLine y={126} stroke="#ef4444" strokeDasharray="5 5" strokeWidth={2} label={{ value: isHindi ? 'मधुमेह सीमा ≥126' : 'Diabetes Danger (≥126)', position: 'insideTopRight', fill: '#ef4444', fontSize: 10, fontWeight: 'bold' }} />
+                      <Area type="monotone" dataKey="glucose" stroke="#f59e0b" strokeWidth={3} fill="url(#glucoseGradient)" dot={chartData.length <= 14 ? { r: 4, fill: '#f59e0b' } : chartData.length <= 35 ? { r: 2.5, fill: '#f59e0b' } : false} activeDot={{ r: 6 }} name={isHindi ? 'फास्टिंग रक्त शर्करा (mg/dL)' : 'Fasting Blood Glucose (mg/dL)'} />
+                    </AreaChart>
+                  ) : selectedMetric === 'urine' ? (
+                    /* 5. URINE -> BARCHART FOR PROTEIN CONCENTRATION */
+                    <BarChart data={chartData} margin={{ top: 16, right: 24, left: -10, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.18)" />
+                      <XAxis dataKey="date" minTickGap={20} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} />
+                      <YAxis domain={[0, 150]} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} />
+                      <Tooltip contentStyle={{ backgroundColor: '#1F150E', borderRadius: 12, border: '1px solid #4A3525', color: '#F6F0E4' }} />
+                      <Legend wrapperStyle={{ fontSize: 12 }} />
+                      <ReferenceLine y={15} stroke="#10b981" strokeDasharray="4 4" strokeWidth={2} label={{ value: isHindi ? 'सामान्य सुरक्षित ≤15' : 'Normal Safe (≤15 mg/dL)', position: 'insideBottomRight', fill: '#10b981', fontSize: 10, fontWeight: 'bold' }} />
+                      <ReferenceLine y={30} stroke="#f59e0b" strokeDasharray="4 4" strokeWidth={2} label={{ value: isHindi ? 'चेतावनी 30 mg/dL' : 'Microalbuminuria (30 mg/dL)', position: 'insideTopRight', fill: '#f59e0b', fontSize: 10, fontWeight: 'bold' }} />
+                      <ReferenceLine y={100} stroke="#ef4444" strokeDasharray="5 5" strokeWidth={2} label={{ value: isHindi ? 'प्रोटीन्यूरिया खतरा ≥100' : 'Proteinuria Danger (≥100 mg/dL)', position: 'insideTopRight', fill: '#ef4444', fontSize: 10, fontWeight: 'bold' }} />
+                      <Bar dataKey="urineProtein" fill="#06b6d4" radius={[6, 6, 0, 0]} maxBarSize={timeRange === '7D' ? 36 : timeRange === '30D' ? 14 : 7} name={isHindi ? 'मूत्र प्रोटीन (Protein mg/dL)' : 'Urine Protein (mg/dL)'} />
+                    </BarChart>
+                  ) : selectedMetric === 'all' ? (
+                    /* 6. OVERVIEW COMPARISON -> COMPOSED CHART */
+                    <ComposedChart data={chartData} margin={{ top: 16, right: 24, left: -10, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.18)" />
+                      <XAxis dataKey="date" minTickGap={20} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} />
+                      <YAxis domain={[50, 160]} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} />
+                      <Tooltip contentStyle={{ backgroundColor: '#1F150E', borderRadius: 12, border: '1px solid #4A3525', color: '#F6F0E4' }} />
+                      <Legend wrapperStyle={{ fontSize: 12 }} />
+                      <Line type="monotone" dataKey="systolic" stroke="#38bdf8" strokeWidth={2.5} dot={false} name={isHindi ? 'सिस्टोलिक BP' : 'Systolic BP'} />
+                      <Line type="monotone" dataKey="diastolic" stroke="#818cf8" strokeWidth={2.5} dot={false} name={isHindi ? 'डायस्टोलिक BP' : 'Diastolic BP'} />
+                      <Line type="monotone" dataKey="heartRate" stroke="#f43f5e" strokeWidth={2.5} dot={false} name={isHindi ? 'हृदय गति' : 'Heart Rate'} />
+                      <Line type="monotone" dataKey="spo2" stroke="#a855f7" strokeWidth={2.5} dot={false} name={isHindi ? 'ऑक्सीजन (SpO2)' : 'SpO2'} />
+                      <Line type="monotone" dataKey="glucose" stroke="#f59e0b" strokeWidth={2.5} dot={false} name={isHindi ? 'शर्करा' : 'Blood Glucose'} />
+                    </ComposedChart>
+                  ) : (
+                    /* 7. BLOOD PRESSURE -> DUAL LINE CHART */
+                    <LineChart data={chartData} margin={{ top: 16, right: 24, left: -10, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.18)" />
+                      <XAxis dataKey="date" minTickGap={20} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} />
+                      <YAxis domain={[60, 160]} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} />
+                      <Tooltip contentStyle={{ backgroundColor: '#1F150E', borderRadius: 12, border: '1px solid #4A3525', color: '#F6F0E4' }} />
+                      <Legend wrapperStyle={{ fontSize: 12 }} />
+                      <ReferenceLine y={120} stroke="#10b981" strokeDasharray="4 4" strokeWidth={2} label={{ value: isHindi ? 'सामान्य सिस्टोलिक ≤120' : 'Normal Limit (≤120)', position: 'insideTopRight', fill: '#10b981', fontSize: 10, fontWeight: 'bold' }} />
+                      <ReferenceLine y={130} stroke="#f59e0b" strokeDasharray="4 4" strokeWidth={2} label={{ value: isHindi ? 'चेतावनी स्तर 130' : 'Warning Level (130)', position: 'insideTopRight', fill: '#f59e0b', fontSize: 10, fontWeight: 'bold' }} />
+                      <ReferenceLine y={140} stroke="#ef4444" strokeDasharray="5 5" strokeWidth={2} label={{ value: isHindi ? 'खतरा स्तर (Stage 2) ≥140' : 'Danger Crisis (≥140)', position: 'insideTopRight', fill: '#ef4444', fontSize: 10, fontWeight: 'bold' }} />
+                      <ReferenceLine y={80} stroke="#06b6d4" strokeDasharray="3 3" strokeWidth={1.5} label={{ value: isHindi ? 'सामान्य डायस्टोलिक ≤80' : 'Normal Diastolic (≤80)', position: 'insideBottomRight', fill: '#06b6d4', fontSize: 10 }} />
+                      <Line type="monotone" dataKey="systolic" stroke="#38bdf8" strokeWidth={3} dot={chartData.length <= 14 ? { r: 4, fill: '#38bdf8' } : chartData.length <= 35 ? { r: 2.5, fill: '#38bdf8' } : false} activeDot={{ r: 6 }} name={isHindi ? 'सिस्टोलिक (Systolic)' : 'Systolic BP (mmHg)'} />
+                      <Line type="monotone" dataKey="diastolic" stroke="#818cf8" strokeWidth={2.5} dot={chartData.length <= 14 ? { r: 4, fill: '#818cf8' } : chartData.length <= 35 ? { r: 2.5, fill: '#818cf8' } : false} activeDot={{ r: 6 }} name={isHindi ? 'डायस्टोलिक (Diastolic)' : 'Diastolic BP (mmHg)'} />
+                    </LineChart>
+                  )}
                 </ResponsiveContainer>
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
+            {/* EASY SUBS CARD: FRIENDLY PLAIN LANGUAGE EXPLANATION */}
+            {(() => {
+              const subConfig = EASY_SUBS_CONFIG[selectedMetric] || EASY_SUBS_CONFIG.bp;
+              return (
+                <div className="p-5 sm:p-6 rounded-3xl bg-[#F6F0E4]/60 dark:bg-[#1F150E]/80 border border-[#E8DFD1] dark:border-[#4A3525] space-y-3.5 shadow-xs">
+                  <div className="flex items-center gap-2.5">
+                    <Sparkles className="w-5 h-5 text-[#2672A8] dark:text-[#A9D6F5]" />
+                    <h3 className="font-extrabold text-lg sm:text-xl text-[#1F150E] dark:text-white">
+                      {isHindi ? subConfig.title.hi : subConfig.title.en}
+                    </h3>
+                  </div>
+                  <p className="text-sm sm:text-base font-medium text-[#6B4F3A] dark:text-[#D5BF86] leading-relaxed">
+                    {isHindi ? subConfig.sub.hi : subConfig.sub.en}
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-2">
+                    <div className="p-3.5 sm:p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-950 dark:text-emerald-100 text-xs sm:text-sm font-medium">
+                      <strong className="block text-emerald-700 dark:text-emerald-300 font-bold text-sm sm:text-base mb-1">
+                        ✓ {isHindi ? 'सामान्य सुरक्षित' : 'Normal & Safe'}
+                      </strong>
+                      {isHindi ? subConfig.normal.hi : subConfig.normal.en}
+                    </div>
+
+                    <div className="p-3.5 sm:p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-950 dark:text-amber-100 text-xs sm:text-sm font-medium">
+                      <strong className="block text-amber-700 dark:text-amber-300 font-bold text-sm sm:text-base mb-1">
+                        ⚠ {isHindi ? 'चेतावनी स्तर' : 'Warning Level'}
+                      </strong>
+                      {isHindi ? subConfig.warning.hi : subConfig.warning.en}
+                    </div>
+
+                    <div className="p-3.5 sm:p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-950 dark:text-rose-100 text-xs sm:text-sm font-medium">
+                      <strong className="block text-rose-700 dark:text-rose-300 font-bold text-sm sm:text-base mb-1">
+                        ✕ {isHindi ? 'खतरा स्तर' : 'Danger Level'}
+                      </strong>
+                      {isHindi ? subConfig.danger.hi : subConfig.danger.en}
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 sm:p-4 rounded-2xl bg-[#A9D6F5]/20 border border-[#A9D6F5]/40 text-xs sm:text-sm font-medium text-[#1F150E] dark:text-[#F6F0E4] flex items-center gap-2.5">
+                    <HelpCircle className="w-5 h-5 text-[#2672A8] dark:text-[#A9D6F5] shrink-0" />
+                    <span>
+                      <strong className="font-bold">{isHindi ? 'स्वास्थ्य टिप: ' : 'Health Tip: '}</strong>
+                      {isHindi ? subConfig.tip.hi : subConfig.tip.en}
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-[#E8DFD1] dark:border-[#4A3525] text-xs sm:text-sm text-slate-500 dark:text-slate-400">
               <span>
                 {isHindi
-                  ? 'कैलेंडर दिवस के अनुसार समूहीकृत 100 नवीनतम रिकॉर्ड्स प्रदर्शित किए जा रहे हैं।'
-                  : 'Showing up to 100 most recent records grouped by calendar day.'}
+                  ? `कैलेंडर दिवस के अनुसार समूहीकृत ${chartData.length} दैनिक रिकॉर्ड्स प्रदर्शित किए जा रहे हैं (${timeRange === 'All' ? 'समग्र इतिहास' : timeRange})।`
+                  : `Showing ${chartData.length} daily entries for ${timeRange === 'All' ? 'all recorded history' : timeRange}.`}
               </span>
-              <span className="flex items-center gap-1 font-semibold text-cyan-600 dark:text-cyan-400">
-                <ShieldCheck className="w-3.5 h-3.5" />
+              <span className="flex items-center gap-1.5 font-semibold text-cyan-600 dark:text-cyan-400">
+                <ShieldCheck className="w-4 h-4" />
                 {isHindi ? 'सत्यापित व्यक्तिगत स्वास्थ्य प्रक्षेपवक्र' : 'Verified Personal Health Trajectory'}
               </span>
             </div>
           </div>
 
           {/* CLINICAL THRESHOLD ORIGINS & GUIDELINE TRANSPARENCY CARD */}
-          <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#101827] p-6 shadow-sm space-y-4">
-            <div className="flex items-center gap-2 text-slate-900 dark:text-white font-bold text-base">
-              <Info className="w-5 h-5 text-cyan-500" />
+          <div className="rounded-3xl border border-[#E8DFD1] dark:border-[#4A3525] bg-white dark:bg-[#1F150E]/90 p-6 shadow-sm space-y-4">
+            <div className="flex items-center gap-2.5 text-slate-900 dark:text-white font-bold text-lg sm:text-xl">
+              <Info className="w-5 h-5 text-[#2672A8] dark:text-[#A9D6F5]" />
               <h3>{isHindi ? 'चिकित्सीय सीमाओं एवं दिशानिर्देशों का पारदर्शी स्रोत' : 'Clinical Threshold Origins & Evidence Transparency'}</h3>
             </div>
-            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+            <p className="text-sm sm:text-base font-medium text-[#6B4F3A]/80 dark:text-[#D5BF86]/90 leading-relaxed">
               {isHindi
-                ? 'बायोट्रैजेक्टरी में प्रदर्शित सभी सीमा रेखाएं और अलर्ट प्रमुख चिकित्सा संघों के अधिकृत दिशानिर्देशों पर आधारित हैं। यदि किसी बायोमार्कर के लिए कोई सार्वभौमिक सीमा नहीं है, तो उसे "अनसेट" रखा जाता है तथा कोई काल्पनिक चेतावनी जारी नहीं की जाती।'
-                : 'All reference lines and automated alerts within BioTrajectory are established directly from recognized clinical guidelines. Unstandardized tests without universal consensus are labeled as unset and do not produce speculative threshold alerts.'}
+                ? 'सभी सीमा रेखाएं प्रमाणित नैदानिक दिशानिर्देशों (AHA, ACC, ADA, WHO) पर आधारित हैं। झूठी चेतावनियों से बचने के लिए असत्यापित परीक्षणों पर काल्पनिक अलर्ट जारी नहीं किए जाते हैं।'
+                : 'All reference lines follow certified clinical guidelines (AHA, ACC, ADA, WHO). Biomarkers without universal clinical consensus remain un-alerted to prevent false alarms.'}
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs pt-1">
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200/80 dark:border-slate-800/80 space-y-1">
-                <span className="font-bold text-cyan-600 dark:text-cyan-400 block">{isHindi ? 'रक्तचाप (AHA/ACC 2017)' : 'Blood Pressure (AHA/ACC 2017)'}</span>
-                <p className="text-slate-600 dark:text-slate-400">
-                  {isHindi ? 'सामान्य: ≤120/80 | चेतावनी: 130-139 | खतरा: ≥140/90 mmHg (Stage 2 Hypertension)' : 'Optimal: ≤120/80 | Warning: 130–139 | Danger: ≥140/90 mmHg (Stage 2)'}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-1">
+              <div className="p-4 rounded-2xl bg-[#F6F0E4]/70 dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525] space-y-1">
+                <span className="font-bold text-sm sm:text-base text-cyan-700 dark:text-cyan-400 block">{isHindi ? 'रक्तचाप (AHA/ACC)' : 'Blood Pressure (AHA/ACC)'}</span>
+                <p className="text-xs sm:text-sm font-medium text-[#1F150E]/80 dark:text-[#F6F0E4]/80">
+                  {isHindi ? 'सामान्य: ≤120/80 | चेतावनी: 130–139 | खतरा: ≥140/90 mmHg' : 'Optimal: ≤120/80 | Warning: 130–139 | Danger: ≥140/90 mmHg'}
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200/80 dark:border-slate-800/80 space-y-1">
-                <span className="font-bold text-rose-600 dark:text-rose-400 block">{isHindi ? 'हृदय गति (AHA Resting)' : 'Heart Rate (AHA Resting)'}</span>
-                <p className="text-slate-600 dark:text-slate-400">
-                  {isHindi ? 'सामान्य विश्राम: 60-100 bpm | चेतावनी: >100 bpm | गंभीर खतरा: ≥120 bpm (Tachycardia)' : 'Resting corridor: 60–100 bpm | Atypical: >100 bpm | Danger: ≥120 bpm'}
+              <div className="p-4 rounded-2xl bg-[#F6F0E4]/70 dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525] space-y-1">
+                <span className="font-bold text-sm sm:text-base text-rose-700 dark:text-rose-400 block">{isHindi ? 'हृदय गति (AHA Resting)' : 'Heart Rate (AHA Resting)'}</span>
+                <p className="text-xs sm:text-sm font-medium text-[#1F150E]/80 dark:text-[#F6F0E4]/80">
+                  {isHindi ? 'सामान्य विश्राम: 60–100 | चेतावनी: >100 | खतरा: ≥120 bpm' : 'Resting: 60–100 bpm | Elevated: >100 | Danger: ≥120 bpm'}
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200/80 dark:border-slate-800/80 space-y-1">
-                <span className="font-bold text-purple-600 dark:text-purple-400 block">{isHindi ? 'ऑक्सीजन संतृप्ति (WHO SpO2)' : 'Oxygen Saturation (WHO SpO2)'}</span>
-                <p className="text-slate-600 dark:text-slate-400">
-                  {isHindi ? 'सामान्य: ≥95% | चेतावनी: 90-94% | गंभीर हाइपोक्सिया खतरा: <90%' : 'Healthy: ≥95% | Warning: 90–94% | Critical Hypoxia Danger: <90%'}
+              <div className="p-4 rounded-2xl bg-[#F6F0E4]/70 dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525] space-y-1">
+                <span className="font-bold text-sm sm:text-base text-purple-700 dark:text-purple-400 block">{isHindi ? 'ऑक्सीजन संतृप्ति (WHO SpO2)' : 'Oxygen Saturation (WHO SpO2)'}</span>
+                <p className="text-xs sm:text-sm font-medium text-[#1F150E]/80 dark:text-[#F6F0E4]/80">
+                  {isHindi ? 'सामान्य: ≥95% | चेतावनी: 90–94% | हाइपोक्सिया खतरा: <90%' : 'Healthy: ≥95% | Warning: 90–94% | Hypoxia Danger: <90%'}
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200/80 dark:border-slate-800/80 space-y-1">
-                <span className="font-bold text-amber-600 dark:text-amber-400 block">{isHindi ? 'रक्त शर्करा (ADA 2026 Standards)' : 'Fasting Glucose (ADA 2026 Standards)'}</span>
-                <p className="text-slate-600 dark:text-slate-400">
-                  {isHindi ? 'सामान्य फास्टिंग: 70-99 | पूर्व-मधुमेह चेतावनी: 100-125 | खतरा: ≥126 mg/dL' : 'Normal Fasting: 70–99 | Impaired Warning: 100–125 | Danger: ≥126 mg/dL'}
+              <div className="p-4 rounded-2xl bg-[#F6F0E4]/70 dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525] space-y-1">
+                <span className="font-bold text-sm sm:text-base text-amber-700 dark:text-amber-400 block">{isHindi ? 'रक्त शर्करा (ADA Standards)' : 'Fasting Glucose (ADA Standards)'}</span>
+                <p className="text-xs sm:text-sm font-medium text-[#1F150E]/80 dark:text-[#F6F0E4]/80">
+                  {isHindi ? 'फास्टिंग सामान्य: 70–99 | पूर्व-मधुमेह: 100–125 | खतरा: ≥126 mg/dL' : 'Fasting: 70–99 | Pre-diabetes: 100–125 | Danger: ≥126 mg/dL'}
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200/80 dark:border-slate-800/80 space-y-1">
-                <span className="font-bold text-teal-600 dark:text-teal-400 block">{isHindi ? 'मूत्र परीक्षण (NKF KDOQI)' : 'Urine Protein (NKF KDOQI)'}</span>
-                <p className="text-slate-600 dark:text-slate-400">
-                  {isHindi ? 'सामान्य: नेगेटिव/ट्रेस (≤15) | चेतावनी: 30 mg/dL | रीनल रिसाव खतरा: ≥100 mg/dL' : 'Normal: Negative/Trace (≤15) | Warning: 30 mg/dL | Proteinuria Danger: ≥100 mg/dL'}
+              <div className="p-4 rounded-2xl bg-[#F6F0E4]/70 dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525] space-y-1">
+                <span className="font-bold text-teal-700 dark:text-teal-400 block">{isHindi ? 'मूत्र परीक्षण (NKF KDOQI)' : 'Urine Protein (NKF KDOQI)'}</span>
+                <p className="text-xs sm:text-sm font-medium text-[#1F150E]/80 dark:text-[#F6F0E4]/80">
+                  {isHindi ? 'सामान्य: ≤15 | माइक्रोअल्बुमिन: 30 | प्रोटीन्यूरिया खतरा: ≥100 mg/dL' : 'Normal: ≤15 | Warning: 30 mg/dL | Proteinuria Danger: ≥100 mg/dL'}
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200/80 dark:border-slate-800/80 space-y-1">
-                <span className="font-bold text-indigo-600 dark:text-indigo-400 block">{isHindi ? 'दैनिक गतिविधि एवं कदम' : 'Activity & Daily Steps'}</span>
-                <p className="text-slate-600 dark:text-slate-400">
-                  {isHindi ? 'दैनिक लक्ष्य: 8,000 कदम | अनसेट पैरामीटर पर कोई कृत्रिम अलर्ट नहीं दिया जाता।' : 'Daily target: 8,000 steps. Personalized goals remain un-alerted.'}
+              <div className="p-4 rounded-2xl bg-[#F6F0E4]/70 dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525] space-y-1">
+                <span className="font-bold text-sky-700 dark:text-sky-400 block">{isHindi ? 'दैनिक गतिविधि एवं कदम' : 'Activity & Daily Steps'}</span>
+                <p className="text-xs sm:text-sm font-medium text-[#1F150E]/80 dark:text-[#F6F0E4]/80">
+                  {isHindi ? 'दैनिक लक्ष्य: 8,000 कदम | अनसेट लक्ष्य पर कोई काल्पनिक चेतावनी नहीं।' : 'Target: 8,000 steps/day | Custom goals without false alarms.'}
                 </p>
               </div>
             </div>

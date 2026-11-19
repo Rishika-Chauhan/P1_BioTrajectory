@@ -268,7 +268,7 @@ export default function DiseaseDetailPage() {
       )}
 
       {/* Non-Diagnostic Disclaimer */}
-      <div className="p-5 rounded-2xl bg-cyan-50/90 dark:bg-[#0b1728] border border-cyan-300/80 dark:border-cyan-800/60 flex items-start gap-3.5 text-sm text-slate-800 dark:text-slate-200 leading-relaxed shadow-xs">
+      <div className="p-5 rounded-2xl bg-cyan-50/90 dark:bg-[#251A11] border border-cyan-300/80 dark:border-cyan-800/60 flex items-start gap-3.5 text-sm text-slate-800 dark:text-slate-200 leading-relaxed shadow-xs">
         <Info className="w-5 h-5 text-cyan-700 dark:text-cyan-400 shrink-0 mt-0.5" />
         <p className="font-medium">
           <strong>{isHindi ? 'चिकित्सीय सूचना:' : 'Medical Notice:'}</strong>{' '}
@@ -457,7 +457,7 @@ export default function DiseaseDetailPage() {
               <select
                 value={selectedCountry}
                 onChange={e => setSelectedCountry(e.target.value)}
-                className="py-2.5 px-3.5 rounded-xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                className="py-2.5 px-3.5 rounded-xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
               >
                 <option value="All">{isHindi ? 'सभी क्षेत्र' : 'All Regions'}</option>
                 <option value="India">India (data.gov.in)</option>
@@ -468,7 +468,7 @@ export default function DiseaseDetailPage() {
               <select
                 value={selectedYear}
                 onChange={e => setSelectedYear(e.target.value)}
-                className="py-2.5 px-3.5 rounded-xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                className="py-2.5 px-3.5 rounded-xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
               >
                 <option value="All">{isHindi ? 'सभी वर्ष' : 'All Years'}</option>
                 <option value="2023">2023</option>
@@ -484,7 +484,7 @@ export default function DiseaseDetailPage() {
               {isHindi ? 'सत्यापित आंकड़े लोड हो रहे हैं...' : 'Loading verified statistics...'}
             </p>
           ) : statsData && !statsData.hasData ? (
-            <div className="p-8 text-center rounded-2xl bg-slate-50/80 dark:bg-[#070B14]/80 border border-slate-200 dark:border-slate-800 space-y-2">
+            <div className="p-8 text-center rounded-2xl bg-slate-50/80 dark:bg-[#1F150E]/80 border border-slate-200 dark:border-slate-800 space-y-2">
               <Info className="w-8 h-8 text-cyan-500 mx-auto" />
               <p className="text-[16px] font-bold text-slate-900 dark:text-white">
                 {isHindi ? 'इस क्षेत्र के लिए विश्वसनीय आंकड़े वर्तमान में अनुपलब्ध हैं।' : 'Reliable statistics are currently unavailable for this region.'}
@@ -506,7 +506,7 @@ export default function DiseaseDetailPage() {
               ))}
             </div>
           ) : (
-            <div className="p-8 text-center rounded-2xl bg-slate-50/80 dark:bg-[#070B14]/80 border border-slate-200 dark:border-slate-800 space-y-2">
+            <div className="p-8 text-center rounded-2xl bg-slate-50/80 dark:bg-[#1F150E]/80 border border-slate-200 dark:border-slate-800 space-y-2">
               <Info className="w-8 h-8 text-cyan-500 mx-auto" />
               <p className="text-[16px] font-bold text-slate-900 dark:text-white">
                 {isHindi ? 'इस क्षेत्र के लिए आंकड़े अनुपलब्ध हैं।' : 'Reliable statistics are currently unavailable for this region.'}

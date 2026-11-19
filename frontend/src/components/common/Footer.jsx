@@ -5,7 +5,7 @@ import BrandLogo from './BrandLogo';
 
 export default function Footer() {
   return (
-    <footer className="w-full border-t border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-[#070B14]/90 backdrop-blur-md transition-colors duration-300 pt-16 pb-12 relative overflow-hidden">
+    <footer className="w-full border-t border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-[#1F150E]/90 backdrop-blur-md transition-colors duration-300 pt-16 pb-12 relative overflow-hidden">
       {/* Ambient background glow in footer */}
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[250px] bg-gradient-to-t from-cyan-500/5 via-blue-500/5 to-transparent blur-[120px] pointer-events-none rounded-full" />
 

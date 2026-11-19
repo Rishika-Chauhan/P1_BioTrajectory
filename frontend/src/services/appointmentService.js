@@ -12,6 +12,8 @@ import {
 import { db, auth } from "./firebase";
 
 const APPOINTMENTS_COLLECTION = "appointments";
+const APPT_STORAGE_PREFIX = "bt_doctor_appointments_";
+const APPT_EVENT_NAME = "bt_doctor_appointments_updated";
 
 const getDemoAppointments = (docUid = 'demo-doctor-uid-002') => [
   {
@@ -54,6 +56,36 @@ const getDemoAppointments = (docUid = 'demo-doctor-uid-002') => [
     createdAt: new Date().toISOString()
   }
 ];
+
+function getStoredDoctorAppointments(doctorUid) {
+  try {
+    const key = `${APPT_STORAGE_PREFIX}${doctorUid || 'default'}`;
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.error('Failed to read stored appointments:', e);
+  }
+  const defaults = getDemoAppointments(doctorUid);
+  saveStoredDoctorAppointments(doctorUid, defaults);
+  return defaults;
+}
+
+function saveStoredDoctorAppointments(doctorUid, list) {
+  try {
+    const key = `${APPT_STORAGE_PREFIX}${doctorUid || 'default'}`;
+    localStorage.setItem(key, JSON.stringify(list));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent(APPT_EVENT_NAME, { detail: { doctorUid, list } }));
+    }
+  } catch (e) {
+    console.error('Failed to save stored appointments:', e);
+  }
+}
 
 function sortAppointments(appointments) {
   return appointments.sort((a, b) => {
@@ -113,16 +145,81 @@ export const appointmentService = {
     return { id: result.id, ...appointment };
   },
 
+  // Get stored doctor appointments
+  getDoctorAppointments(doctorUid = 'demo-doctor-uid-002') {
+    return sortAppointments(getStoredDoctorAppointments(doctorUid));
+  },
+
+  getStoredDoctorAppointments(doctorUid = 'demo-doctor-uid-002') {
+    return sortAppointments(getStoredDoctorAppointments(doctorUid));
+  },
+
+  // Doctor schedules a new appointment for a patient
+  async addDoctorAppointment(doctor, data) {
+    const docUid = doctor?.uid || 'demo-doctor-uid-002';
+    const doctorName = doctor?.name || doctor?.fullName || 'Dr. Sarah Mitchell, MD';
+
+    const newAppt = {
+      id: `appt-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      patientId: data.patientId || `pat-${Date.now()}`,
+      patientName: data.patientName?.trim() || 'Patient',
+      doctorId: docUid,
+      doctorName,
+      appointmentDate: data.appointmentDate || new Date().toISOString().split('T')[0],
+      appointmentTime: data.appointmentTime || '10:00',
+      type: data.type || 'video',
+      reason: (data.reason || 'Consultation Review').trim(),
+      status: data.status || 'ACCEPTED',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const current = getStoredDoctorAppointments(docUid);
+    const updated = [newAppt, ...current];
+    saveStoredDoctorAppointments(docUid, updated);
+
+    // Also persist to Firestore if online
+    try {
+      await addDoc(collection(db, APPOINTMENTS_COLLECTION), {
+        ...newAppt,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+    } catch {
+      // offline/demo fallback succeeds
+    }
+
+    return newAppt;
+  },
+
   subscribeToDoctorAppointments(doctorUid, onData, onError) {
     if (!doctorUid) {
       onError?.(new Error("Doctor ID is missing."));
       return () => {};
     }
 
-    if (String(doctorUid).startsWith('demo-') || String(doctorUid).includes('doctor')) {
-      const demoList = getDemoAppointments(doctorUid);
-      onData(sortAppointments(demoList));
-      return () => {};
+    // Always provide immediate stored appointments
+    const initialList = getStoredDoctorAppointments(doctorUid);
+    onData(sortAppointments(initialList));
+
+    // Listen for local updates across tabs / components
+    const handleStorageUpdate = (e) => {
+      if (e.detail?.doctorUid === doctorUid || !e.detail?.doctorUid) {
+        onData(sortAppointments(e.detail?.list || getStoredDoctorAppointments(doctorUid)));
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener(APPT_EVENT_NAME, handleStorageUpdate);
+    }
+
+    // If demo doctor, storage is our single source of truth
+    if (String(doctorUid).startsWith('demo-') || String(doctorUid).includes('doctor') || String(doctorUid).includes('doc_')) {
+      return () => {
+        if (typeof window !== 'undefined') {
+          window.removeEventListener(APPT_EVENT_NAME, handleStorageUpdate);
+        }
+      };
     }
 
     const appointmentsQuery = query(
@@ -130,21 +227,35 @@ export const appointmentService = {
       where("doctorId", "==", doctorUid)
     );
 
-    return onSnapshot(
+    const unsubFirestore = onSnapshot(
       appointmentsQuery,
       (snapshot) => {
-        const appointments = snapshot.docs.map((item) => ({
+        const firestoreAppointments = snapshot.docs.map((item) => ({
           id: item.id,
           ...item.data(),
         }));
 
-        onData(sortAppointments(appointments));
+        const localList = getStoredDoctorAppointments(doctorUid);
+        // Merge without duplicating IDs
+        const existingIds = new Set(firestoreAppointments.map((a) => a.id));
+        const merged = [
+          ...firestoreAppointments,
+          ...localList.filter((a) => !existingIds.has(a.id)),
+        ];
+
+        onData(sortAppointments(merged));
       },
       (error) => {
-        console.error("Doctor appointments listener error:", error);
-        onError?.(error);
+        console.warn("Doctor appointments firestore listener:", error);
       }
     );
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener(APPT_EVENT_NAME, handleStorageUpdate);
+      }
+      unsubFirestore();
+    };
   },
 
   // Real-time appointment history for the logged-in patient
@@ -192,8 +303,8 @@ export const appointmentService = {
     );
   },
 
-  async updateStatus(appointmentId, status) {
-    const allowedStatuses = ["ACCEPTED", "REJECTED", "COMPLETED"];
+  async updateStatus(appointmentId, status, doctorUid = 'demo-doctor-uid-002') {
+    const allowedStatuses = ["ACCEPTED", "REJECTED", "COMPLETED", "CANCELLED"];
 
     if (!allowedStatuses.includes(status)) {
       throw new Error("Invalid appointment status.");
@@ -203,9 +314,30 @@ export const appointmentService = {
       throw new Error("Appointment ID is missing.");
     }
 
-    await updateDoc(doc(db, APPOINTMENTS_COLLECTION, appointmentId), {
-      status,
-      updatedAt: serverTimestamp(),
-    });
+    // Update in local store
+    try {
+      const stored = getStoredDoctorAppointments(doctorUid);
+      const updated = stored.map((item) => {
+        if (item.id === appointmentId) {
+          return { ...item, status, updatedAt: new Date().toISOString() };
+        }
+        return item;
+      });
+      saveStoredDoctorAppointments(doctorUid, updated);
+    } catch (e) {
+      console.error("Local appointment status update failed:", e);
+    }
+
+    // Update in Firestore if connected
+    try {
+      await updateDoc(doc(db, APPOINTMENTS_COLLECTION, appointmentId), {
+        status,
+        updatedAt: serverTimestamp(),
+      });
+    } catch {
+      // offline/demo mode succeeds
+    }
   },
 };
+
+export { getStoredDoctorAppointments, saveStoredDoctorAppointments };

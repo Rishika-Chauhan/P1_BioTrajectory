@@ -123,9 +123,13 @@ export default function AdminDoctorVerificationPage() {
   // Fetch applications from trusted backend
   // ------------------------------------------------
 
-  const loadApplications = useCallback(async () => {
+  const loadApplications = useCallback(async (isManual = false) => {
     setLoading(true);
     setError('');
+
+    if (isManual) {
+      await new Promise((r) => setTimeout(r, 450));
+    }
 
     try {
       // Fetch all applications. The backend should return
@@ -285,7 +289,7 @@ export default function AdminDoctorVerificationPage() {
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
             Doctor Verification
           </h1>
 
@@ -296,14 +300,14 @@ export default function AdminDoctorVerificationPage() {
 
         <button
           type="button"
-          onClick={loadApplications}
+          onClick={() => loadApplications(true)}
           disabled={loading}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-700 bg-[#101827] text-slate-200 text-sm font-semibold hover:bg-slate-800 disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#251A11] text-slate-700 dark:text-slate-200 text-sm font-semibold hover:bg-slate-800 disabled:opacity-50 cursor-pointer active:scale-95 transition-all shadow-xs"
         >
           <RefreshCw
             className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`}
           />
-          Refresh
+          {loading ? 'Refreshing...' : 'Refresh'}
         </button>
       </div>
 
@@ -311,7 +315,7 @@ export default function AdminDoctorVerificationPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
-        <div className="rounded-2xl bg-[#101827] border border-slate-800 p-5">
+        <div className="rounded-2xl bg-white dark:bg-[#251A11] border border-slate-200 dark:border-slate-800 shadow-xs p-5">
           <div className="flex items-center justify-between">
             <span className="text-slate-400 text-xs uppercase tracking-wider">
               Pending
@@ -319,12 +323,12 @@ export default function AdminDoctorVerificationPage() {
             <Clock3 className="w-4 h-4 text-amber-400" />
           </div>
 
-          <p className="mt-3 text-3xl font-extrabold text-white">
+          <p className="mt-3 text-3xl font-extrabold text-slate-900 dark:text-white">
             {counts.pending}
           </p>
         </div>
 
-        <div className="rounded-2xl bg-[#101827] border border-slate-800 p-5">
+        <div className="rounded-2xl bg-white dark:bg-[#251A11] border border-slate-200 dark:border-slate-800 shadow-xs p-5">
           <div className="flex items-center justify-between">
             <span className="text-slate-400 text-xs uppercase tracking-wider">
               Approved
@@ -332,12 +336,12 @@ export default function AdminDoctorVerificationPage() {
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
           </div>
 
-          <p className="mt-3 text-3xl font-extrabold text-white">
+          <p className="mt-3 text-3xl font-extrabold text-slate-900 dark:text-white">
             {counts.approved}
           </p>
         </div>
 
-        <div className="rounded-2xl bg-[#101827] border border-slate-800 p-5">
+        <div className="rounded-2xl bg-white dark:bg-[#251A11] border border-slate-200 dark:border-slate-800 shadow-xs p-5">
           <div className="flex items-center justify-between">
             <span className="text-slate-400 text-xs uppercase tracking-wider">
               Rejected
@@ -345,7 +349,7 @@ export default function AdminDoctorVerificationPage() {
             <XCircle className="w-4 h-4 text-red-400" />
           </div>
 
-          <p className="mt-3 text-3xl font-extrabold text-white">
+          <p className="mt-3 text-3xl font-extrabold text-slate-900 dark:text-white">
             {counts.rejected}
           </p>
         </div>
@@ -375,7 +379,7 @@ export default function AdminDoctorVerificationPage() {
 
       {/* Search and filter */}
 
-      <div className="rounded-2xl bg-[#101827] border border-slate-800 p-4">
+      <div className="rounded-2xl bg-white dark:bg-[#251A11] border border-slate-200 dark:border-slate-800 shadow-xs p-4">
         <div className="flex flex-col md:flex-row gap-3">
 
           <div className="relative flex-1">
@@ -386,14 +390,14 @@ export default function AdminDoctorVerificationPage() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search doctor, specialty, email or registration number..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#070B14] border border-slate-800 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-purple-400"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200 dark:border-slate-800 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-purple-400"
             />
           </div>
 
           <select
             value={statusFilter}
             onChange={(event) => setStatusFilter(event.target.value)}
-            className="rounded-xl bg-[#070B14] border border-slate-800 px-4 py-2.5 text-sm text-white"
+            className="rounded-xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200 dark:border-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white"
           >
             <option value="ALL">All applications</option>
             <option value="PENDING">Pending</option>
@@ -406,7 +410,7 @@ export default function AdminDoctorVerificationPage() {
 
       {/* Applications */}
 
-      <div className="rounded-3xl bg-[#101827] border border-slate-800 shadow-sm overflow-hidden">
+      <div className="rounded-3xl bg-white dark:bg-[#251A11] border border-slate-200 dark:border-slate-800 shadow-xs shadow-sm overflow-hidden">
 
         {loading ? (
           <div className="py-16 flex flex-col items-center gap-3">
@@ -419,7 +423,7 @@ export default function AdminDoctorVerificationPage() {
           <div className="py-16 flex flex-col items-center text-center gap-3">
             <UserRound className="w-9 h-9 text-slate-500" />
 
-            <p className="text-white font-semibold">
+            <p className="text-slate-900 dark:text-white font-bold">
               No applications found
             </p>
 
@@ -428,7 +432,7 @@ export default function AdminDoctorVerificationPage() {
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-800">
+          <div className="divide-y divide-slate-100 dark:divide-slate-800/80">
 
             {filteredApplications.map((application) => {
               const isBusy = busyUid === application.uid;
@@ -437,7 +441,7 @@ export default function AdminDoctorVerificationPage() {
               return (
                 <div
                   key={application.uid}
-                  className="p-5 sm:p-6 hover:bg-slate-800/20 transition-colors"
+                  className="p-5 sm:p-6 hover:bg-slate-50/80 dark:hover:bg-slate-800/20 transition-colors"
                 >
 
                   {/* Applicant heading */}
@@ -446,7 +450,7 @@ export default function AdminDoctorVerificationPage() {
 
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-3">
-                        <h3 className="text-base font-bold text-white">
+                        <h3 className="text-base font-bold text-slate-900 dark:text-white">
                           {application.name}
                         </h3>
 
@@ -502,7 +506,7 @@ export default function AdminDoctorVerificationPage() {
                         <p className="text-[10px] uppercase text-slate-500">
                           Email
                         </p>
-                        <p className="text-sm text-slate-200 break-all">
+                        <p className="text-sm text-slate-700 dark:text-slate-200 break-all">
                           {application.email || 'Not provided'}
                         </p>
                       </div>
@@ -514,7 +518,7 @@ export default function AdminDoctorVerificationPage() {
                         <p className="text-[10px] uppercase text-slate-500">
                           Phone
                         </p>
-                        <p className="text-sm text-slate-200">
+                        <p className="text-sm text-slate-700 dark:text-slate-200">
                           {application.phone || 'Not provided'}
                         </p>
                       </div>
@@ -526,7 +530,7 @@ export default function AdminDoctorVerificationPage() {
                         <p className="text-[10px] uppercase text-slate-500">
                           Qualification
                         </p>
-                        <p className="text-sm text-slate-200">
+                        <p className="text-sm text-slate-700 dark:text-slate-200">
                           {application.qualification || 'Not provided'}
                         </p>
                       </div>
@@ -550,7 +554,7 @@ export default function AdminDoctorVerificationPage() {
                         <p className="text-[10px] uppercase text-slate-500">
                           Issuing council
                         </p>
-                        <p className="text-sm text-slate-200">
+                        <p className="text-sm text-slate-700 dark:text-slate-200">
                           {application.issuingCouncil || 'Not provided'}
                         </p>
                       </div>
@@ -562,7 +566,7 @@ export default function AdminDoctorVerificationPage() {
                         <p className="text-[10px] uppercase text-slate-500">
                           Clinic / institution
                         </p>
-                        <p className="text-sm text-slate-200">
+                        <p className="text-sm text-slate-700 dark:text-slate-200">
                           {application.clinicName || 'Not provided'}
                         </p>
                       </div>
@@ -577,7 +581,7 @@ export default function AdminDoctorVerificationPage() {
                       Specialization
                     </p>
 
-                    <p className="text-sm font-semibold text-slate-200">
+                    <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
                       {application.specialty || 'Not provided'}
                     </p>
                   </div>
@@ -585,7 +589,7 @@ export default function AdminDoctorVerificationPage() {
                   {/* Review note */}
 
                   {application.reviewNote && (
-                    <div className="mt-4 rounded-xl bg-slate-900/70 border border-slate-800 p-3">
+                    <div className="mt-4 rounded-xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200 dark:border-slate-800 p-3">
                       <p className="text-[10px] uppercase text-slate-500 mb-1">
                         Review note
                       </p>

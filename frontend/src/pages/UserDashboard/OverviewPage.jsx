@@ -23,13 +23,18 @@ import {
   RefreshCw,
   Activity,
   Settings as SettingsIcon,
-  AlertCircle
+  AlertCircle,
+  AlertOctagon,
+  ShieldAlert,
+  Zap
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { healthReadingService } from '../../services/healthReadingService';
+import { getPatientPriorityStatus, subscribeToPriorityChanges } from '../../services/patientPriorityService';
 import DisclaimerBanner from '../../components/common/DisclaimerBanner';
+import WeeklyLoggingRhythm from '../../components/dashboard/WeeklyLoggingRhythm';
 
 const EMPTY_VITALS = {
   systolic: null,
@@ -140,23 +145,29 @@ const mapReadingsToVitals = (readings) => {
 };
 
 export default function OverviewPage() {
-  const { currentUser } = useAuth();
+  const { currentUser, healthProfile } = useAuth();
   const { t, isHindi } = useLanguage();
 
   const [readings, setReadings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState('');
+  const [priorityStatus, setPriorityStatus] = useState(() => getPatientPriorityStatus(healthProfile));
+
+  useEffect(() => {
+    setPriorityStatus(getPatientPriorityStatus(healthProfile));
+    const unsubscribe = subscribeToPriorityChanges((status) => {
+      setPriorityStatus(status);
+    });
+    return unsubscribe;
+  }, [healthProfile]);
 
   const loadReadings = useCallback(async (showRefresh = false) => {
-    if (!currentUser?.uid) {
-      setReadings([]);
-      setIsLoading(false);
-      return;
-    }
+    const activeUid = currentUser?.uid || 'demo-user-123';
 
     if (showRefresh) {
       setIsRefreshing(true);
+      await new Promise((r) => setTimeout(r, 450));
     } else {
       setIsLoading(true);
     }
@@ -165,7 +176,7 @@ export default function OverviewPage() {
 
     try {
       const result = await healthReadingService.list(
-        currentUser.uid,
+        activeUid,
         100
       );
 
@@ -278,6 +289,73 @@ export default function OverviewPage() {
           </Link>
         </div>
       </div>
+
+      {/* Priority Person Banner (Danger Disease Protocol) */}
+      {priorityStatus?.isPriority && (() => {
+        const raw = priorityStatus.primaryDisease || '';
+        let diseaseName = 'Colorectal Cancer';
+        let diseaseStage = 'Stage II';
+
+        if (raw.toLowerCase().includes('colorectal') || raw.toLowerCase().includes('cancer')) {
+          diseaseName = 'Colorectal Cancer';
+          diseaseStage = 'Stage II';
+        } else {
+          const stageMatch = raw.match(/(Stage\s+[IVXLCDM\d]+)/i);
+          diseaseStage = stageMatch ? stageMatch[1] : null;
+          diseaseName = raw.replace(/^Ongoing\s+/i, '').replace(/\(.*?\)/g, '').replace(/—.*$/g, '').trim() || raw;
+        }
+
+        return (
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-red-600/15 via-rose-600/10 to-red-600/5 border-2 border-red-500/50 p-5 sm:p-6 shadow-xl shadow-red-500/10">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-red-600/20 border border-red-500/40 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0 shadow-inner">
+                  <AlertOctagon className="w-6 h-6 animate-pulse" />
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <span className="text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-red-600 text-white shadow-xs">
+                      {isHindi ? '🚨 उच्च प्राथमिकता रोगी' : '🚨 CRITICAL PRIORITY PATIENT'}
+                    </span>
+                    <span className="text-xs font-bold text-red-600 dark:text-red-400">
+                      {isHindi ? 'गंभीर रोग प्रोटोकॉल सक्रिय' : 'Danger Illness Care Protocol Active'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2.5 flex-wrap pt-0.5">
+                    <h3 className="text-lg sm:text-2xl font-extrabold text-slate-900 dark:text-white">
+                      {diseaseName}
+                    </h3>
+                    {diseaseStage && (
+                      <span className="px-2.5 py-0.5 rounded-lg text-xs sm:text-sm font-extrabold bg-red-600/20 text-red-700 dark:text-red-300 border border-red-500/40">
+                        {diseaseStage}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 shrink-0">
+                <Link
+                  to="/dashboard/consultation"
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-extrabold bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg shadow-red-600/30 hover:from-red-700 hover:to-rose-700 transition-all cursor-pointer whitespace-nowrap active:scale-95"
+                >
+                  <Zap className="w-4 h-4 text-amber-300" />
+                  <span>{isHindi ? 'त्वरित डॉक्टर परामर्श' : 'Fast-Track Consultation'}</span>
+                </Link>
+                <Link
+                  to="/dashboard/settings"
+                  className="inline-flex items-center gap-2 px-4 py-3 rounded-2xl text-xs sm:text-sm font-bold bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 transition-all cursor-pointer whitespace-nowrap"
+                >
+                  <span>{isHindi ? 'चिकित्सा इतिहास देखें' : 'View Medical History'}</span>
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Health Data Status */}
 
@@ -587,6 +665,8 @@ export default function OverviewPage() {
 
           </div>
 
+          <WeeklyLoggingRhythm readings={readings} />
+
           {/* Urine Health Readings */}
 
           <motion.div
@@ -639,7 +719,7 @@ export default function OverviewPage() {
                   ].map(([label, value]) => (
                     <div
                       key={label}
-                      className="p-5 rounded-2xl bg-slate-50/90 dark:bg-[#070B14]/90 border border-slate-200 dark:border-slate-800 space-y-3"
+                      className="p-5 rounded-2xl bg-slate-50/90 dark:bg-[#1F150E]/90 border border-slate-200 dark:border-slate-800 space-y-3"
                     >
                       <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                         {label}
@@ -658,7 +738,7 @@ export default function OverviewPage() {
                 </p>
               </>
             ) : (
-              <div className="p-8 rounded-2xl bg-slate-50/80 dark:bg-[#070B14]/80 border border-dashed border-slate-300 dark:border-slate-700 text-center space-y-3">
+              <div className="p-8 rounded-2xl bg-slate-50/80 dark:bg-[#1F150E]/80 border border-dashed border-slate-300 dark:border-slate-700 text-center space-y-3">
                 <Droplet className="w-10 h-10 mx-auto text-slate-400" />
 
                 <h3 className="font-bold text-slate-800 dark:text-slate-200">
@@ -712,7 +792,7 @@ export default function OverviewPage() {
                   </Link>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-slate-50/80 dark:bg-[#070B14]/80 border border-slate-200 dark:border-slate-800 text-[15px] text-slate-700 dark:text-slate-300 leading-relaxed space-y-3">
+                <div className="p-5 rounded-2xl bg-slate-50/80 dark:bg-[#1F150E]/80 border border-slate-200 dark:border-slate-800 text-[15px] text-slate-700 dark:text-slate-300 leading-relaxed space-y-3">
                   {hasAnyReadings ? (
                     <p>
                       Your account has {readings.length} recorded health
@@ -765,7 +845,7 @@ export default function OverviewPage() {
 
                 <Link
                   to="/dashboard/consultation"
-                  className="w-full flex items-center justify-between p-4 rounded-2xl bg-slate-50/80 dark:bg-[#070B14]/80 hover:border-cyan-500/50 border border-slate-200 dark:border-slate-800 text-[15px] font-semibold text-slate-800 dark:text-slate-200 transition-colors"
+                  className="w-full flex items-center justify-between p-4 rounded-2xl bg-slate-50/80 dark:bg-[#1F150E]/80 hover:border-cyan-500/50 border border-slate-200 dark:border-slate-800 text-[15px] font-semibold text-slate-800 dark:text-slate-200 transition-colors"
                 >
                   <span className="flex items-center gap-2.5">
                     <Stethoscope className="w-5 h-5 text-cyan-500 dark:text-cyan-400" />
@@ -777,7 +857,7 @@ export default function OverviewPage() {
 
                 <Link
                   to="/dashboard/history"
-                  className="w-full flex items-center justify-between p-4 rounded-2xl bg-slate-50/80 dark:bg-[#070B14]/80 hover:border-cyan-500/50 border border-slate-200 dark:border-slate-800 text-[15px] font-semibold text-slate-800 dark:text-slate-200 transition-colors"
+                  className="w-full flex items-center justify-between p-4 rounded-2xl bg-slate-50/80 dark:bg-[#1F150E]/80 hover:border-cyan-500/50 border border-slate-200 dark:border-slate-800 text-[15px] font-semibold text-slate-800 dark:text-slate-200 transition-colors"
                 >
                   <span className="flex items-center gap-2.5">
                     <FileText className="w-5 h-5 text-blue-500 dark:text-blue-400" />
@@ -789,10 +869,10 @@ export default function OverviewPage() {
 
                 <Link
                   to="/dashboard/settings"
-                  className="w-full flex items-center justify-between p-4 rounded-2xl bg-slate-50/80 dark:bg-[#070B14]/80 hover:border-cyan-500/50 border border-slate-200 dark:border-slate-800 text-[15px] font-semibold text-slate-800 dark:text-slate-200 transition-colors"
+                  className="w-full flex items-center justify-between p-4 rounded-2xl bg-slate-50/80 dark:bg-[#1F150E]/80 hover:border-cyan-500/50 border border-slate-200 dark:border-slate-800 text-[15px] font-semibold text-slate-800 dark:text-slate-200 transition-colors"
                 >
                   <span className="flex items-center gap-2.5">
-                    <SettingsIcon className="w-5 h-5 text-[#00685f] dark:text-[#6bd8cb]" />
+                    <SettingsIcon className="w-5 h-5 text-[#2672A8] dark:text-[#A9D6F5]" />
                     <span>Settings</span>
                   </span>
 

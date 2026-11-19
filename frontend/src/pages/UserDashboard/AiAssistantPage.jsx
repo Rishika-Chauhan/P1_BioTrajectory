@@ -220,7 +220,7 @@ export default function AiAssistantPage() {
               className={`p-5 rounded-3xl max-w-[90%] sm:max-w-[85%] text-[15px] leading-relaxed space-y-3 ${
                 msg.sender === 'user'
                   ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-medium rounded-tr-none shadow-md'
-                  : 'bg-white/90 dark:bg-[#070B14]/90 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-tl-none shadow-xs'
+                  : 'bg-white/90 dark:bg-[#1F150E]/90 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-tl-none shadow-xs'
               }`}
             >
               {/* Message text with friendly formatting */}

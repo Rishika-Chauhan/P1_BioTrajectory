@@ -49,6 +49,7 @@ const QrProfilePage = lazy(() => import('./pages/UserDashboard/QrProfilePage'));
 const SettingsPage = lazy(() => import('./pages/UserDashboard/SettingsPage'));
 const ConnectedDevicesPage = lazy(() => import('./pages/UserDashboard/ConnectedDevicesPage'));
 const UrineAnalysisPage = lazy(() => import('./pages/UserDashboard/UrineAnalysisPage'));
+const FamilyHealthPage = lazy(() => import('./pages/UserDashboard/FamilyHealthPage'));
 
 // --------------------------------------------------
 // Doctor portal
@@ -206,6 +207,7 @@ function AppRoutes() {
           <Route path="profile" element={<QrProfilePage />} />
           <Route path="qr" element={<QrProfilePage />} />
           <Route path="devices" element={<ConnectedDevicesPage />} />
+          <Route path="family" element={<FamilyHealthPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
 
@@ -305,8 +307,14 @@ function AppRoutes() {
           <Route path="reports" element={<AdminReportsPage />} />
           <Route path="analytics" element={<AdminPopulationAnalyticsPage />} />
           <Route path="feedback" element={<AdminFeedbackPage />} />
+          <Route path="medical-records" element={<DoctorMedicalRecordsPage />} />
+          <Route path="records" element={<DoctorMedicalRecordsPage />} />
           <Route path="settings" element={<AdminSettingsPage />} />
         </Route>
+
+        {/* Global medical-records shortcuts */}
+        <Route path="/medical-records" element={<Navigate to="/doctor/medical-records" replace />} />
+        <Route path="/records" element={<Navigate to="/doctor/medical-records" replace />} />
 
         {/* Unknown routes */}
 

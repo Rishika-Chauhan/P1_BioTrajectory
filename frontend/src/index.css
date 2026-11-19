@@ -3,16 +3,80 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-mahogany: #3F0D12;
-  --color-mahogany-deep: #2A090C;
-  --color-ruby: #A71D31;
-  --color-ruby-hover: #8D1829;
-  --color-chiffon: #F1F0CC;
-  --color-chiffon-surface: #FAF9EB;
-  --color-fawn: #D5BF86;
-  --color-fawn-dark: #BEA466;
-  --color-copper: #8D775F;
-  --color-copper-dark: #6D5B47;
+  /* Starting Palette: Brown, Cream & Baby Blue */
+  --color-brown-50: #FAF6EE;
+  --color-brown-100: #F3ECE1;
+  --color-brown-200: #E5DACB;
+  --color-brown-300: #CBB9A3;
+  --color-brown-400: #9E836D;
+  --color-brown-500: #6B4F3A; /* Starting Brown */
+  --color-brown-600: #573E2C;
+  --color-brown-700: #473223;
+  --color-brown-800: #36261B;
+  --color-brown-900: #2B1E15; /* Dark Card Surface */
+  --color-brown-950: #1F150E; /* Dark Mode Main Background */
+
+  --color-cream-50: #FFFDF9;
+  --color-cream-100: #FAF6EE;
+  --color-cream-200: #F6F0E4; /* Starting Cream */
+  --color-cream-300: #EFE7D8;
+  --color-cream-400: #E5DACB;
+  --color-cream-500: #D8C8B5;
+  --color-cream-600: #BFAF9B;
+  --color-cream-700: #8E7D6A;
+  --color-cream-800: #5C4F40;
+  --color-cream-900: #3D3328;
+  --color-cream-950: #231C14;
+
+  --color-babyblue-50: #F3FAFF;
+  --color-babyblue-100: #E4F3FD;
+  --color-babyblue-200: #C7E6FA;
+  --color-babyblue-300: #A9D6F5; /* Starting Baby Blue */
+  --color-babyblue-400: #7CBFEA;
+  --color-babyblue-500: #45A3E2;
+  --color-babyblue-600: #2672A8; /* Accessible contrast on Cream */
+  --color-babyblue-700: #1C5885;
+  --color-babyblue-800: #133D5E;
+  --color-babyblue-900: #0C283E;
+  --color-babyblue-950: #081B2B;
+
+  /* Aliases for legacy component theme variables */
+  --color-mahogany: #6B4F3A;
+  --color-mahogany-deep: #3D291A;
+  --color-ruby: #A9D6F5;
+  --color-ruby-hover: #7CBFEA;
+  --color-chiffon: #F6F0E4;
+  --color-chiffon-surface: #FAF6EE;
+  --color-fawn: #E5DACB;
+  --color-fawn-dark: #D8C8B5;
+  --color-copper: #846752;
+  --color-copper-dark: #6B4F3A;
+
+  /* Map cyan utility classes to Baby Blue scale */
+  --color-cyan-50: #F3FAFF;
+  --color-cyan-100: #E4F3FD;
+  --color-cyan-200: #C7E6FA;
+  --color-cyan-300: #A9D6F5;
+  --color-cyan-400: #7CBFEA;
+  --color-cyan-500: #45A3E2;
+  --color-cyan-600: #2672A8;
+  --color-cyan-700: #1C5885;
+  --color-cyan-800: #133D5E;
+  --color-cyan-900: #0C283E;
+  --color-cyan-950: #081B2B;
+
+  /* Map slate utility classes to warm Brown & Cream scale */
+  --color-slate-50: #FAF6EE;
+  --color-slate-100: #EFE7D8;
+  --color-slate-200: #E5DACB;
+  --color-slate-300: #D8C8B5;
+  --color-slate-400: #A8917D;
+  --color-slate-500: #846752;
+  --color-slate-600: #6B4F3A;
+  --color-slate-700: #573E2C;
+  --color-slate-800: #4A3525;
+  --color-slate-900: #3D291A;
+  --color-slate-950: #241810;
 }
 
 @layer base {
@@ -21,79 +85,73 @@
     --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
-    /* User Requested Warm Light Palette:
-       #3F0D12 - Rich Mahogany
-       #A71D31 - Ruby Red
-       #F1F0CC - Lemon Chiffon
-       #D5BF86 - Soft Fawn
-       #8D775F - Faded Copper
-    */
-    --bg-main: #F1F0CC;
-    --bg-card: #FFFFFF;
+    /* BioTrajectory Brown, Cream & Baby Blue Palette - Light Mode */
+    --bg-main: #F6F0E4;        /* Cream page background */
+    --bg-card: #FFFFFF;        /* Clean card surface */
     --bg-card-glass: rgba(255, 255, 255, 0.94);
-    --bg-secondary: #FAF9EB;
-    --bg-container: #EAE7BC;
-    --bg-container-high: #E2DEAB;
+    --bg-secondary: #FAF6EE;   /* Soft cream surface */
+    --bg-container: #ECE3D2;   /* Nested container */
+    --bg-container-high: #E2D7C3;
     
-    --primary: #A71D31;
-    --primary-container: #8D1829;
-    --on-primary: #FFFFFF;
-    --primary-fixed: #D5BF86;
+    --primary: #A9D6F5;        /* Baby blue accent */
+    --primary-container: #7CBFEA;
+    --on-primary: #1F150E;     /* Deep brown on baby blue */
+    --primary-fixed: #A9D6F5;
     
-    --secondary: #3F0D12;
-    --secondary-container: #D5BF86;
+    --secondary: #6B4F3A;      /* Starting Brown */
+    --secondary-container: #E5DACB;
     
-    --tertiary: #8D775F;
-    --tertiary-container: #3F0D12;
-    --tertiary-fixed: #D5BF86;
+    --tertiary: #2672A8;       /* High-contrast readable baby blue */
+    --tertiary-container: #F6F0E4;
+    --tertiary-fixed: #A9D6F5;
     
-    --amber-shift: #D5BF86;
-    --amber-dark: #8D775F;
+    --amber-shift: #F59E0B;
+    --amber-dark: #D97706;
     
-    --text-head: #3F0D12;
-    --text-body: #473228;
-    --text-muted: #8D775F;
-    --outline: #D5BF86;
-    --border-subtle: rgba(213, 191, 134, 0.55);
-    --border-glass: rgba(167, 29, 49, 0.16);
+    --text-head: #3D291A;      /* Deep rich brown headings */
+    --text-body: #553C2A;      /* Readable brown body text */
+    --text-muted: #846752;     /* Muted warm brown */
+    --outline: #E5DACB;        /* Warm cream border */
+    --border-subtle: #E2D7C3;
+    --border-glass: rgba(107, 79, 58, 0.16);
     
-    --card-shadow: 0 1px 4px 0 rgba(63, 13, 18, 0.04), 0 4px 16px -2px rgba(63, 13, 18, 0.06);
-    --card-shadow-hover: 0 4px 20px -2px rgba(167, 29, 49, 0.18), 0 2px 8px -1px rgba(63, 13, 18, 0.08);
+    --card-shadow: 0 1px 4px 0 rgba(107, 79, 58, 0.05), 0 4px 16px -2px rgba(107, 79, 58, 0.08);
+    --card-shadow-hover: 0 4px 20px -2px rgba(169, 214, 245, 0.35), 0 2px 8px -1px rgba(107, 79, 58, 0.1);
   }
 
   .dark {
-    /* BioTrajectory Deep Futuristic Navy & Cyan Dark Theme */
-    --bg-main: #050814;
-    --bg-card: #0B132B;
-    --bg-card-glass: rgba(11, 19, 43, 0.82);
-    --bg-secondary: #070D1E;
-    --bg-container: #0E1A38;
-    --bg-container-high: #15244D;
+    /* BioTrajectory Brown, Cream & Baby Blue Palette - Dark Mode */
+    --bg-main: #1F150E;        /* Deep roasted brown page background */
+    --bg-card: #2B1E15;        /* Deep brown card surface */
+    --bg-card-glass: rgba(43, 30, 21, 0.88);
+    --bg-secondary: #1A110A;   /* Darker brown surface */
+    --bg-container: #36261B;   /* Elevated brown container */
+    --bg-container-high: #423023;
     
-    --primary: #00D9FF;
-    --primary-container: #0077B6;
-    --on-primary: #030712;
-    --primary-fixed: #38BDF8;
+    --primary: #A9D6F5;        /* Luminous Baby Blue accent */
+    --primary-container: #3388C4;
+    --on-primary: #1F150E;
+    --primary-fixed: #C8E7FA;
     
-    --secondary: #38BDF8;
-    --secondary-container: #0284C7;
+    --secondary: #D4C3B2;      /* Soft cream secondary */
+    --secondary-container: #4D3627;
     
-    --tertiary: #818CF8;
-    --tertiary-container: #4F46E5;
-    --tertiary-fixed: #A5B4FC;
+    --tertiary: #A9D6F5;
+    --tertiary-container: #2672A8;
+    --tertiary-fixed: #C8E7FA;
     
-    --amber-shift: #38BDF8;
-    --amber-dark: #0284C7;
+    --amber-shift: #FBBF24;
+    --amber-dark: #D97706;
     
-    --text-head: #F8FAFC;
-    --text-body: #CBD5E1;
-    --text-muted: #94A3B8;
-    --outline: #1E293B;
-    --border-subtle: rgba(255, 255, 255, 0.08);
-    --border-glass: rgba(0, 217, 255, 0.18);
+    --text-head: #F6F0E4;      /* Cream readable text */
+    --text-body: #E7DDCE;      /* Soft cream */
+    --text-muted: #B8A695;     /* Warm muted cream */
+    --outline: #4D3627;
+    --border-subtle: rgba(246, 240, 228, 0.12);
+    --border-glass: rgba(169, 214, 245, 0.22);
     
-    --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7), 0 0 15px rgba(0, 217, 255, 0.08);
-    --card-shadow-hover: 0 20px 40px -12px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 217, 255, 0.22);
+    --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7), 0 0 15px rgba(169, 214, 245, 0.08);
+    --card-shadow-hover: 0 20px 40px -12px rgba(0, 0, 0, 0.8), 0 0 25px rgba(169, 214, 245, 0.25);
   }
 
   body {
@@ -105,7 +163,53 @@
   }
 }
 
-/* Glassmorphism & Cybernetic Glow Effects */
+/* Dark Mode Global Text & Card Overrides */
+.dark body {
+  background-color: #1F150E;
+  color: #F6F0E4;
+}
+
+.dark .text-white {
+  color: #F6F0E4 !important;
+}
+
+.dark .text-slate-100 {
+  color: #FAF6EE !important;
+}
+
+.dark .text-slate-200 {
+  color: #EFE7D8 !important;
+}
+
+.dark .text-slate-300 {
+  color: #D8C8B5 !important;
+}
+
+.dark .text-slate-400 {
+  color: #B8A695 !important;
+}
+
+.dark .bg-slate-900 {
+  background-color: #241810 !important;
+}
+
+.dark .bg-slate-800 {
+  background-color: #2E2016 !important;
+}
+
+.dark .bg-slate-700 {
+  background-color: #3A291D !important;
+}
+
+.dark .border-slate-800 {
+  border-color: #473324 !important;
+}
+
+.dark .border-slate-700 {
+  border-color: #573E2C !important;
+}
+
+/* Glassmorphism & Theme Glow Effects */
 .glass-panel {
   background: var(--bg-card-glass);
   backdrop-filter: blur(14px);
@@ -114,54 +218,60 @@
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  border: 1px solid rgba(229, 218, 203, 0.8);
   box-shadow: var(--card-shadow);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dark .glass-card {
-  background: rgba(11, 19, 43, 0.78);
+  background: rgba(43, 30, 21, 0.82);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(246, 240, 228, 0.12);
   box-shadow: var(--card-shadow);
 }
 
 .glass-card-hover:hover {
   transform: translateY(-3px);
   box-shadow: var(--card-shadow-hover);
-  border-color: rgba(0, 217, 255, 0.4);
+  border-color: rgba(169, 214, 245, 0.6);
 }
 
 .dark .glass-card-hover:hover {
-  border-color: rgba(0, 217, 255, 0.45);
+  border-color: rgba(169, 214, 245, 0.55);
 }
 
 /* Brand Glows */
 .glow-ruby {
-  box-shadow: 0 0 25px -3px rgba(167, 29, 49, 0.35);
+  box-shadow: 0 0 25px -3px rgba(169, 214, 245, 0.35);
 }
 
 .glow-subtle {
-  box-shadow: 0 0 20px -2px rgba(167, 29, 49, 0.15);
+  box-shadow: 0 0 20px -2px rgba(169, 214, 245, 0.2);
 }
 
 .light .glow-ruby {
-  box-shadow: 0 0 20px -2px rgba(167, 29, 49, 0.25);
+  box-shadow: 0 0 20px -2px rgba(169, 214, 245, 0.3);
 }
 
 /* Gradient Text */
 .text-gradient-ruby {
-  background: linear-gradient(135deg, #A71D31 0%, #3F0D12 100%);
+  background: linear-gradient(135deg, #6B4F3A 0%, #2672A8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.dark .text-gradient-ruby {
+  background: linear-gradient(135deg, #F6F0E4 0%, #A9D6F5 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .light .text-gradient-ruby {
-  background: linear-gradient(135deg, #A71D31 0%, #3F0D12 100%);
+  background: linear-gradient(135deg, #6B4F3A 0%, #2672A8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -169,25 +279,25 @@
 /* Medical Technical Grid Patterns */
 .bg-grid-medical {
   background-image: 
-    linear-gradient(to right, rgba(167, 29, 49, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(167, 29, 49, 0.05) 1px, transparent 1px);
+    linear-gradient(to right, rgba(107, 79, 58, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(107, 79, 58, 0.05) 1px, transparent 1px);
   background-size: 3rem 3rem;
 }
 
 .dark .bg-grid-medical {
   background-image: 
-    linear-gradient(to right, rgba(0, 217, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 217, 255, 0.04) 1px, transparent 1px);
+    linear-gradient(to right, rgba(169, 214, 245, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(169, 214, 245, 0.04) 1px, transparent 1px);
   background-size: 3rem 3rem;
 }
 
 .bg-dots-pattern {
-  background-image: radial-gradient(rgba(0, 217, 255, 0.06) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(107, 79, 58, 0.08) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
 .dark .bg-dots-pattern {
-  background-image: radial-gradient(rgba(0, 217, 255, 0.08) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(169, 214, 245, 0.08) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
@@ -204,7 +314,7 @@
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #00D9FF;
+  background: #A9D6F5;
 }
 
 /* Ambient Floating Animations */

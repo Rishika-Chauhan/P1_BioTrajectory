@@ -51,7 +51,7 @@ export default function ClinicalSafety() {
 
   return (
     <section
-      className={`relative py-20 transition-colors ${isDark ? 'bg-[#070b14]' : 'bg-[#faf8ff]'
+      className={`relative py-20 transition-colors ${isDark ? 'bg-[#1F150E]' : 'bg-[#faf8ff]'
         }`}
       id="clinical-rigor"
     >
@@ -99,7 +99,7 @@ export default function ClinicalSafety() {
                   key={t.id}
                   onClick={() => setActiveTab(t.id)}
                   className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold tracking-wider transition-all ${isActive
-                    ? 'bg-[#00685f] text-white font-bold shadow-xs'
+                    ? 'bg-[#A9D6F5] text-[#1F150E] font-bold font-bold shadow-xs'
                     : isDark
                       ? 'text-slate-400 hover:text-white'
                       : 'text-slate-600 hover:text-slate-900'
@@ -122,7 +122,7 @@ export default function ClinicalSafety() {
             {/* Left 5 Cols: 7 Risks Selector */}
             <div className={`lg:col-span-5 rounded-xl border p-5 shadow-xs ${isDark ? 'bg-[#0d1526] border-slate-800' : 'bg-white border-[#e2e8f0]'
               }`}>
-              <span className="text-[11px] font-sans uppercase font-bold text-[#00685f] dark:text-[#6bd8cb] block mb-2.5">
+              <span className="text-[11px] font-sans uppercase font-bold text-[#2672A8] dark:text-[#A9D6F5] block mb-2.5">
                 Select Clinical Risk Scenario to Inspect:
               </span>
 
@@ -137,7 +137,7 @@ export default function ClinicalSafety() {
                         setActiveSimulationOutput(null);
                       }}
                       className={`w-full text-left p-3 rounded-lg border transition-all text-xs flex items-center justify-between font-sans ${isSelected
-                        ? 'bg-[#00685f]/15 border-[#00685f] text-on-surface font-bold shadow-xs'
+                        ? 'bg-[#A9D6F5]/15 border-[#A9D6F5] text-on-surface font-bold shadow-xs'
                         : isDark
                           ? 'bg-slate-900/50 border-slate-800 text-slate-400 hover:text-white'
                           : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
@@ -145,14 +145,14 @@ export default function ClinicalSafety() {
                     >
                       <div className="flex items-center space-x-2.5">
                         <span className={`text-[10px] font-sans w-5 h-5 rounded flex items-center justify-center font-bold ${isSelected
-                          ? 'bg-[#00685f] text-white'
+                          ? 'bg-[#A9D6F5] text-[#1F150E] font-bold'
                           : 'bg-black/10 dark:bg-slate-800 text-slate-400'
                           }`}>
                           0{idx + 1}
                         </span>
                         <span>{risk.risk}</span>
                       </div>
-                      <ChevronRight className={`w-3.5 h-3.5 ${isSelected ? 'text-[#00685f]' : 'text-slate-400'}`} />
+                      <ChevronRight className={`w-3.5 h-3.5 ${isSelected ? 'text-[#2672A8]' : 'text-slate-400'}`} />
                     </button>
                   );
                 })}
@@ -164,7 +164,7 @@ export default function ClinicalSafety() {
               }`}>
               <div className="flex items-center justify-between pb-4 border-b border-inherit">
                 <div>
-                  <span className="text-[10px] font-sans uppercase text-[#00685f] dark:text-[#6bd8cb] font-bold block">
+                  <span className="text-[10px] font-sans uppercase text-[#2672A8] dark:text-[#A9D6F5] font-bold block">
                     Risk Assessment & Architectural Defense
                   </span>
                   <h3 className={`text-lg font-bold font-sans mt-0.5 ${isDark ? 'text-white' : 'text-[#131b2e]'}`}>
@@ -182,7 +182,7 @@ export default function ClinicalSafety() {
               </div>
 
               <div className="mt-4 space-y-3 font-sans">
-                <div className={`p-3.5 rounded-lg border ${isDark ? 'bg-[#070b14] border-slate-800' : 'bg-slate-50 border-slate-200'
+                <div className={`p-3.5 rounded-lg border ${isDark ? 'bg-[#1F150E] border-slate-800' : 'bg-slate-50 border-slate-200'
                   }`}>
                   <strong className="text-xs uppercase text-[#ba1a1a] block mb-1">
                     Why It Matters Clinically:
@@ -204,8 +204,8 @@ export default function ClinicalSafety() {
 
                 {/* Simulated Failure Defense Output Box */}
                 {activeSimulationOutput ? (
-                  <div className="p-3.5 rounded-lg bg-slate-950 border border-[#00685f] animate-fadeIn">
-                    <div className="flex items-center justify-between text-xs font-sans text-[#6bd8cb] mb-2">
+                  <div className="p-3.5 rounded-lg bg-slate-950 border border-[#A9D6F5] animate-fadeIn">
+                    <div className="flex items-center justify-between text-xs font-sans text-[#A9D6F5] mb-2">
                       <span className="flex items-center space-x-1.5 font-bold">
                         <Terminal className="w-3.5 h-3.5" />
                         <span>Defensive Guardrail Triggered ({activeSimulationOutput.timestamp})</span>
@@ -233,7 +233,7 @@ export default function ClinicalSafety() {
             TAB 2: 7-STEP CLINICAL VALIDATION PATHWAY (PDF Section 12)
         ========================================================================== */}
         {activeTab === 'validation' && (
-          <div className={`rounded-3xl border p-6 sm:p-10 shadow-2xl ${isDark ? 'bg-[#090e18] border-white/10' : 'bg-white border-amber-900/10'
+          <div className={`rounded-3xl border p-6 sm:p-10 shadow-2xl ${isDark ? 'bg-[#251A11] border-white/10' : 'bg-white border-amber-900/10'
             }`}>
             <div className="max-w-3xl mb-8">
               <span className={`text-xs font-mono-code uppercase font-semibold ${isDark ? 'text-amber-300' : 'text-amber-800'}`}>
@@ -284,7 +284,7 @@ export default function ClinicalSafety() {
             TAB 3: PRIVACY, DATA MINIMIZATION & ETHICAL AI (PDF Section 13)
         ========================================================================== */}
         {activeTab === 'privacy' && (
-          <div className={`rounded-3xl border p-6 sm:p-10 shadow-2xl ${isDark ? 'bg-[#090e18] border-white/10' : 'bg-white border-amber-900/10'
+          <div className={`rounded-3xl border p-6 sm:p-10 shadow-2xl ${isDark ? 'bg-[#251A11] border-white/10' : 'bg-white border-amber-900/10'
             }`}>
             <div className="max-w-3xl mb-8">
               <span className={`text-xs font-mono-code uppercase font-semibold ${isDark ? 'text-amber-300' : 'text-amber-800'}`}>

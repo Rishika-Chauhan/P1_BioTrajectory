@@ -106,6 +106,23 @@ export default function DoctorOverviewPage() {
     return unsubscribe;
   }, [doctor?.uid, isVerified]);
 
+  const handleRefresh = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      await new Promise((r) => setTimeout(r, 450));
+      const uid = doctor?.uid || 'doc_mock_1';
+      const data = await appointmentService.getDoctorAppointments(uid);
+      if (Array.isArray(data)) {
+        setAppointments(data);
+      }
+    } catch (err) {
+      console.error("Overview refresh failed:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const today = getToday();
 
   const todayAppointments = useMemo(
@@ -168,6 +185,16 @@ export default function DoctorOverviewPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={handleRefresh}
+              disabled={loading}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm font-semibold hover:border-blue-500 cursor-pointer active:scale-95 transition-all disabled:opacity-60 shadow-xs"
+              title={isHindi ? 'डैशबोर्ड रिफ्रेश करें' : 'Refresh Dashboard'}
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-blue-500' : ''}`} />
+              <span>{loading ? (isHindi ? 'रिफ्रेश...' : 'Refreshing...') : (isHindi ? 'रिफ्रेश' : 'Refresh')}</span>
+            </button>
+
             <Link
               to="/doctor/appointments"
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition-all"

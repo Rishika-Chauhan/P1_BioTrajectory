@@ -252,6 +252,27 @@ export const translations = {
       doctorConnect: 'Doctor Consultation',
       connectedDevices: 'Connected Devices',
       settings: 'Settings',
+      weeklyRhythm: {
+        title: 'Your week, at a glance',
+        subtitle: 'A gentle recap of which days you logged health records, not a health score.',
+        loggedDays: '{count} of 7 days with entries',
+        selectDay: 'Choose a day to review entries',
+        dayButton: '{date}: {count} health record(s)',
+        today: 'Today',
+        entryCount: '{count} record(s) logged',
+        noEntries: 'No records logged on this day',
+        emptyDayHint: 'Choose another day or add a reading when you are ready.',
+        viewRecords: 'View all records',
+        types: {
+          bloodPressure: 'Blood pressure',
+          heartRate: 'Heart rate',
+          oxygen: 'Blood oxygen',
+          activity: 'Activity',
+          urine: 'Urine test',
+          blood: 'Blood test',
+          document: 'Medical document'
+        }
+      },
       vitalsOverview: 'Current Vital Measurements',
       bloodPressure: 'Blood Pressure',
       heartRate: 'Heart Rate',
@@ -306,18 +327,17 @@ export const translations = {
     // ---------------- MEDICAL RECORDS ----------------
     records: {
       title: 'My Medical Records & Test Library',
-      subtitle: 'Complete repository for blood pressure, heart rate, oxygen, activity, urine tests, blood tests, and uploaded clinical files.',
+      subtitle: 'Complete clinical repository for lab reports, urinalysis, diagnostic imaging scans, prescriptions, and verified medical files.',
       searchPlaceholder: 'Search tests, values, doctors, lab notes, or diagnoses...',
       uploadBtn: 'Upload Medical Record',
       categories: {
-        all: 'All Records',
-        blood_pressure: 'Blood Pressure',
-        heart_rate: 'Heart Rate',
-        oxygen_saturation: 'Blood Oxygen (SpO2)',
-        activity: 'Activity & Steps',
-        urine_test: 'Urine Test Strip',
-        blood_test: 'Blood Test / Lab',
-        document: 'Uploaded Documents / Scans'
+        all: 'All Medical Records',
+        blood_test: 'Blood Tests & Labs',
+        urine_test: 'Urine Analysis Reports',
+        imaging_scan: 'Diagnostic Scans & Imaging',
+        prescription: 'Doctor Prescriptions',
+        clinical_note: 'Clinical Summaries',
+        document: 'Uploaded Documents'
       },
       detailsModalTitle: 'Medical Record Clinical Details',
       closeBtn: 'Close',
@@ -602,6 +622,27 @@ export const translations = {
       doctorConnect: 'डॉक्टर परामर्श (Doctor Connect)',
       connectedDevices: 'कनेक्टेड डिवाइसेस',
       settings: 'सेटिंग्स',
+      weeklyRhythm: {
+        title: 'आपका सप्ताह एक नज़र में',
+        subtitle: 'किन दिनों आपने स्वास्थ्य रिकॉर्ड जोड़े, इसकी हल्की सी झलक—यह स्वास्थ्य स्कोर नहीं है।',
+        loggedDays: '7 में से {count} दिनों में रिकॉर्ड',
+        selectDay: 'रिकॉर्ड देखने के लिए दिन चुनें',
+        dayButton: '{date}: {count} स्वास्थ्य रिकॉर्ड',
+        today: 'आज',
+        entryCount: '{count} रिकॉर्ड जोड़े गए',
+        noEntries: 'इस दिन कोई रिकॉर्ड नहीं जोड़ा गया',
+        emptyDayHint: 'कोई और दिन चुनें या जब चाहें रीडिंग जोड़ें।',
+        viewRecords: 'सभी रिकॉर्ड देखें',
+        types: {
+          bloodPressure: 'रक्तचाप',
+          heartRate: 'हृदय गति',
+          oxygen: 'रक्त में ऑक्सीजन',
+          activity: 'गतिविधि',
+          urine: 'मूत्र परीक्षण',
+          blood: 'रक्त परीक्षण',
+          document: 'चिकित्सा दस्तावेज़'
+        }
+      },
       vitalsOverview: 'वर्तमान महत्वपूर्ण संकेत (Vitals)',
       bloodPressure: 'रक्तचाप (Blood Pressure)',
       heartRate: 'हृदय गति (Heart Rate)',
@@ -656,18 +697,17 @@ export const translations = {
     // ---------------- MEDICAL RECORDS ----------------
     records: {
       title: 'मेरे मेडिकल रिकॉर्ड्स एवं टेस्ट लाइब्रेरी',
-      subtitle: 'रक्तचाप, हृदय गति, ऑक्सीजन, शारीरिक गतिविधि, मूत्र परीक्षण, रक्त परीक्षण एवं अपलोड की गई रिपोर्टों का सुरक्षित संग्रह।',
+      subtitle: 'क्लिनिकल लैब रिपोर्ट, मूत्र विश्लेषण, डायग्नोस्टिक स्कैन, डॉक्टर के पर्चे और सत्यापित चिकित्सा फाइलों का सुरक्षित संग्रह।',
       searchPlaceholder: 'टेस्ट, रीडिंग, डॉक्टर या लैब नोट्स खोजें...',
       uploadBtn: 'मेडिकल रिकॉर्ड अपलोड करें',
       categories: {
-        all: 'सभी रिकॉर्ड्स',
-        blood_pressure: 'रक्तचाप (BP)',
-        heart_rate: 'हृदय गति (HR)',
-        oxygen_saturation: 'ऑक्सीजन (SpO2)',
-        activity: 'शारीरिक गतिविधि (Steps)',
-        urine_test: 'मूत्र परीक्षण (Urine Test)',
-        blood_test: 'रक्त जांच / लैब टेस्ट (Blood Test)',
-        document: 'अपलोड किए गए दस्तावेज़ / रिपोर्ट'
+        all: 'सभी मेडिकल रिकॉर्ड्स',
+        blood_test: 'रक्त परीक्षण एवं लैब',
+        urine_test: 'मूत्र परीक्षण रिपोर्ट',
+        imaging_scan: 'जांच स्कैन एवं इमेजिंग',
+        prescription: 'डॉक्टर के पर्चे (Rx)',
+        clinical_note: 'क्लिनिकल परामर्श एवं रिपोर्ट',
+        document: 'अपलोड किए गए दस्तावेज़'
       },
       detailsModalTitle: 'मेडिकल रिकॉर्ड का विस्तृत विवरण',
       closeBtn: 'बंद करें',

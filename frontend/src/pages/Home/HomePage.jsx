@@ -158,7 +158,7 @@ export default function HomePage() {
       </section>
 
       {/* 2. HEALTHCARE PROBLEMS SECTION */}
-      <section className="w-full py-16 px-4 sm:px-6 lg:px-8 border-t border-slate-200/80 dark:border-slate-800/80 bg-slate-50/50 dark:bg-[#070B14]/40 relative">
+      <section className="w-full py-16 px-4 sm:px-6 lg:px-8 border-t border-slate-200/80 dark:border-slate-800/80 bg-slate-50/50 dark:bg-[#1F150E]/40 relative">
         <div className="max-w-7xl mx-auto space-y-10">
           <motion.div {...fadeInUp} className="text-center max-w-2xl mx-auto space-y-2">
             <span className="text-[12px] font-bold uppercase tracking-widest text-rose-500 dark:text-rose-400 bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/20 inline-block">
@@ -292,7 +292,7 @@ export default function HomePage() {
             </div>
 
             <div className="space-y-3">
-              <div className="p-3.5 rounded-xl bg-slate-50/80 dark:bg-[#070B14]/80 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+              <div className="p-3.5 rounded-xl bg-slate-50/80 dark:bg-[#1F150E]/80 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div>
                   <p className="text-[12px] text-slate-500 dark:text-slate-400">
                     {isHindi ? 'रक्तचाप (Blood Pressure)' : 'Blood Pressure'}
@@ -306,7 +306,7 @@ export default function HomePage() {
                 </span>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-slate-50/80 dark:bg-[#070B14]/80 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+              <div className="p-3.5 rounded-xl bg-slate-50/80 dark:bg-[#1F150E]/80 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div>
                   <p className="text-[12px] text-slate-500 dark:text-slate-400">
                     {isHindi ? 'दैनिक कदम (Daily Steps)' : 'Daily Steps'}
@@ -320,7 +320,7 @@ export default function HomePage() {
                 </span>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-slate-50/80 dark:bg-[#070B14]/80 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+              <div className="p-3.5 rounded-xl bg-slate-50/80 dark:bg-[#1F150E]/80 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div>
                   <p className="text-[12px] text-slate-500 dark:text-slate-400">
                     {isHindi ? 'मूत्र प्रोटीन जांच' : 'Urine Protein Check'}
@@ -339,7 +339,7 @@ export default function HomePage() {
       </section>
 
       {/* 4. HOW BIOTRAJECTORY WORKS */}
-      <section className="w-full py-16 px-4 sm:px-6 lg:px-8 border-t border-slate-200/80 dark:border-slate-800/80 bg-slate-50/50 dark:bg-[#070B14]/40">
+      <section className="w-full py-16 px-4 sm:px-6 lg:px-8 border-t border-slate-200/80 dark:border-slate-800/80 bg-slate-50/50 dark:bg-[#1F150E]/40">
         <div className="max-w-7xl mx-auto space-y-10">
           <motion.div {...fadeInUp} className="text-center max-w-2xl mx-auto space-y-2">
             <span className="text-[12px] font-bold uppercase tracking-widest text-cyan-700 dark:text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/20 inline-block">

@@ -370,7 +370,11 @@ export default function DoctorScanQrPage() {
               <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
                 <div>
                   <span className="text-slate-400">Emergency Contact:</span>
-                  <p className="font-medium text-slate-800 dark:text-slate-200 mt-0.5">{scanResult.emergencyContact}</p>
+                  <p className="font-medium text-slate-800 dark:text-slate-200 mt-0.5">
+                    {typeof scanResult.emergencyContact === 'object' && scanResult.emergencyContact !== null
+                      ? `${scanResult.emergencyContact.name || ''} ${scanResult.emergencyContact.phone || ''} ${scanResult.emergencyContact.relationship ? `(${scanResult.emergencyContact.relationship})` : ''}`.trim() || 'Not recorded'
+                      : String(scanResult.emergencyContact || 'Not recorded')}
+                  </p>
                 </div>
                 <div>
                   <span className="text-slate-400">Primary Health Concern:</span>

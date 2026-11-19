@@ -180,7 +180,7 @@ export default function Hero({ onOpenDemo, onOpenReport }) {
             : 'bg-gradient-to-b from-cyan-300/40 via-blue-200/20 to-transparent'
           }`}>
           <div className={`rounded-[15px] border p-6 text-left ${isDark
-              ? 'bg-[#090e18]/95 border-white/10'
+              ? 'bg-[#251A11]/95 border-white/10'
               : 'bg-white border-slate-200 shadow-sm'
             }`}>
             <div className={`flex flex-wrap items-center justify-between gap-3 pb-4 border-b ${isDark ? 'border-white/10' : 'border-slate-100'

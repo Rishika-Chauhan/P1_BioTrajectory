@@ -145,18 +145,18 @@ export default function DailyReportsPage() {
     window.setTimeout(() => setToastMessage(''), 3500);
   };
 
-  const loadReadings = useCallback(async () => {
-    if (!uid) {
-      setRecords([]);
-      setLoading(false);
-      return;
-    }
+  const activeUid = uid || 'demo-user-123';
 
+  const loadReadings = useCallback(async (isManual = false) => {
     setLoading(true);
     setErrorMessage('');
 
+    if (isManual) {
+      await new Promise((r) => setTimeout(r, 450));
+    }
+
     try {
-      const result = await healthReadingService.list(uid, 100);
+      const result = await healthReadingService.list(activeUid, 100);
 
       const sortedResult = [...(result || [])].sort((a, b) => {
         const dateA = a.measuredAt?.toDate
@@ -431,7 +431,7 @@ export default function DailyReportsPage() {
         value={newReading[field]}
         onChange={(event) => updateField(field, event.target.value)}
         placeholder={options.placeholder || ''}
-        className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
+        className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
       />
     </div>
   );
@@ -445,7 +445,7 @@ export default function DailyReportsPage() {
       <select
         value={newReading[field]}
         onChange={(event) => updateField(field, event.target.value)}
-        className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
+        className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
       >
         <option value="">Not recorded</option>
 
@@ -592,20 +592,20 @@ export default function DailyReportsPage() {
 
           <button
             onClick={exportCSV}
-            className="px-4 py-3 rounded-xl text-sm font-semibold bg-white dark:bg-[#101827] border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 flex items-center gap-2"
+            className="px-4 py-3 rounded-xl text-sm font-semibold bg-white dark:bg-[#2B1E15] border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 flex items-center gap-2"
           >
             <FileSpreadsheet className="w-4 h-4" />
             Export CSV
           </button>
 
           <button
-            onClick={loadReadings}
+            onClick={() => loadReadings(true)}
             disabled={loading}
-            className="p-3 rounded-xl bg-white dark:bg-[#101827] border border-slate-300 dark:border-slate-800"
+            className="p-3 rounded-xl bg-white dark:bg-[#2B1E15] border border-slate-300 dark:border-slate-800 hover:border-cyan-500 cursor-pointer active:scale-95 transition-all disabled:opacity-60"
             title="Refresh readings"
           >
             <RefreshCw
-              className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`}
+              className={`w-4 h-4 ${loading ? 'animate-spin text-cyan-500' : ''}`}
             />
           </button>
         </div>
@@ -618,8 +618,8 @@ export default function DailyReportsPage() {
         </div>
       )}
 
-      <div className="p-5 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4 shadow-sm">
-        <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-100 dark:bg-[#070B14] border border-slate-200 dark:border-slate-800">
+      <div className="p-5 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4 shadow-sm">
+        <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-100 dark:bg-[#1F150E] border border-slate-200 dark:border-slate-800">
           {['daily', 'weekly', 'monthly'].map((mode) => (
             <button
               key={mode}
@@ -647,14 +647,14 @@ export default function DailyReportsPage() {
             value={selectedDate}
             max={getLocalDateString()}
             onChange={(event) => setSelectedDate(event.target.value)}
-            className="p-2 rounded-xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700"
+            className="p-2 rounded-xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700"
           />
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
-        <div className="p-7 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+        <div className="p-7 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
           <div className="flex justify-between">
             <span className="font-bold text-slate-500 dark:text-slate-400">
               Blood Pressure
@@ -676,7 +676,7 @@ export default function DailyReportsPage() {
           </p>
         </div>
 
-        <div className="p-7 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+        <div className="p-7 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
           <div className="flex justify-between">
             <span className="font-bold text-slate-500 dark:text-slate-400">
               Daily Activity
@@ -694,7 +694,7 @@ export default function DailyReportsPage() {
           </p>
         </div>
 
-        <div className="p-7 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+        <div className="p-7 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
           <div className="flex justify-between">
             <span className="font-bold text-slate-500 dark:text-slate-400">
               Heart Rate
@@ -715,7 +715,7 @@ export default function DailyReportsPage() {
           </p>
         </div>
 
-        <div className="p-7 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+        <div className="p-7 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
           <div className="flex justify-between">
             <span className="font-bold text-slate-500 dark:text-slate-400">
               Urine Test
@@ -734,7 +734,7 @@ export default function DailyReportsPage() {
         </div>
       </div>
 
-      <div className="p-7 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-sm">
+      <div className="p-7 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 shadow-sm">
         <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-5">
           Recorded Measurements
         </h2>
@@ -802,7 +802,7 @@ export default function DailyReportsPage() {
 
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm">
-          <div className="w-full max-w-xl p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-xl p-8 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
 
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
               <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -838,7 +838,7 @@ export default function DailyReportsPage() {
                       date: newReading.date
                     })
                   }
-                  className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
+                  className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
                 >
                   <option value="blood_pressure">Blood pressure</option>
                   <option value="heart_rate">Heart rate</option>
@@ -859,7 +859,7 @@ export default function DailyReportsPage() {
                   max={getLocalDateString()}
                   onChange={(event) => updateField('date', event.target.value)}
                   required
-                  className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
+                  className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
                 />
               </div>
 
@@ -875,7 +875,7 @@ export default function DailyReportsPage() {
                   onChange={(event) => updateField('notes', event.target.value)}
                   maxLength={1000}
                   rows={3}
-                  className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
+                  className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
                   placeholder="Add context about this measurement"
                 />
               </div>

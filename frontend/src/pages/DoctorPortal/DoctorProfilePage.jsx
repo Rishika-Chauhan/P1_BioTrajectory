@@ -55,7 +55,7 @@ export default function DoctorProfilePage() {
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#A9D6F5]/20 dark:bg-[#A9D6F5]/10 text-[#1C5885] dark:text-[#A9D6F5]">
             {isHindi ? 'चिकित्सक साख एवं प्रमाणन' : 'Practitioner Credentials'}
           </span>
           {isVerified ? (
@@ -80,14 +80,14 @@ export default function DoctorProfilePage() {
         </p>
       </div>
 
-      <div className="rounded-2xl p-5 bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-transparent border border-blue-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="rounded-2xl p-5 bg-gradient-to-r from-[#A9D6F5]/15 via-[#7CBFEA]/10 to-transparent border border-[#A9D6F5]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h3 className="text-sm font-bold text-slate-900 dark:text-white">
             {isHindi ? 'क्लिनिकल एक्सेस स्थिति' : 'Clinical Access Status'}
           </h3>
           <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
             {isHindi ? 'वर्तमान भूमिका विश्वसनीय बैकएंड और टोकन द्वारा प्रबंधित है: ' : 'Current role is managed by the trusted backend and token claims: '}
-            <strong className="font-mono text-blue-600 dark:text-blue-400">{doctor?.role || 'DOCTOR'}</strong>
+            <strong className="font-mono text-[#2672A8] dark:text-[#A9D6F5]">{doctor?.role || 'DOCTOR'}</strong>
           </p>
         </div>
       </div>
@@ -259,7 +259,7 @@ export default function DoctorProfilePage() {
 
           <button
             type="submit"
-            className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md transition-colors flex items-center gap-1.5 self-end sm:self-auto cursor-pointer"
+            className="px-6 py-2.5 rounded-xl bg-[#A9D6F5] hover:bg-[#7CBFEA] text-[#1F150E] font-bold text-xs shadow-md transition-colors flex items-center gap-1.5 self-end sm:self-auto cursor-pointer"
           >
             <Save className="w-4 h-4" />
             <span>{isHindi ? 'प्रोफाइल सहेजें' : 'Save Profile Details'}</span>

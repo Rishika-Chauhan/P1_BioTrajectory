@@ -27,7 +27,7 @@ export default function DoctorForgotPasswordPage() {
         </p>
       </div>
 
-      <div className="p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
+      <div className="p-8 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
         {sent ? (
           <div className="text-center space-y-4 py-4">
             <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto" />
@@ -55,7 +55,7 @@ export default function DoctorForgotPasswordPage() {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="doctor@hospital.org"
-                  className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
             </div>

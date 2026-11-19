@@ -301,7 +301,7 @@ export default function DoctorRegisterPage() {
   };
 
   const inputClass =
-    'w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-[#070B14] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm';
+    'w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-[#1F150E] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm';
 
   const labelClass =
     'block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2';
@@ -403,7 +403,7 @@ export default function DoctorRegisterPage() {
         key={step}
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 shadow-xl"
+        className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 shadow-xl"
       >
 
         {/* STEP 1: ACCOUNT CREATION */}
@@ -823,7 +823,7 @@ export default function DoctorRegisterPage() {
               Your account will receive doctor access only after admin approval.
             </p>
 
-            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-800 text-left space-y-3">
+            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200 dark:border-slate-800 text-left space-y-3">
 
               <div className="flex justify-between gap-3 text-sm">
                 <span className="text-slate-500">Name</span>

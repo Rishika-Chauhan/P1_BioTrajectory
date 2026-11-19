@@ -461,6 +461,18 @@ export function AuthProvider({ children }) {
   };
 
   const refreshToken = async () => {
+    if (currentUser?.isDemo) {
+      try {
+        const stored = sessionStorage.getItem(DEMO_STORAGE_KEY) || localStorage.getItem(DEMO_STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          setCurrentUser(parsed);
+          return parsed;
+        }
+      } catch {}
+      return currentUser;
+    }
+
     const firebaseUser = auth?.currentUser;
 
     if (!firebaseUser) {

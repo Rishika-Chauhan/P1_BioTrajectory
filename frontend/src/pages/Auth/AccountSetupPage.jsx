@@ -27,7 +27,7 @@ export default function AccountSetupPage() {
 
   return (
     <div className="min-h-[85vh] flex items-center justify-center px-4 py-12">
-      <div className="max-w-xl w-full bg-white dark:bg-[#101827] border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-2xl space-y-6 relative overflow-hidden">
+      <div className="max-w-xl w-full bg-white dark:bg-[#2B1E15] border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-2xl space-y-6 relative overflow-hidden">
         {/* Top Notice */}
         <div className="flex items-center gap-3 p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200">
           <HelpCircle className="w-6 h-6 shrink-0 text-cyan-500" />
@@ -50,7 +50,7 @@ export default function AccountSetupPage() {
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#070B14] border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#1F150E] border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
             <div className="flex justify-between py-1 border-b border-slate-200 dark:border-slate-800">
               <span className="text-slate-500">Authenticated Email:</span>
               <span className="font-semibold text-slate-800 dark:text-slate-200">{currentUser?.email}</span>
@@ -69,10 +69,10 @@ export default function AccountSetupPage() {
           <div className="p-4 rounded-2xl bg-teal-50/60 dark:bg-teal-950/20 border border-teal-200/60 dark:border-teal-800/40 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-teal-900 dark:text-teal-200 flex items-center gap-1.5">
-                <Activity className="w-3.5 h-3.5 text-[#00685f]" />
+                <Activity className="w-3.5 h-3.5 text-[#2672A8]" />
                 <span>Health Profile &amp; Informed Consent Setup</span>
               </span>
-              <span className="text-[10px] font-mono font-semibold text-[#00685f] dark:text-[#6bd8cb] bg-teal-100 dark:bg-teal-900/40 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-mono font-semibold text-[#2672A8] dark:text-[#A9D6F5] bg-teal-100 dark:bg-teal-900/40 px-2 py-0.5 rounded-full">
                 7-Step Guided Flow
               </span>
             </div>
@@ -82,7 +82,7 @@ export default function AccountSetupPage() {
             <button
               type="button"
               onClick={() => setIsProfileModalOpen(true)}
-              className="w-full py-2.5 px-3 rounded-xl bg-[#00685f] hover:bg-[#008378] text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs"
+              className="w-full py-2.5 px-3 rounded-xl bg-[#A9D6F5] hover:bg-[#7CBFEA] text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>Complete My Health Profile Setup</span>

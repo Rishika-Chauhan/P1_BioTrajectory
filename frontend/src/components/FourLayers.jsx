@@ -42,7 +42,7 @@ export default function FourLayers() {
                 key={layer.number}
                 className={`group relative rounded-2xl p-6 border transition-all duration-300 flex flex-col justify-between shadow-lg ${
                   isDark
-                    ? 'bg-gradient-to-b from-[#0b1222] to-[#070b14] border-white/10 hover:border-amber-400/40 shadow-[0_10px_30px_rgba(0,0,0,0.6)]'
+                    ? 'bg-gradient-to-b from-[#0b1222] to-[#1F150E] border-white/10 hover:border-amber-400/40 shadow-[0_10px_30px_rgba(0,0,0,0.6)]'
                     : 'bg-white border-amber-900/10 hover:border-amber-400 shadow-[0_10px_25px_rgba(0,0,0,0.03)]'
                 }`}
               >

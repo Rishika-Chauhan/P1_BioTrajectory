@@ -23,18 +23,40 @@ export default function DoctorNewPrescriptionPage() {
 
   const patientId = searchParams.get('patientId') || 'p_01';
   const patientName = searchParams.get('name') || 'Rahul Sharma';
+  const queryMed = searchParams.get('medName') || searchParams.get('med');
+  const queryStrength = searchParams.get('strength') || '';
+  const queryForm = searchParams.get('form') || 'Tablet';
+  const queryFreq = searchParams.get('freq') || 'Once Daily';
+  const queryTiming = searchParams.get('timing') || 'Morning after meals';
+  const queryDuration = searchParams.get('duration') || '14 Days';
+  const queryDisease = searchParams.get('disease') || '';
+  const queryNotes = searchParams.get('notes') || (queryDisease ? `Guideline-directed therapy for ${queryDisease}.` : 'Take as directed with water.');
 
-  const [medicines, setMedicines] = useState([
-    {
-      name: 'Telmisartan',
-      strength: '40mg',
-      dosageForm: 'Tablet',
-      frequency: 'Once Daily',
-      timing: 'Morning after breakfast',
-      duration: '30 Days',
-      instructions: 'Take with a glass of water at the same time each morning.',
-    },
-  ]);
+  const [medicines, setMedicines] = useState(
+    queryMed
+      ? [
+          {
+            name: queryMed,
+            strength: queryStrength,
+            dosageForm: queryForm,
+            frequency: queryFreq,
+            timing: queryTiming,
+            duration: queryDuration,
+            instructions: queryNotes,
+          },
+        ]
+      : [
+          {
+            name: 'Telmisartan',
+            strength: '40mg',
+            dosageForm: 'Tablet',
+            frequency: 'Once Daily',
+            timing: 'Morning after breakfast',
+            duration: '30 Days',
+            instructions: 'Take with a glass of water at the same time each morning.',
+          },
+        ]
+  );
 
   const [dietAdvice, setDietAdvice] = useState('Maintain low sodium (<2g per day). Avoid processed foods and deep fried snacks.');
   const [nextReview, setNextReview] = useState('14 days');

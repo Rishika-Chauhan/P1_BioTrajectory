@@ -74,13 +74,13 @@ export default function ExplorePage() {
       const matchesSearch =
         !q ||
         disease.name.toLowerCase().includes(q) ||
-        localized.name.toLowerCase().includes(q) ||
+        localized?.name?.toLowerCase().includes(q) ||
         (disease.medicalName && disease.medicalName.toLowerCase().includes(q)) ||
-        (localized.medicalName && localized.medicalName.toLowerCase().includes(q)) ||
-        disease.shortDescription.toLowerCase().includes(q) ||
-        localized.shortDescription.toLowerCase().includes(q) ||
-        disease.signsYouMayNotice.some(s => s.toLowerCase().includes(q)) ||
-        localized.signsYouMayNotice.some(s => s.toLowerCase().includes(q));
+        (localized?.medicalName && localized.medicalName.toLowerCase().includes(q)) ||
+        (disease.shortDescription && disease.shortDescription.toLowerCase().includes(q)) ||
+        (localized?.shortDescription && localized.shortDescription.toLowerCase().includes(q)) ||
+        (Array.isArray(disease.signsYouMayNotice) && disease.signsYouMayNotice.some(s => s?.toLowerCase().includes(q))) ||
+        (Array.isArray(localized?.signsYouMayNotice) && localized.signsYouMayNotice.some(s => s?.toLowerCase().includes(q)));
 
       return matchesPrimary && matchesSub && matchesSearch;
     });

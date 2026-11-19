@@ -33,7 +33,7 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 w-full backdrop-blur-2xl border-b transition-colors duration-300 border-slate-200/70 dark:border-slate-800/70 bg-[#F5F8FC]/80 dark:bg-[#070B14]/85">
+    <nav className="sticky top-0 z-50 w-full backdrop-blur-2xl border-b transition-colors duration-300 border-slate-200/70 dark:border-slate-800/70 bg-[#F6F0E4]/80 dark:bg-[#1F150E]/85">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           
@@ -134,7 +134,7 @@ export default function Navbar() {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-slate-200 dark:border-slate-800 bg-[#F5F8FC]/95 dark:bg-[#070B14]/95 backdrop-blur-xl px-5 pt-4 pb-6 space-y-4">
+        <div className="md:hidden border-b border-slate-200 dark:border-slate-800 bg-[#F6F0E4]/95 dark:bg-[#1F150E]/95 backdrop-blur-xl px-5 pt-4 pb-6 space-y-4">
           <div className="flex justify-center pb-2 border-b border-slate-200/60 dark:border-slate-800/60">
             <LanguageSwitcher />
           </div>

@@ -43,7 +43,7 @@ export default function SystemArchitecture() {
 
   return (
     <section
-      className={`relative py-20 border-t transition-colors ${isDark ? 'bg-[#070b14] border-slate-800' : 'bg-[#faf8ff] border-slate-200'
+      className={`relative py-20 border-t transition-colors ${isDark ? 'bg-[#1F150E] border-slate-800' : 'bg-[#faf8ff] border-slate-200'
         }`}
       id="architecture"
     >
@@ -53,8 +53,8 @@ export default function SystemArchitecture() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-6 border-b border-slate-200 dark:border-slate-800">
           <div className="max-w-2xl">
             <div className="flex items-center gap-2 mb-2">
-              <span className="w-2 h-2 rounded-full bg-[#00685f]"></span>
-              <span className="text-[11px] font-mono uppercase tracking-wider font-bold text-[#00685f] dark:text-[#6bd8cb]">
+              <span className="w-2 h-2 rounded-full bg-[#A9D6F5]"></span>
+              <span className="text-[11px] font-mono uppercase tracking-wider font-bold text-[#2672A8] dark:text-[#A9D6F5]">
                 Deterministic Architecture & Data Isolation
               </span>
             </div>
@@ -67,7 +67,7 @@ export default function SystemArchitecture() {
           </div>
 
           <div className="p-4 rounded-2xl border text-xs max-w-md self-start md:self-auto shrink-0 bg-white dark:bg-[#0d1526] border-slate-200 dark:border-slate-800 shadow-sm">
-            <strong className="font-bold block mb-1 text-[#00685f] dark:text-[#6bd8cb] font-mono uppercase text-[10px]">
+            <strong className="font-bold block mb-1 text-[#2672A8] dark:text-[#A9D6F5] font-mono uppercase text-[10px]">
               Core Architecture Guarantee
             </strong>
             <p className="text-slate-600 dark:text-slate-400">
@@ -83,7 +83,7 @@ export default function SystemArchitecture() {
           }`}>
           <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
             <div>
-              <span className="text-xs font-mono uppercase font-semibold text-[#00685f] dark:text-[#6bd8cb]">
+              <span className="text-xs font-mono uppercase font-semibold text-[#2672A8] dark:text-[#A9D6F5]">
                 Deterministic Data Flow Pipeline
               </span>
               <h3 className="text-xl sm:text-2xl font-bold mt-1 text-slate-900 dark:text-white">
@@ -98,7 +98,7 @@ export default function SystemArchitecture() {
                 disabled={isRunningPipeline}
                 className={`px-4 py-2.5 rounded-xl text-xs font-bold font-mono uppercase flex items-center space-x-2 transition-all shadow-sm ${isRunningPipeline
                   ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
-                  : 'bg-[#00685f] hover:bg-[#008378] text-white'
+                  : 'bg-[#A9D6F5] hover:bg-[#7CBFEA] text-white'
                   }`}
               >
                 <Play className="w-3.5 h-3.5" />
@@ -127,8 +127,8 @@ export default function SystemArchitecture() {
                   onClick={() => setActiveStageIndex(idx)}
                   className={`p-3.5 rounded-2xl text-left border transition-all flex flex-col justify-between ${isSelected
                     ? isDark
-                      ? 'bg-[#00685f]/20 border-[#00685f] shadow-sm ring-1 ring-[#00685f]/50'
-                      : 'bg-[#00685f]/10 border-[#00685f] shadow-sm ring-1 ring-[#00685f]/30'
+                      ? 'bg-[#A9D6F5]/20 border-[#A9D6F5] shadow-sm ring-1 ring-[#A9D6F5]/50'
+                      : 'bg-[#A9D6F5]/10 border-[#A9D6F5] shadow-sm ring-1 ring-[#A9D6F5]/30'
                     : isDark
                       ? 'bg-slate-900/50 border-slate-800 hover:bg-slate-800/60 text-slate-400'
                       : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
@@ -136,7 +136,7 @@ export default function SystemArchitecture() {
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isSelected
-                      ? 'bg-[#00685f] text-white font-bold'
+                      ? 'bg-[#A9D6F5] text-[#1F150E] font-bold font-bold'
                       : isDark ? 'bg-slate-800 text-slate-400' : 'bg-slate-200 text-slate-600'
                       }`}>
                       <Icon className="w-4 h-4" />
@@ -145,7 +145,7 @@ export default function SystemArchitecture() {
                   </div>
 
                   <div>
-                    <span className={`text-[10px] font-mono uppercase block font-semibold ${isSelected ? 'text-[#00685f] dark:text-[#6bd8cb]' : 'text-slate-500'
+                    <span className={`text-[10px] font-mono uppercase block font-semibold ${isSelected ? 'text-[#2672A8] dark:text-[#A9D6F5]' : 'text-slate-500'
                       }`}>
                       {stg.layer}
                     </span>
@@ -165,7 +165,7 @@ export default function SystemArchitecture() {
             {/* Left 6 Cols: Architectural Details & Deterministic Rules */}
             <div className={`lg:col-span-6 p-6 rounded-2xl border ${isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'
               }`}>
-              <div className="flex items-center space-x-2 text-xs font-mono uppercase text-[#00685f] dark:text-[#6bd8cb] font-bold mb-3">
+              <div className="flex items-center space-x-2 text-xs font-mono uppercase text-[#2672A8] dark:text-[#A9D6F5] font-bold mb-3">
                 <Code2 className="w-4 h-4" />
                 <span>Deterministic Processing Specifications</span>
               </div>
@@ -189,8 +189,8 @@ export default function SystemArchitecture() {
                   <strong className="text-[#006947] dark:text-[#6ffbbe]">{activeStage.algorithm}</strong>
                 </div>
 
-                <div className="p-3 rounded-xl bg-[#00685f]/15 border border-[#00685f]/30">
-                  <span className="block text-[10px] uppercase text-[#00685f] dark:text-[#6bd8cb] mb-1 font-bold">Clinical Safety Mandate:</span>
+                <div className="p-3 rounded-xl bg-[#A9D6F5]/15 border border-[#A9D6F5]/30">
+                  <span className="block text-[10px] uppercase text-[#2672A8] dark:text-[#A9D6F5] mb-1 font-bold">Clinical Safety Mandate:</span>
                   <p className="text-slate-800 dark:text-slate-200 font-sans text-xs">{activeStage.deterministicRule}</p>
                 </div>
               </div>
@@ -207,7 +207,7 @@ export default function SystemArchitecture() {
                 <span className="text-[10px] text-slate-500">Stage {activeStage.stage} Output</span>
               </div>
 
-              <pre className="p-4 rounded-xl bg-black/70 border border-white/10 text-xs font-mono text-[#6bd8cb] overflow-x-auto leading-relaxed">
+              <pre className="p-4 rounded-xl bg-black/70 border border-white/10 text-xs font-mono text-[#A9D6F5] overflow-x-auto leading-relaxed">
                 {JSON.stringify(activeStage.samplePayload, null, 2)}
               </pre>
 
@@ -230,10 +230,10 @@ export default function SystemArchitecture() {
             {PDF_TECH_STACK.map((tech) => (
               <div
                 key={tech.title}
-                className={`p-5 rounded-2xl border transition-all ${isDark ? 'bg-[#0d1526] border-slate-800 hover:border-[#00685f]/40' : 'bg-white border-slate-200 hover:border-[#00685f]/30 shadow-xs'
+                className={`p-5 rounded-2xl border transition-all ${isDark ? 'bg-[#0d1526] border-slate-800 hover:border-[#A9D6F5]/40' : 'bg-white border-slate-200 hover:border-[#A9D6F5]/30 shadow-xs'
                   }`}
               >
-                <span className="text-[10px] font-mono uppercase font-bold px-2 py-0.5 rounded border mb-3 inline-block bg-[#00685f]/10 text-[#00685f] dark:text-[#6bd8cb] border-[#00685f]/25">
+                <span className="text-[10px] font-mono uppercase font-bold px-2 py-0.5 rounded border mb-3 inline-block bg-[#A9D6F5]/10 text-[#2672A8] dark:text-[#A9D6F5] border-[#A9D6F5]/25">
                   {tech.category}
                 </span>
 

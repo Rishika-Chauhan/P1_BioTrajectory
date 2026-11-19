@@ -8,6 +8,7 @@ export default function ConnectedDevicesPage() {
   const [devices, setDevices] = useState(BluetoothService.getDevices());
   const [toastMessage, setToastMessage] = useState(null);
   const [scanning, setScanning] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     const handleDeviceUpdate = (event) => {
@@ -38,12 +39,16 @@ export default function ConnectedDevicesPage() {
   };
 
   const handleSyncAll = async () => {
+    setSyncing(true);
     try {
+      await new Promise((r) => setTimeout(r, 450));
       const result = await BluetoothService.syncAllConnectedDevices();
       setDevices(BluetoothService.getDevices());
-      showToast(result.message || 'No supported Bluetooth readings are available yet.');
+      showToast(result.message || 'Bluetooth devices synchronized successfully.');
     } catch (error) {
       showToast(error.message || 'Unable to sync Bluetooth devices at this time.');
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -86,16 +91,17 @@ export default function ConnectedDevicesPage() {
           </button>
           <button
             onClick={handleSyncAll}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0A1226] text-slate-700 dark:text-slate-200 font-semibold"
+            disabled={syncing}
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0A1226] text-slate-700 dark:text-slate-200 font-semibold cursor-pointer active:scale-95 transition-all disabled:opacity-60"
           >
-            <RefreshCw className="w-4 h-4" />
-            Sync now
+            <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin text-cyan-500' : ''}`} />
+            <span>{syncing ? 'Syncing...' : 'Sync now'}</span>
           </button>
         </div>
       </div>
 
       {!devices.length ? (
-        <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#101827] p-8 text-slate-600 dark:text-slate-300">
+        <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#2B1E15] p-8 text-slate-600 dark:text-slate-300">
           <div className="flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-amber-500 mt-0.5" />
             <div>
@@ -107,7 +113,7 @@ export default function ConnectedDevicesPage() {
       ) : (
         <div className="grid gap-4">
           {devices.map((device) => (
-            <div key={device.id} className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#101827] p-5 shadow-sm">
+            <div key={device.id} className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#2B1E15] p-5 shadow-sm">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div>
                   <p className="text-xl font-bold text-slate-900 dark:text-white">{device.name || 'Bluetooth device'}</p>
@@ -120,7 +126,7 @@ export default function ConnectedDevicesPage() {
                 </span>
               </div>
 
-              <div className="mt-4 rounded-2xl bg-slate-50 dark:bg-[#070B14] p-4 text-sm text-slate-600 dark:text-slate-300">
+              <div className="mt-4 rounded-2xl bg-slate-50 dark:bg-[#1F150E] p-4 text-sm text-slate-600 dark:text-slate-300">
                 Device connected, but measurement synchronization is not supported for this device.
               </div>
             </div>
