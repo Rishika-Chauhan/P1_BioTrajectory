@@ -1,870 +1,1705 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+
 import {
-  Users,
-  Heart,
-  Activity,
-  Droplet,
-  ShieldCheck,
-  CheckCircle2,
-  Clock,
-  AlertTriangle,
-  Plus,
-  Trash2,
-  Zap,
-  Eye,
-  ArrowRight,
-  UserCheck,
-  FileText,
-  Stethoscope,
-  X,
-  Phone,
-  RefreshCw,
-  Lock,
-  ChevronRight,
-  Sparkles,
-  Pill
+  Users, UserPlus, ShieldCheck, Activity, Lock, RefreshCw,
+  Trash2, LogOut, XCircle, CheckCircle2, Heart, AlertCircle,
+  Mail, Eye, FileText, BarChart3, Stethoscope, Loader2,
+  Plus, Clock, Check, X, TrendingUp, Droplets, Footprints,
+  HeartPulse, CalendarDays, ChevronDown
 } from 'lucide-react';
+
 import { useLanguage } from '../../context/LanguageContext';
+import { useFamily } from '../../context/FamilyContext';
 import { useAuth } from '../../context/AuthContext';
-import { familyHealthService } from '../../services/familyHealthService';
 import DisclaimerBanner from '../../components/common/DisclaimerBanner';
+
+const PERMISSION_FIELDS = [
+  {
+    key: 'viewReadings',
+    label: 'Health readings',
+    description: 'Allow family members to view your recorded health measurements.',
+    icon: Activity,
+  },
+  {
+    key: 'viewAnalytics',
+    label: 'Health analytics',
+    description: 'Allow access to your health analytics.',
+    icon: BarChart3,
+  },
+  {
+    key: 'viewMedicalHistory',
+    label: 'Medical history',
+    description: 'Allow access to your medical history.',
+    icon: Stethoscope,
+  },
+  {
+    key: 'viewReports',
+    label: 'Health reports',
+    description: 'Allow access to your health reports.',
+    icon: FileText,
+  },
+];
+
+const METRICS = {
+  heart_rate: {
+    title: 'Heart Rate',
+    unit: 'bpm',
+    field: 'bpm',
+    icon: HeartPulse,
+    color: '#E45D70',
+  },
+  oxygen_saturation: {
+    title: 'Oxygen Saturation',
+    unit: '%',
+    field: 'spo2',
+    icon: Droplets,
+    color: '#3988D6',
+  },
+  activity: {
+    title: 'Daily Steps',
+    unit: 'steps',
+    field: 'steps',
+    icon: Footprints,
+    color: '#269D78',
+  },
+  blood_pressure: {
+    title: 'Systolic Pressure',
+    unit: 'mmHg',
+    field: 'systolic',
+    icon: Activity,
+    color: '#9B72CF',
+  },
+};
+
+const FIELD_LABELS = {
+  systolic: 'Systolic pressure',
+  diastolic: 'Diastolic pressure',
+  pulse: 'Pulse',
+  bpm: 'Heart rate',
+  spo2: 'Oxygen saturation',
+  steps: 'Steps',
+  distanceKm: 'Distance',
+  exerciseMinutes: 'Exercise duration',
+  glucose: 'Glucose',
+  fastingGlucose: 'Fasting glucose',
+  hba1c: 'HbA1c',
+  protein: 'Urine protein',
+  proteinMgDl: 'Urine protein',
+  ph: 'Urine pH',
+  specificGravity: 'Specific gravity',
+  nitrites: 'Nitrites',
+  hemoglobin: 'Hemoglobin',
+  hematocrit: 'Hematocrit',
+  wbc: 'White blood cells',
+  rbc: 'Red blood cells',
+  platelets: 'Platelets',
+  creatinine: 'Creatinine',
+  totalCholesterol: 'Total cholesterol',
+  hdl: 'HDL cholesterol',
+  ldl: 'LDL cholesterol',
+  triglycerides: 'Triglycerides',
+  title: 'Title',
+  category: 'Category',
+  doctorName: 'Doctor',
+  facility: 'Facility',
+  scanType: 'Scan type',
+  region: 'Region',
+  modality: 'Modality',
+  findings: 'Findings',
+  impression: 'Impression',
+  diagnosis: 'Diagnosis',
+  instructions: 'Instructions',
+  chiefComplaint: 'Chief complaint',
+  assessment: 'Assessment',
+  recommendations: 'Recommendations',
+  testSummary: 'Test summary',
+  fileName: 'File name',
+  fileType: 'File type',
+};
+
+const FIELD_UNITS = {
+  systolic: 'mmHg',
+  diastolic: 'mmHg',
+  pulse: 'bpm',
+  bpm: 'bpm',
+  spo2: '%',
+  steps: 'steps',
+  distanceKm: 'km',
+  exerciseMinutes: 'min',
+  glucose: 'mg/dL',
+  fastingGlucose: 'mg/dL',
+  proteinMgDl: 'mg/dL',
+  hemoglobin: 'g/dL',
+  hematocrit: '%',
+  wbc: '/mcL',
+  rbc: 'M/mcL',
+  platelets: '/mcL',
+  creatinine: 'mg/dL',
+  totalCholesterol: 'mg/dL',
+  hdl: 'mg/dL',
+  ldl: 'mg/dL',
+  triglycerides: 'mg/dL',
+};
+
+const TYPE_LABELS = {
+  blood_pressure: 'Blood Pressure',
+  heart_rate: 'Heart Rate',
+  oxygen_saturation: 'Oxygen Saturation',
+  activity: 'Physical Activity',
+  urine_test: 'Urine Test',
+  blood_test: 'Blood Test',
+  imaging_scan: 'Imaging Scan',
+  prescription: 'Prescription',
+  clinical_note: 'Clinical Note',
+  document: 'Medical Document',
+};
+
+function getDateValue(reading) {
+  return (
+    reading?.measuredAt ||
+    reading?.recordedAt ||
+    reading?.timestamp ||
+    reading?.createdAt ||
+    reading?.date ||
+    null
+  );
+}
+
+function parseDate(value) {
+  if (!value) return null;
+
+  let date;
+
+  if (value?.toDate && typeof value.toDate === 'function') {
+    date = value.toDate();
+  } else if (value?._seconds) {
+    date = new Date(value._seconds * 1000);
+  } else {
+    date = new Date(value);
+  }
+
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatDate(value) {
+  const date = parseDate(value);
+  if (!date) return 'Date unavailable';
+
+  return date.toLocaleString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function getValues(reading) {
+  return reading?.values && typeof reading.values === 'object'
+    ? reading.values
+    : {};
+}
+
+function getTypeLabel(type) {
+  return TYPE_LABELS[type] || 'Health Record';
+}
+
+function getMetricValue(reading, metric) {
+  const values = getValues(reading);
+  const value = values[metric.field];
+
+  return typeof value === 'number' && Number.isFinite(value)
+    ? value
+    : null;
+}
+
+function getLatestReading(readings, type) {
+  return [...readings]
+    .filter((reading) => reading.type === type)
+    .sort((a, b) => {
+      const dateA = parseDate(getDateValue(a))?.getTime() || 0;
+      const dateB = parseDate(getDateValue(b))?.getTime() || 0;
+      return dateB - dateA;
+    })[0] || null;
+}
+
+function formatMetricValue(value, unit) {
+  if (value === null || value === undefined) return 'Not available';
+
+  return `${Number(value).toLocaleString('en-IN')} ${unit}`;
+}
+
+function getDisplayValue(key, value) {
+  if (value === null || value === undefined) return 'Not available';
+
+  if (typeof value === 'object') {
+    if (Array.isArray(value)) {
+      return value.map((item) =>
+        typeof item === 'object' ? JSON.stringify(item) : String(item)
+      ).join(', ');
+    }
+
+    return JSON.stringify(value);
+  }
+
+  const unit = FIELD_UNITS[key] || '';
+  return `${value}${unit ? ` ${unit}` : ''}`;
+}
+
+/* --------------------------------------------------
+   HEALTH SUMMARY CARD
+-------------------------------------------------- */
+
+function SummaryCard({ title, value, subtitle, icon: Icon, color }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1F150E] p-5 shadow-sm">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            {title}
+          </p>
+          <p className="text-2xl font-extrabold text-slate-900 dark:text-white mt-2">
+            {value}
+          </p>
+          <p className="text-xs text-slate-500 mt-1">{subtitle}</p>
+        </div>
+
+        <div
+          className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+          style={{ backgroundColor: `${color}18`, color }}
+        >
+          <Icon className="w-6 h-6" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* --------------------------------------------------
+   SVG TREND CHART
+-------------------------------------------------- */
+
+function TrendChart({ readings, type }) {
+  const metric = METRICS[type];
+
+  if (!metric) return null;
+
+  const points = readings
+    .filter((reading) => reading.type === type)
+    .map((reading) => ({
+      value: getMetricValue(reading, metric),
+      date: parseDate(getDateValue(reading)),
+    }))
+    .filter((item) => item.value !== null && item.date)
+    .sort((a, b) => a.date - b.date)
+    .slice(-12);
+
+  if (points.length < 2) {
+    return (
+      <div className="p-6 rounded-xl bg-slate-50 dark:bg-slate-800/40 text-center">
+        <p className="text-sm text-slate-500">
+          At least two readings are needed to display this trend.
+        </p>
+      </div>
+    );
+  }
+
+  const width = 600;
+  const height = 210;
+  const padding = 35;
+
+  const values = points.map((point) => point.value);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+
+  const coordinates = points.map((point, index) => ({
+    x: padding + (index / (points.length - 1)) * (width - padding * 2),
+    y: height - padding -
+      ((point.value - min) / range) * (height - padding * 2),
+    ...point,
+  }));
+
+  const line = coordinates
+    .map((point) => `${point.x},${point.y}`)
+    .join(' ');
+
+  const area = [
+    `${coordinates[0].x},${height - padding}`,
+    ...coordinates.map((point) => `${point.x},${point.y}`),
+    `${coordinates[coordinates.length - 1].x},${height - padding}`,
+  ].join(' ');
+
+  return (
+    <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 bg-white dark:bg-[#1F150E]">
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div>
+          <h3 className="font-bold text-slate-900 dark:text-white">
+            {metric.title}
+          </h3>
+          <p className="text-xs text-slate-500 mt-1">
+            Last {points.length} available readings
+          </p>
+        </div>
+
+        <span className="text-sm font-bold" style={{ color: metric.color }}>
+          {formatMetricValue(points[points.length - 1].value, metric.unit)}
+        </span>
+      </div>
+
+      <div className="w-full overflow-hidden">
+        <svg
+          viewBox={`0 0 ${width} ${height}`}
+          className="w-full h-auto"
+          role="img"
+          aria-label={`${metric.title} trend chart`}
+        >
+          {[0, 1, 2, 3].map((index) => {
+            const y = padding + index * ((height - padding * 2) / 3);
+
+            return (
+              <line
+                key={index}
+                x1={padding}
+                y1={y}
+                x2={width - padding}
+                y2={y}
+                stroke="currentColor"
+                opacity="0.12"
+                strokeDasharray="4 4"
+              />
+            );
+          })}
+
+          <polygon
+            points={area}
+            fill={metric.color}
+            opacity="0.10"
+          />
+
+          <polyline
+            points={line}
+            fill="none"
+            stroke={metric.color}
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+
+          {coordinates.map((point, index) => (
+            <g key={`${point.x}-${index}`}>
+              <circle
+                cx={point.x}
+                cy={point.y}
+                r="5"
+                fill={metric.color}
+                stroke="white"
+                strokeWidth="2"
+              />
+              <title>
+                {formatMetricValue(point.value, metric.unit)} — {formatDate(point.date)}
+              </title>
+            </g>
+          ))}
+
+          <text
+            x={padding}
+            y={height - 7}
+            fill="currentColor"
+            fontSize="11"
+            opacity="0.65"
+          >
+            {points[0].date.toLocaleDateString('en-IN', {
+              day: 'numeric',
+              month: 'short',
+            })}
+          </text>
+
+          <text
+            x={width - padding}
+            y={height - 7}
+            textAnchor="end"
+            fill="currentColor"
+            fontSize="11"
+            opacity="0.65"
+          >
+            {points[points.length - 1].date.toLocaleDateString('en-IN', {
+              day: 'numeric',
+              month: 'short',
+            })}
+          </text>
+        </svg>
+      </div>
+
+      <div className="flex justify-between text-xs text-slate-500 mt-2">
+        <span>Lowest: {formatMetricValue(min, metric.unit)}</span>
+        <span>Highest: {formatMetricValue(max, metric.unit)}</span>
+      </div>
+    </div>
+  );
+}
+
+/* --------------------------------------------------
+   READABLE HEALTH RECORD CARD
+-------------------------------------------------- */
+
+function ReadingCard({ reading }) {
+  const values = getValues(reading);
+
+  const visibleEntries = Object.entries(values).filter(
+    ([, value]) =>
+      value !== null &&
+      value !== undefined &&
+      typeof value !== 'object'
+  );
+
+  const extraEntries = Object.entries(values).filter(
+    ([, value]) =>
+      value !== null &&
+      value !== undefined &&
+      typeof value === 'object'
+  );
+
+  return (
+    <article className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1F150E] p-5 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
+        <div>
+          <h3 className="font-extrabold text-slate-900 dark:text-white">
+            {getTypeLabel(reading.type)}
+          </h3>
+
+          {values.title && (
+            <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
+              {values.title}
+            </p>
+          )}
+
+          <p className="text-xs text-slate-500 mt-2 flex items-center gap-1">
+            <CalendarDays className="w-3.5 h-3.5" />
+            {formatDate(getDateValue(reading))}
+          </p>
+        </div>
+
+        <span className="self-start px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-bold">
+          {reading.source || 'Recorded'}
+        </span>
+      </div>
+
+      {visibleEntries.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {visibleEntries.map(([key, value]) => (
+            <div
+              key={key}
+              className="rounded-xl bg-slate-50 dark:bg-slate-800/60 p-3"
+            >
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {FIELD_LABELS[key] || key}
+              </p>
+
+              <p className="text-base font-bold text-slate-900 dark:text-white mt-1 break-words">
+                {getDisplayValue(key, value)}
+              </p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-slate-500">
+          No individual measurement values are available.
+        </p>
+      )}
+
+      {extraEntries.map(([key, value]) => (
+        <div key={key} className="mt-3">
+          <p className="text-xs text-slate-500 mb-1">
+            {FIELD_LABELS[key] || key}
+          </p>
+          <pre className="whitespace-pre-wrap break-words text-xs bg-slate-50 dark:bg-slate-800/60 p-3 rounded-lg text-slate-700 dark:text-slate-300">
+            {JSON.stringify(value, null, 2)}
+          </pre>
+        </div>
+      ))}
+
+      {reading.notes && (
+        <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700">
+          <p className="text-xs font-bold text-slate-500 mb-1">Notes</p>
+          <p className="text-sm text-slate-700 dark:text-slate-300">
+            {reading.notes}
+          </p>
+        </div>
+      )}
+    </article>
+  );
+}
+
+/* --------------------------------------------------
+   RECENT READINGS TABLE
+-------------------------------------------------- */
+
+function ReadingsTable({ readings }) {
+  return (
+    <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+      <table className="w-full text-sm text-left">
+        <thead className="bg-slate-50 dark:bg-slate-800/70">
+          <tr>
+            <th className="p-3 font-bold">Date</th>
+            <th className="p-3 font-bold">Record</th>
+            <th className="p-3 font-bold">Main result</th>
+            <th className="p-3 font-bold">Source</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {readings.slice(0, 20).map((reading, index) => {
+            const values = getValues(reading);
+
+            const mainResult = Object.entries(values).find(
+              ([, value]) =>
+                value !== null &&
+                value !== undefined &&
+                typeof value !== 'object'
+            );
+
+            return (
+              <tr
+                key={reading.id || index}
+                className="border-t border-slate-200 dark:border-slate-700"
+              >
+                <td className="p-3 whitespace-nowrap text-slate-500">
+                  {formatDate(getDateValue(reading))}
+                </td>
+
+                <td className="p-3 font-semibold text-slate-900 dark:text-white">
+                  {getTypeLabel(reading.type)}
+                </td>
+
+                <td className="p-3 text-slate-700 dark:text-slate-300">
+                  {mainResult
+                    ? `${FIELD_LABELS[mainResult[0]] || mainResult[0]}: ${getDisplayValue(mainResult[0], mainResult[1])}`
+                    : 'Details available in record'}
+                </td>
+
+                <td className="p-3 text-slate-500">
+                  {reading.source || 'Recorded'}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/* --------------------------------------------------
+   MAIN FAMILY HEALTH PAGE
+-------------------------------------------------- */
 
 export default function FamilyHealthPage() {
   const { isHindi } = useLanguage();
   const { currentUser } = useAuth();
 
-  const [members, setMembers] = useState(() => familyHealthService.getMembers());
-  const [activeProfileId, setActiveProfileId] = useState(() => familyHealthService.getActiveProfileId());
-  const [filter, setFilter] = useState('all'); // 'all', 'approved', 'pending'
-  const [selectedMemberModal, setSelectedMemberModal] = useState(null);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [toastMessage, setToastMessage] = useState(null);
-  const [isApprovingId, setIsApprovingId] = useState(null);
+  const {
+    family,
+    members,
+    invitations,
+    pendingInvitations,
+    pendingInvitationsLoading,
+    pendingInvitationsError,
+    isOwner,
+    myPermissions,
+    loading,
+    error,
+    activeMember,
+    activeMemberUid,
+    activeMemberReadings,
+    activeMemberPermissions,
+    activeMemberLoading,
+    activeMemberError,
+    fetchFamily,
+    fetchPendingInvitations,
+    createFamily,
+    inviteMember,
+    acceptInvitation,
+    rejectInvitation,
+    revokeInvitation,
+    removeMember,
+    leaveFamily,
+    disbandFamily,
+    updateMyPermissions,
+    selectMemberProfile,
+    clearActiveMember,
+  } = useFamily();
 
-  // New Member Form State
-  const [newMember, setNewMember] = useState({
-    name: '',
-    relationship: 'Parent',
-    relationshipHi: 'माता/पिता',
-    age: '',
-    gender: 'Male',
-    bloodGroup: 'O+',
-    primaryCondition: '',
-    conditionStage: 'Mild',
-    instantApproval: true,
-    phone: '',
-    allergies: '',
-    medications: ''
-  });
+  const [familyName, setFamilyName] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [busyAction, setBusyAction] = useState('');
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('success');
+  const [showCreate, setShowCreate] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
+  const [selectedChart, setSelectedChart] = useState('heart_rate');
+  const [showAllReadings, setShowAllReadings] = useState(false);
 
-  useEffect(() => {
-    const unsub = familyHealthService.subscribe((updatedMembers, activeId) => {
-      setMembers(updatedMembers);
-      setActiveProfileId(activeId);
-    });
-    return unsub;
-  }, []);
+  const readingsSectionRef = useRef(null);
 
-  const showToast = (msg) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3800);
+  const hindi = (en, hi) => isHindi ? hi : en;
+
+  const showMessage = (text, type = 'success') => {
+    setMessage(text);
+    setMessageType(type);
   };
 
-  // 1-Click Instant Approval Handler
-  const handleOneClickApproval = (memberId, memberName) => {
-    setIsApprovingId(memberId);
-    setTimeout(() => {
-      const updated = familyHealthService.approveMemberAccess(memberId);
-      setMembers(updated);
-      setIsApprovingId(null);
-      showToast(
-        isHindi
-          ? `✓ 1-क्लिक स्वीकृति सफल! ${memberName} का स्वास्थ्य डेटा अब सक्रिय है।`
-          : `✓ 1-Click Approval Granted! You can now seamlessly access ${memberName}'s health data.`
-      );
-    }, 450);
-  };
+  const runAction = async (action, actionName = 'action') => {
+    setBusy(true);
+    setBusyAction(actionName);
+    setMessage('');
 
-  // Revoke Access Handler
-  const handleRevokeAccess = (memberId, memberName) => {
-    const updated = familyHealthService.revokeMemberAccess(memberId);
-    setMembers(updated);
-    showToast(
-      isHindi
-        ? `${memberName} का डेटा एक्सेस निरस्त (Revoked) कर दिया गया है।`
-        : `Health data access for ${memberName} has been revoked.`
-    );
-  };
-
-  // Switch Active Profile
-  const handleSwitchProfile = (memberId, memberName) => {
-    if (activeProfileId === memberId) {
-      familyHealthService.setActiveProfileId(null);
-      showToast(isHindi ? 'वापस अपने प्रोफाइल पर स्विच किया गया।' : 'Switched back to your personal health record (Alex Johnson).');
-    } else {
-      familyHealthService.setActiveProfileId(memberId);
-      showToast(
-        isHindi
-          ? `सफलतापूर्वक ${memberName} के प्रोफाइल पर स्विच किया गया!`
-          : `Active dashboard switched to ${memberName}'s health record!`
-      );
+    try {
+      return await action();
+    } catch (err) {
+      showMessage(err.message || 'Something went wrong.', 'error');
+      return null;
+    } finally {
+      setBusy(false);
+      setBusyAction('');
     }
   };
 
-  // Add Family Member Handler
-  const handleAddMember = (e) => {
-    e.preventDefault();
-    if (!newMember.name.trim()) return;
+  useEffect(() => {
+    if (activeMemberUid && activeMember) {
+      readingsSectionRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }
+  }, [activeMemberUid, activeMember]);
 
-    familyHealthService.addMember(newMember);
-    setShowAddModal(false);
-    showToast(
-      isHindi
-        ? `परिवार के नए सदस्य (${newMember.name}) को सफलतापूर्वक जोड़ा गया!`
-        : `Family member (${newMember.name}) added successfully with 1-click access!`
-    );
-    setNewMember({
-      name: '',
-      relationship: 'Parent',
-      relationshipHi: 'माता/पिता',
-      age: '',
-      gender: 'Male',
-      bloodGroup: 'O+',
-      primaryCondition: '',
-      conditionStage: 'Mild',
-      instantApproval: true,
-      phone: '',
-      allergies: '',
-      medications: ''
+  const readings = useMemo(() => {
+    return [...(activeMemberReadings || [])].sort((a, b) => {
+      const dateA = parseDate(getDateValue(a))?.getTime() || 0;
+      const dateB = parseDate(getDateValue(b))?.getTime() || 0;
+      return dateB - dateA;
     });
+  }, [activeMemberReadings]);
+
+  const latestHeartRate = getLatestReading(readings, 'heart_rate');
+  const latestSpo2 = getLatestReading(readings, 'oxygen_saturation');
+  const latestBP = getLatestReading(readings, 'blood_pressure');
+  const latestActivity = getLatestReading(readings, 'activity');
+
+  const heartRateValue = latestHeartRate
+    ? getMetricValue(latestHeartRate, METRICS.heart_rate)
+    : null;
+
+  const spo2Value = latestSpo2
+    ? getMetricValue(latestSpo2, METRICS.oxygen_saturation)
+    : null;
+
+  const systolic = latestBP?.values?.systolic;
+  const diastolic = latestBP?.values?.diastolic;
+
+  const stepsValue = latestActivity
+    ? getMetricValue(latestActivity, METRICS.activity)
+    : null;
+
+  const handleRefresh = async () => {
+    await Promise.all([fetchFamily(), fetchPendingInvitations()]);
+    showMessage('Family information refreshed.');
   };
 
-  // Delete Member
-  const handleDeleteMember = (memberId, name) => {
-    const updated = familyHealthService.deleteMember(memberId);
-    setMembers(updated);
-    showToast(`${name} removed from your Family Circle.`);
+  const handleCreateFamily = async (e) => {
+    e.preventDefault();
+
+    if (familyName.trim().length < 2) {
+      showMessage('Family name must contain at least 2 characters.', 'error');
+      return;
+    }
+
+    const result = await runAction(
+      () => createFamily(familyName.trim()),
+      'create'
+    );
+
+    if (result) {
+      setFamilyName('');
+      setShowCreate(false);
+      showMessage('Family created successfully.');
+    }
   };
 
-  const filteredMembers = members.filter((m) => {
-    if (filter === 'approved') return m.status === 'approved';
-    if (filter === 'pending') return m.status === 'pending';
-    return true;
-  });
+  const handleInvite = async (e) => {
+    e.preventDefault();
 
-  const activeFamilyMember = members.find((m) => m.id === activeProfileId);
-  const pendingCount = members.filter((m) => m.status === 'pending').length;
-  const approvedCount = members.filter((m) => m.status === 'approved').length;
+    if (!inviteEmail.trim()) {
+      showMessage('Enter the email address of the registered user.', 'error');
+      return;
+    }
+
+    const result = await runAction(
+      () => inviteMember(inviteEmail.trim()),
+      'invite'
+    );
+
+    if (result) {
+      setInviteEmail('');
+      setShowInvite(false);
+      showMessage('Invitation sent successfully.');
+    }
+  };
+
+  const handleAcceptInvitation = async (id) => {
+    const result = await runAction(
+      () => acceptInvitation(id),
+      `accept-${id}`
+    );
+
+    if (result) showMessage('You have joined the family successfully.');
+  };
+
+  const handleRejectInvitation = async (id) => {
+    const result = await runAction(
+      () => rejectInvitation(id),
+      `reject-${id}`
+    );
+
+    if (result) showMessage('Invitation rejected.');
+  };
+
+  const handlePermissionChange = async (key, checked) => {
+    const updated = { ...myPermissions, [key]: checked };
+
+    await runAction(
+      () => updateMyPermissions(updated),
+      'permissions'
+    );
+  };
+
+  const handleSelectMember = async (uid) => {
+    await runAction(() => selectMemberProfile(uid), 'readings');
+  };
+
+  const handleRemoveMember = async (uid) => {
+    const result = await runAction(
+      () => removeMember(uid),
+      'remove'
+    );
+
+    if (result) {
+      setConfirmAction(null);
+      showMessage('Family member removed.');
+    }
+  };
+
+  const handleLeaveFamily = async () => {
+    const result = await runAction(() => leaveFamily(), 'leave');
+
+    if (result) {
+      setConfirmAction(null);
+      showMessage('You have left the family.');
+    }
+  };
+
+  const handleDisbandFamily = async () => {
+    const result = await runAction(() => disbandFamily(), 'disband');
+
+    if (result) {
+      setConfirmAction(null);
+      showMessage('Family disbanded.');
+    }
+  };
+
+  const handleRevokeInvitation = async (id) => {
+    const result = await runAction(
+      () => revokeInvitation(id),
+      'revoke'
+    );
+
+    if (result) showMessage('Invitation revoked.');
+  };
+
+  const handleCloseReadings = () => {
+    clearActiveMember();
+    setShowAllReadings(false);
+  };
+
+  const formatFamilyDate = (value) => {
+    if (!value) return 'Not available';
+    return formatDate(value);
+  };
+
+  const isInvitationBusy = (id) => (
+    busyAction === `accept-${id}` ||
+    busyAction === `reject-${id}`
+  );
+
+  if (loading) {
+    return (
+      <div className="min-h-[50vh] flex items-center justify-center">
+        <div className="flex items-center gap-3 text-slate-600 dark:text-slate-300">
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <span>Loading family information...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-12">
+    <div className="max-w-7xl mx-auto space-y-7 pb-12">
       <DisclaimerBanner />
 
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 p-4 rounded-2xl bg-[#1F150E] text-[#F6F0E4] border border-[#A9D6F5]/40 shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-5">
-          <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-          <span className="text-xs sm:text-sm font-bold">{toastMessage}</span>
+      {message && (
+        <div
+          className={`p-4 rounded-2xl flex items-start gap-3 border ${
+            messageType === 'error'
+              ? 'bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300'
+              : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300'
+          }`}
+        >
+          {messageType === 'error'
+            ? <AlertCircle className="w-5 h-5 shrink-0" />
+            : <CheckCircle2 className="w-5 h-5 shrink-0" />
+          }
+
+          <p className="text-sm font-semibold flex-1">{message}</p>
+
+          <button onClick={() => setMessage('')}>
+            <XCircle className="w-5 h-5" />
+          </button>
         </div>
       )}
 
-      {/* Header & Quick Action */}
+      {error && (
+        <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-sm">
+          {error}
+        </div>
+      )}
+
+      {/* PAGE HEADER */}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-[#A9D6F5]/20 border border-[#A9D6F5]/40 flex items-center justify-center text-[#2672A8] dark:text-[#A9D6F5]">
-              <Users className="w-5 h-5" />
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-[#A9D6F5]/20 border border-[#A9D6F5]/40 flex items-center justify-center">
+              <Users className="w-6 h-6 text-[#2672A8] dark:text-[#A9D6F5]" />
             </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-              {isHindi ? 'परिवार स्वास्थ्य मंडल (Family Health Circle)' : 'Family Health Circle'}
+
+            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">
+              {hindi('Family Health Circle', 'परिवार स्वास्थ्य मंडल')}
             </h1>
           </div>
-          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 mt-1 max-w-3xl">
-            {isHindi
-              ? 'आसानी से अपने माता-पिता, जीवनसाथी और बच्चों के स्वास्थ्य रुझान और वाइटल्स देखें — केवल 1 स्वीकृति (1-Click Approval) के साथ।'
-              : 'Easily monitor, access, and protect your loved ones\' longitudinal health records and vital trajectories with seamless 1-Click Approval.'}
+
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+            Manage family membership and control access to your health information.
           </p>
         </div>
 
         <button
-          type="button"
-          onClick={() => setShowAddModal(true)}
-          className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#A9D6F5] hover:bg-[#7CBFEA] text-[#1F150E] font-black text-sm transition-all shadow-md shadow-[#A9D6F5]/20 cursor-pointer self-start sm:self-auto active:scale-95"
+          onClick={handleRefresh}
+          disabled={busy}
+          className="inline-flex items-center gap-2 px-4 py-3 rounded-xl border border-[#A9D6F5]/50 text-[#2672A8] dark:text-[#A9D6F5] font-bold text-sm hover:bg-[#A9D6F5]/10"
         >
-          <Plus className="w-4 h-4 stroke-[3]" />
-          <span>{isHindi ? '+ परिवार सदस्य जोड़ें' : '+ Add Family Member'}</span>
+          <RefreshCw className={`w-4 h-4 ${busy ? 'animate-spin' : ''}`} />
+          Refresh
         </button>
       </div>
 
-      {/* Active Family Profile Switcher Alert Banner */}
-      {activeFamilyMember && (
-        <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-blue-600/15 via-cyan-600/10 to-blue-600/5 border-2 border-blue-500/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg shadow-blue-500/10">
-          <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl overflow-hidden border border-blue-500/30 shrink-0">
-              <img src={activeFamilyMember.avatar} alt={activeFamilyMember.name} className="w-full h-full object-cover" />
+      {/* RECEIVED INVITATIONS */}
+
+      <section className="p-6 rounded-3xl bg-white dark:bg-[#1F150E] border border-[#A9D6F5]/50 space-y-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+              <Mail className="w-5 h-5 text-blue-500" />
             </div>
+
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded-full bg-blue-600 text-white">
-                  {isHindi ? 'सक्रिय परिवार प्रोफ़ाइल' : 'Active Family View'}
-                </span>
-                <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
-                  {activeFamilyMember.relationship} • {activeFamilyMember.age} yrs
-                </span>
-              </div>
-              <h3 className="text-lg font-extrabold text-slate-900 dark:text-white mt-0.5">
-                {isHindi ? `आप वर्तमान में ${activeFamilyMember.name} का स्वास्थ्य रिकॉर्ड देख रहे हैं` : `You are viewing ${activeFamilyMember.name}'s Health Records`}
-              </h3>
+              <h2 className="font-extrabold text-slate-900 dark:text-white">
+                Family Invitations
+              </h2>
+              <p className="text-xs text-slate-500">
+                Invitations received by your account
+              </p>
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => handleSwitchProfile(activeFamilyMember.id, activeFamilyMember.name)}
-            className="px-4 py-2.5 rounded-2xl bg-white dark:bg-[#1F150E] border border-blue-500/40 text-blue-700 dark:text-blue-300 font-bold text-xs sm:text-sm hover:bg-blue-50 dark:hover:bg-[#2B1E15] transition-all cursor-pointer whitespace-nowrap self-start sm:self-auto"
-          >
-            {isHindi ? 'वापस अपने रिकॉर्ड पर जाएं (Alex Johnson)' : 'Switch Back to My Record (Alex Johnson)'}
-          </button>
-        </div>
-      )}
-
-      {/* Quick Summary Metric Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525] shadow-xs space-y-1">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase tracking-wider">
-            <span>{isHindi ? 'कुल सदस्य' : 'Family Members'}</span>
-            <Users className="w-4 h-4 text-[#2672A8] dark:text-[#A9D6F5]" />
-          </div>
-          <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">{members.length}</p>
-          <span className="text-[11px] text-slate-500 font-medium">{isHindi ? 'परिवार मंडल में दर्ज' : 'Enrolled in Health Circle'}</span>
-        </div>
-
-        <div className="p-4 sm:p-5 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 shadow-xs space-y-1">
-          <div className="flex items-center justify-between text-emerald-800 dark:text-emerald-300 text-xs font-bold uppercase tracking-wider">
-            <span>{isHindi ? 'सक्रिय 1-क्लिक एक्सेस' : 'Approved & Active'}</span>
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
-          </div>
-          <p className="text-2xl sm:text-3xl font-black text-emerald-950 dark:text-emerald-100">{approvedCount}</p>
-          <span className="text-[11px] text-emerald-700 dark:text-emerald-300 font-semibold">{isHindi ? 'पूर्ण डेटा सुलभ' : 'Full Telemetry Access'}</span>
-        </div>
-
-        <div className={`p-4 sm:p-5 rounded-3xl border shadow-xs space-y-1 transition-all ${
-          pendingCount > 0
-            ? 'bg-amber-500/15 border-amber-500/40 ring-1 ring-amber-500/20'
-            : 'bg-white dark:bg-[#1F150E] border-[#E8DFD1] dark:border-[#4A3525]'
-        }`}>
-          <div className="flex items-center justify-between text-amber-800 dark:text-amber-300 text-xs font-bold uppercase tracking-wider">
-            <span>{isHindi ? 'लंबित 1-स्वीकृति' : 'Pending 1-Click'}</span>
-            <Zap className="w-4 h-4 text-amber-600 animate-pulse" />
-          </div>
-          <p className="text-2xl sm:text-3xl font-black text-amber-950 dark:text-amber-100">{pendingCount}</p>
-          <span className="text-[11px] text-amber-700 dark:text-amber-300 font-semibold">
-            {pendingCount > 0 ? (isHindi ? 'तुरंत 1-क्लिक करें' : '1 Click to grant access') : (isHindi ? 'सभी स्वीकृत' : 'All Approved')}
+          <span className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 text-xs font-bold">
+            {pendingInvitations.length} pending
           </span>
         </div>
 
-        <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525] shadow-xs space-y-1">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase tracking-wider">
-            <span>{isHindi ? 'दैनिक वाइटल सिंक' : 'Biometric Sync'}</span>
-            <Activity className="w-4 h-4 text-rose-500" />
+        {pendingInvitationsLoading ? (
+          <div className="flex items-center gap-2 text-sm text-slate-500">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Loading invitations...
           </div>
-          <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">Live</p>
-          <span className="text-[11px] text-emerald-600 font-semibold">✓ {isHindi ? 'क्लीनिकल ट्रैजेक्टरी सक्रिय' : 'Longitudinal Active'}</span>
-        </div>
-      </div>
-
-      {/* Pending 1-Click Approvals Highlight Section */}
-      {pendingCount > 0 && (
-        <div className="p-6 rounded-3xl bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-amber-500/5 border-2 border-amber-500/50 shadow-md space-y-4">
-          <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200">
-            <Zap className="w-5 h-5 text-amber-600 shrink-0" />
-            <h3 className="font-extrabold text-base sm:text-lg">
-              {isHindi ? 'त्वरित 1-क्लिक एक्सेस अनुरोध (Action Required: 1-Click Approval)' : 'Pending Family Health Data Access: 1-Click Approval Ready'}
-            </h3>
+        ) : pendingInvitationsError ? (
+          <div className="text-sm text-rose-500">
+            {pendingInvitationsError}
           </div>
-          <p className="text-xs sm:text-sm text-amber-900/80 dark:text-amber-200/90 leading-relaxed">
-            {isHindi
-              ? 'आपके परिवार के सदस्य ने अपना स्वास्थ्य रिकॉर्ड साझा करने की अनुमति मांगी है। केवल 1 क्लिक में तत्काल एक्सेस सक्षम करें:'
-              : 'A family member is waiting for your authorization. Simply tap the 1-Click Approval button to immediately unlock their live vitals and health trajectory.'}
-          </p>
-
-          <div className="space-y-3 pt-1">
-            {members.filter(m => m.status === 'pending').map(member => (
+        ) : pendingInvitations.length === 0 ? (
+          <div className="p-5 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 text-center text-sm text-slate-500">
+            No pending family invitations.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {pendingInvitations.map((invitation) => (
               <div
-                key={member.id}
-                className="p-4 rounded-2xl bg-white dark:bg-[#1F150E] border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs"
+                key={invitation.id}
+                className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full overflow-hidden border border-amber-500/40 shrink-0">
-                    <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
-                  </div>
-                  <div>
-                    <h4 className="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base">
-                      {member.name}
-                    </h4>
-                    <p className="text-xs text-slate-500">
-                      {member.relationship} • {member.age} yrs • Token: <span className="font-mono text-amber-600">{member.approvalToken}</span>
-                    </p>
-                  </div>
+                <div className="min-w-0">
+                  <h3 className="font-bold text-slate-900 dark:text-white">
+                    {invitation.familyName || 'Family invitation'}
+                  </h3>
+
+                  <p className="text-sm text-slate-500 mt-1">
+                    Invited by: {invitation.inviterName || 'Family owner'}
+                  </p>
+
+                  <p className="text-xs text-slate-500 mt-1">
+                    {invitation.invitedEmail}
+                  </p>
+
+                  <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5" />
+                    Expires: {formatFamilyDate(invitation.expiresAt)}
+                  </p>
                 </div>
 
-                <button
-                  type="button"
-                  disabled={isApprovingId === member.id}
-                  onClick={() => handleOneClickApproval(member.id, member.name)}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs sm:text-sm shadow-md shadow-emerald-600/20 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
-                >
-                  {isApprovingId === member.id ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Zap className="w-4 h-4 text-amber-300" />
-                  )}
-                  <span>{isApprovingId === member.id ? 'Granting...' : isHindi ? '⚡ 1-क्लिक तुरंत स्वीकृति दें' : '⚡ 1-Click Approve Access'}</span>
-                </button>
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    onClick={() => handleAcceptInvitation(invitation.id)}
+                    disabled={busy || isInvitationBusy(invitation.id)}
+                    className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold disabled:opacity-50"
+                  >
+                    {busyAction === `accept-${invitation.id}`
+                      ? <Loader2 className="w-4 h-4 animate-spin" />
+                      : <Check className="w-4 h-4 inline mr-1" />
+                    }
+                    Accept
+                  </button>
+
+                  <button
+                    onClick={() => handleRejectInvitation(invitation.id)}
+                    disabled={busy || isInvitationBusy(invitation.id)}
+                    className="px-4 py-2 rounded-lg border border-rose-500/30 text-rose-500 text-xs font-bold disabled:opacity-50"
+                  >
+                    {busyAction === `reject-${invitation.id}`
+                      ? <Loader2 className="w-4 h-4 animate-spin" />
+                      : <X className="w-4 h-4 inline mr-1" />
+                    }
+                    Reject
+                  </button>
+                </div>
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </section>
 
-      {/* Filter Tabs */}
-      <div className="flex items-center gap-2 border-b border-[#E8DFD1] dark:border-[#4A3525] pb-3 text-xs sm:text-sm font-bold">
-        {[
-          { id: 'all', label: isHindi ? `सभी सदस्य (${members.length})` : `All Members (${members.length})` },
-          { id: 'approved', label: isHindi ? `स्वीकृत एवं सक्रिय (${approvedCount})` : `Approved & Active (${approvedCount})` },
-          { id: 'pending', label: isHindi ? `लंबित स्वीकृति (${pendingCount})` : `Pending Approval (${pendingCount})` }
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setFilter(tab.id)}
-            className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${
-              filter === tab.id
-                ? 'bg-[#A9D6F5] text-[#1F150E] font-black shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-[#F6F0E4] dark:hover:bg-[#1F150E]'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {/* NO FAMILY */}
 
-      {/* Family Directory Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredMembers.map((member) => {
-          const isApproved = member.status === 'approved';
-          const isPending = member.status === 'pending';
-          const isCurrentlyActive = activeProfileId === member.id;
+      {!family && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="p-7 rounded-3xl bg-white dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525] space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-[#A9D6F5]/20 flex items-center justify-center">
+              <Users className="w-6 h-6 text-[#2672A8]" />
+            </div>
 
-          return (
-            <div
-              key={member.id}
-              className={`p-6 rounded-3xl border transition-all space-y-4 relative flex flex-col justify-between ${
-                isCurrentlyActive
-                  ? 'bg-blue-500/10 dark:bg-blue-950/30 border-blue-500 shadow-md ring-2 ring-blue-500/20'
-                  : isApproved
-                  ? 'bg-white dark:bg-[#1F150E] border-[#E8DFD1] dark:border-[#4A3525] shadow-xs hover:border-[#A9D6F5]'
-                  : 'bg-amber-500/5 dark:bg-[#1F150E] border-amber-500/30'
-              }`}
+            <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">
+              Create a Family
+            </h2>
+
+            <p className="text-sm text-slate-500">
+              Create a family group and become its owner. Invite other registered users to join.
+            </p>
+
+            <button
+              onClick={() => setShowCreate(true)}
+              className="px-5 py-3 rounded-xl bg-[#A9D6F5] text-[#1F150E] font-extrabold text-sm"
             >
-              {/* Header: Photo, Name, Relationship, Status */}
-              <div className="space-y-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-[#A9D6F5]/50 shrink-0 shadow-xs">
-                      <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="px-2 py-0.5 rounded-md text-[11px] font-black bg-[#A9D6F5]/20 text-[#2672A8] dark:text-[#A9D6F5]">
-                          {isHindi ? member.relationshipHi : member.relationship}
-                        </span>
-                        <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
-                          {member.age} yrs • {member.bloodGroup}
-                        </span>
-                      </div>
-                      <h3 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white truncate mt-0.5">
-                        {member.name}
-                      </h3>
-                    </div>
-                  </div>
+              <Plus className="w-4 h-4 inline mr-2" />
+              Create Family
+            </button>
+          </div>
 
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteMember(member.id, member.name)}
-                    className="text-slate-400 hover:text-rose-500 p-1 rounded-lg transition-colors cursor-pointer"
-                    title="Remove member"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+          <div className="p-7 rounded-3xl bg-white dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525] space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+              <Heart className="w-6 h-6 text-emerald-600" />
+            </div>
 
-                {/* 1-Click Access Status Pill */}
-                <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-800 text-xs">
-                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
-                    {isHindi ? '1-क्लिक एक्सेस स्थिति:' : '1-Click Access:'}
-                  </span>
-                  {isApproved ? (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 font-extrabold text-[11px]">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>{isHindi ? 'सक्रिय एवं स्वीकृत' : 'Active & Approved'}</span>
-                    </span>
-                  ) : isPending ? (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-800 dark:text-amber-300 font-extrabold text-[11px]">
-                      <Clock className="w-3.5 h-3.5" />
-                      <span>{isHindi ? 'स्वीकृति प्रतीक्षित' : 'Approval Pending'}</span>
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-800 dark:text-rose-300 font-extrabold text-[11px]">
-                      <X className="w-3.5 h-3.5" />
-                      <span>{isHindi ? 'पहुंच निरस्त' : 'Access Revoked'}</span>
-                    </span>
-                  )}
-                </div>
+            <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">
+              Join a Family
+            </h2>
 
-                {/* Clinical Condition Pill */}
-                <div className="p-3 rounded-2xl bg-[#F6F0E4]/60 dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525] space-y-0.5">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
-                    {isHindi ? 'प्राथमिक स्वास्थ्य स्थिति' : 'Active Clinical Condition'}
-                  </span>
-                  <div className="flex items-center justify-between">
-                    <p className="font-extrabold text-xs sm:text-sm text-slate-800 dark:text-slate-200">
-                      {member.primaryCondition}
-                    </p>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#A9D6F5]/30 text-slate-800 dark:text-white">
-                      {member.conditionStage}
-                    </span>
-                  </div>
-                </div>
+            <p className="text-sm text-slate-500">
+              Check your pending invitations above. Accept an invitation to join a family.
+            </p>
 
-                {/* Live Vitals Snapshot */}
-                {isApproved ? (
-                  <div className="grid grid-cols-2 gap-2 text-center pt-1">
-                    <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800">
-                      <span className="text-[10px] font-bold text-slate-400 block uppercase">Blood Pressure</span>
-                      <p className="font-black text-sm text-slate-900 dark:text-white mt-0.5">{member.latestVitals.bp}</p>
-                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">{member.latestVitals.bpStatus}</span>
-                    </div>
+            <button
+              onClick={fetchPendingInvitations}
+              disabled={pendingInvitationsLoading}
+              className="px-5 py-3 rounded-xl bg-emerald-600 text-white font-extrabold text-sm"
+            >
+              <RefreshCw className="w-4 h-4 inline mr-2" />
+              Check Invitations
+            </button>
+          </div>
+        </div>
+      )}
 
-                    <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800">
-                      <span className="text-[10px] font-bold text-slate-400 block uppercase">Heart Rate</span>
-                      <p className="font-black text-sm text-slate-900 dark:text-white mt-0.5">{member.latestVitals.hr} bpm</p>
-                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">{member.latestVitals.hrStatus}</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-4 rounded-2xl bg-amber-500/10 border border-dashed border-amber-500/40 text-center space-y-1">
-                    <Lock className="w-5 h-5 text-amber-600 mx-auto" />
-                    <p className="text-xs font-bold text-amber-900 dark:text-amber-200">
-                      {isHindi ? 'डेटा 1-स्वीकृति के बाद अनलॉक होगा' : 'Data Locked Until 1-Click Approval'}
-                    </p>
-                    <p className="text-[10px] text-amber-800/80 dark:text-amber-300/80">
-                      {isHindi ? 'नीचे दिए गए बटन पर टैप करें।' : 'Tap below to grant access immediately.'}
-                    </p>
-                  </div>
-                )}
+      {/* FAMILY DASHBOARD */}
+
+      {family && (
+        <>
+          <div className="p-6 rounded-3xl bg-white dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <span className="text-xs uppercase tracking-wider font-bold text-slate-400">
+                  Current Family
+                </span>
+
+                <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white mt-1">
+                  {family.name}
+                </h2>
+
+                <p className="text-xs text-slate-500 mt-2">
+                  {family.memberCount ?? members.length} active members
+                  {' · '}
+                  {isOwner ? 'Owner' : 'Member'}
+                </p>
               </div>
 
-              {/* Action Buttons */}
-              <div className="pt-3 border-t border-[#E8DFD1] dark:border-[#4A3525] space-y-2">
-                {isApproved ? (
-                  <div className="space-y-2">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedMemberModal(member)}
-                      className="w-full py-2.5 px-4 rounded-xl bg-[#A9D6F5] hover:bg-[#7CBFEA] text-[#1F150E] font-black text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs active:scale-95"
+              <div className="flex flex-wrap gap-2">
+                {isOwner && (
+                  <button
+                    onClick={() => setShowInvite(true)}
+                    className="px-4 py-3 rounded-xl bg-[#A9D6F5] text-[#1F150E] font-bold text-sm"
+                  >
+                    <UserPlus className="w-4 h-4 inline mr-2" />
+                    Invite Member
+                  </button>
+                )}
+
+                {!isOwner && (
+                  <button
+                    onClick={() => setConfirmAction({ type: 'leave' })}
+                    className="px-4 py-3 rounded-xl border border-rose-500/30 text-rose-500 font-bold text-sm"
+                  >
+                    <LogOut className="w-4 h-4 inline mr-2" />
+                    Leave Family
+                  </button>
+                )}
+
+                {isOwner && (
+                  <button
+                    onClick={() => setConfirmAction({ type: 'disband' })}
+                    className="px-4 py-3 rounded-xl border border-rose-500/30 text-rose-500 font-bold text-sm"
+                  >
+                    Disband Family
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* FAMILY MEMBERS */}
+
+          <section className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">
+                Family Members
+              </h2>
+
+              <span className="text-xs text-slate-500">
+                {members.length} members
+              </span>
+            </div>
+
+            {members.length === 0 ? (
+              <div className="p-8 text-center rounded-3xl border border-dashed border-slate-300 dark:border-slate-700 text-slate-500">
+                No active family members found.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {members.map((member) => {
+                  const isMe = member.uid === currentUser?.uid;
+                  const isActive = activeMemberUid === member.uid;
+
+                  return (
+                    <div
+                      key={member.uid}
+                      className={`p-5 rounded-3xl bg-white dark:bg-[#1F150E] border ${
+                        isActive
+                          ? 'border-blue-500 ring-2 ring-blue-500/20'
+                          : 'border-[#E8DFD1] dark:border-[#4A3525]'
+                      }`}
                     >
-                      <Eye className="w-4 h-4" />
-                      <span>{isHindi ? 'पूर्ण स्वास्थ्य डेटा एवं यूरिन टेस्ट देखें' : 'View Full Health Data & Tests'}</span>
-                    </button>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <h3 className="font-extrabold text-slate-900 dark:text-white break-words">
+                            {member.name || 'Family member'}
 
-                    <div className="flex items-center justify-between text-xs pt-1">
-                      <button
-                        type="button"
-                        onClick={() => handleSwitchProfile(member.id, member.name)}
-                        className="text-xs font-bold text-[#2672A8] dark:text-[#A9D6F5] hover:underline flex items-center gap-1 cursor-pointer"
-                      >
-                        <span>{isCurrentlyActive ? '✓ Active Dashboard' : 'Switch Dashboard to Member'}</span>
-                        <ChevronRight className="w-3.5 h-3.5" />
-                      </button>
+                            {isMe && (
+                              <span className="ml-2 text-xs text-blue-500">
+                                You
+                              </span>
+                            )}
+                          </h3>
 
-                      <button
-                        type="button"
-                        onClick={() => handleRevokeAccess(member.id, member.name)}
-                        className="text-[11px] font-semibold text-rose-500 hover:underline cursor-pointer"
-                      >
-                        {isHindi ? 'पहुंच निरस्त करें' : 'Revoke 1-Click'}
-                      </button>
-                    </div>
-                  </div>
-                ) : isPending ? (
-                  <button
-                    type="button"
-                    disabled={isApprovingId === member.id}
-                    onClick={() => handleOneClickApproval(member.id, member.name)}
-                    className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md shadow-emerald-600/20 active:scale-95 disabled:opacity-50"
-                  >
-                    {isApprovingId === member.id ? (
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Zap className="w-4 h-4 text-amber-300" />
-                    )}
-                    <span>{isApprovingId === member.id ? 'Granting...' : isHindi ? '⚡ 1-क्लिक तुरंत स्वीकृति दें' : '⚡ 1-Click Approve Access'}</span>
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => handleOneClickApproval(member.id, member.name)}
-                    className="w-full py-2.5 px-4 rounded-xl bg-[#A9D6F5] text-[#1F150E] font-extrabold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                    <span>{isHindi ? 'पुनः 1-स्वीकृति दें' : 'Re-Authorize Access (1-Click)'}</span>
-                  </button>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+                          <p className="text-xs text-slate-500 mt-1 break-all">
+                            {member.email || member.uid}
+                          </p>
+                        </div>
 
-      {/* FULL FAMILY HEALTH DATA DEEP DIVE MODAL */}
-      {selectedMemberModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-[#F6F0E4] dark:bg-[#1F150E] border-2 border-[#A9D6F5] p-6 sm:p-7 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150 text-slate-900 dark:text-white">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-[#E8DFD1] dark:border-[#4A3525]">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl overflow-hidden border border-[#A9D6F5]/50 shrink-0">
-                  <img src={selectedMemberModal.avatar} alt={selectedMemberModal.name} className="w-full h-full object-cover" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-black uppercase px-2 py-0.5 rounded-full bg-[#A9D6F5] text-[#1F150E]">
-                      {selectedMemberModal.relationship}
-                    </span>
-                    <span className="text-xs text-emerald-600 font-bold flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> 1-Click Authorized
-                    </span>
-                  </div>
-                  <h3 className="text-xl font-extrabold mt-0.5">
-                    {selectedMemberModal.name} ({selectedMemberModal.age} yrs • {selectedMemberModal.bloodGroup})
-                  </h3>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setSelectedMemberModal(null)}
-                className="p-1.5 rounded-xl hover:bg-slate-200 dark:hover:bg-[#2A1D15] text-slate-500 cursor-pointer"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            {/* Vitals Telemetry Grid */}
-            <div className="space-y-2">
-              <h4 className="font-extrabold text-xs uppercase tracking-wider text-[#2672A8] dark:text-[#A9D6F5] flex items-center gap-1.5">
-                <Activity className="w-4 h-4" />
-                <span>Live Biomarker Trajectory & Vitals</span>
-              </h4>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-                <div className="p-3.5 rounded-2xl bg-white dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525]">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">Blood Pressure</span>
-                  <p className="text-lg font-black text-slate-900 dark:text-white mt-0.5">{selectedMemberModal.latestVitals.bp}</p>
-                  <span className="text-[10px] text-emerald-600 font-semibold">{selectedMemberModal.latestVitals.bpStatus}</span>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-white dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525]">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">Heart Rate</span>
-                  <p className="text-lg font-black text-slate-900 dark:text-white mt-0.5">{selectedMemberModal.latestVitals.hr} bpm</p>
-                  <span className="text-[10px] text-emerald-600 font-semibold">{selectedMemberModal.latestVitals.hrStatus}</span>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-white dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525]">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">Blood Glucose</span>
-                  <p className="text-lg font-black text-slate-900 dark:text-white mt-0.5">{selectedMemberModal.latestVitals.glucose} mg/dL</p>
-                  <span className="text-[10px] text-emerald-600 font-semibold">{selectedMemberModal.latestVitals.glucoseStatus}</span>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-white dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525]">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">Blood Oxygen (SpO2)</span>
-                  <p className="text-lg font-black text-slate-900 dark:text-white mt-0.5">{selectedMemberModal.latestVitals.spo2} %</p>
-                  <span className="text-[10px] text-emerald-600 font-semibold">Optimal</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Urine Strip Optical Spectrophotometer Analysis */}
-            <div className="space-y-2">
-              <h4 className="font-extrabold text-xs uppercase tracking-wider text-[#2672A8] dark:text-[#A9D6F5] flex items-center gap-1.5">
-                <Droplet className="w-4 h-4 text-cyan-500" />
-                <span>Optical Urinalysis 10SG Biomarkers</span>
-              </h4>
-
-              <div className="p-4 rounded-2xl bg-white dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525] grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-                <div>
-                  <span className="text-slate-400 text-[10px] uppercase font-bold block">Urinary Protein</span>
-                  <span className="font-extrabold text-emerald-600">{selectedMemberModal.urineAnalysis.protein}</span>
-                </div>
-                <div>
-                  <span className="text-slate-400 text-[10px] uppercase font-bold block">Urine Glucose</span>
-                  <span className="font-extrabold text-emerald-600">{selectedMemberModal.urineAnalysis.glucose}</span>
-                </div>
-                <div>
-                  <span className="text-slate-400 text-[10px] uppercase font-bold block">Specific Gravity</span>
-                  <span className="font-extrabold text-slate-800 dark:text-slate-200">{selectedMemberModal.urineAnalysis.specificGravity}</span>
-                </div>
-                <div>
-                  <span className="text-slate-400 text-[10px] uppercase font-bold block">pH Balance</span>
-                  <span className="font-extrabold text-slate-800 dark:text-slate-200">{selectedMemberModal.urineAnalysis.pH}</span>
-                </div>
-                <div>
-                  <span className="text-slate-400 text-[10px] uppercase font-bold block">Leukocytes / Esterase</span>
-                  <span className="font-extrabold text-emerald-600">{selectedMemberModal.urineAnalysis.leukocytes}</span>
-                </div>
-                <div>
-                  <span className="text-slate-400 text-[10px] uppercase font-bold block">Last Tested Window</span>
-                  <span className="font-bold text-slate-500">{selectedMemberModal.urineAnalysis.lastTested}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Active Prescriptions & Medications */}
-            {selectedMemberModal.medications && selectedMemberModal.medications.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="font-extrabold text-xs uppercase tracking-wider text-[#2672A8] dark:text-[#A9D6F5] flex items-center gap-1.5">
-                  <Pill className="w-4 h-4 text-purple-500" />
-                  <span>Active Prescriptions & Regimens</span>
-                </h4>
-                <div className="space-y-2">
-                  {selectedMemberModal.medications.map((m, idx) => (
-                    <div key={idx} className="p-3 rounded-2xl bg-white dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525] flex items-center justify-between text-xs">
-                      <div>
-                        <p className="font-extrabold text-slate-900 dark:text-white">{m.name}</p>
-                        <p className="text-slate-500 text-[11px]">{m.dosage}</p>
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+                          member.familyRole === 'OWNER'
+                            ? 'bg-blue-500/10 text-blue-600'
+                            : 'bg-slate-500/10 text-slate-500'
+                        }`}>
+                          {member.familyRole}
+                        </span>
                       </div>
-                      <span className="px-2 py-0.5 rounded-md font-bold text-[10px] bg-emerald-500/20 text-emerald-800 dark:text-emerald-300">
-                        {m.status}
-                      </span>
+
+                      <div className="mt-4 flex items-center gap-2 text-xs text-emerald-600">
+                        <ShieldCheck className="w-4 h-4" />
+                        Active membership
+                      </div>
+
+                      <p className="mt-3 text-xs text-slate-500">
+                        Joined: {formatFamilyDate(member.joinedAt)}
+                      </p>
+
+                      <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-wrap gap-2">
+                        {!isMe && (
+                          <button
+                            onClick={() => handleSelectMember(member.uid)}
+                            disabled={busy}
+                            className="px-3 py-2 rounded-lg bg-[#A9D6F5] text-[#1F150E] font-bold text-xs disabled:opacity-50"
+                          >
+                            <Eye className="w-3.5 h-3.5 inline mr-1" />
+                            View Shared Readings
+                          </button>
+                        )}
+
+                        {isActive && (
+                          <button
+                            onClick={handleCloseReadings}
+                            className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-xs font-bold"
+                          >
+                            Close Readings
+                          </button>
+                        )}
+
+                        {isOwner && !isMe && (
+                          <button
+                            onClick={() => setConfirmAction({
+                              type: 'remove',
+                              uid: member.uid,
+                              name: member.name,
+                            })}
+                            className="px-3 py-2 rounded-lg text-rose-500 border border-rose-500/20 text-xs font-bold"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 inline mr-1" />
+                            Remove
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
             )}
+          </section>
 
-            {/* Doctor Care Consultation Notes */}
-            {selectedMemberModal.recentConsultations && selectedMemberModal.recentConsultations.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="font-extrabold text-xs uppercase tracking-wider text-[#2672A8] dark:text-[#A9D6F5] flex items-center gap-1.5">
-                  <Stethoscope className="w-4 h-4 text-blue-500" />
-                  <span>Physician Consultation & Clinical Summary</span>
-                </h4>
-                {selectedMemberModal.recentConsultations.map((c, idx) => (
-                  <div key={idx} className="p-3.5 rounded-2xl bg-white dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525] space-y-1 text-xs">
-                    <div className="flex justify-between items-center text-slate-400">
-                      <span className="font-bold text-slate-800 dark:text-slate-200">{c.doctor} ({c.specialty})</span>
-                      <span>{c.date}</span>
+          {/* MY HEALTH SHARING PERMISSIONS */}
+
+          <section className="p-6 rounded-3xl bg-white dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525] space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                <ShieldCheck className="w-6 h-6 text-emerald-600" />
+              </div>
+
+              <div>
+                <h2 className="font-extrabold text-slate-900 dark:text-white">
+                  My Health Data Permissions
+                </h2>
+
+                <p className="text-xs text-slate-500">
+                  You control what other family members can access.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {PERMISSION_FIELDS.map((permission) => {
+                const Icon = permission.icon;
+                const checked = Boolean(myPermissions?.[permission.key]);
+
+                return (
+                  <div
+                    key={permission.key}
+                    className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4"
+                  >
+                    <div className="flex items-start gap-3">
+                      <Icon className="w-5 h-5 mt-1 text-[#2672A8] dark:text-[#A9D6F5]" />
+
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                          {permission.label}
+                        </h3>
+
+                        <p className="text-xs text-slate-500 mt-1">
+                          {permission.description}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed font-medium">{c.notes}</p>
+
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      disabled={busy}
+                      onChange={(e) => handlePermissionChange(
+                        permission.key,
+                        e.target.checked
+                      )}
+                      className="w-5 h-5 accent-blue-600 shrink-0 cursor-pointer"
+                    />
                   </div>
-                ))}
-              </div>
-            )}
-
-            {/* Footer Modal Actions */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-[#E8DFD1] dark:border-[#4A3525]">
-              <div className="text-[11px] text-slate-500">
-                1-Click Consent Token: <span className="font-mono text-cyan-600 dark:text-cyan-400 font-bold">{selectedMemberModal.approvalToken}</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleSwitchProfile(selectedMemberModal.id, selectedMemberModal.name);
-                    setSelectedMemberModal(null);
-                  }}
-                  className="px-4 py-2 rounded-xl bg-[#A9D6F5] text-[#1F150E] font-black text-xs hover:bg-[#7CBFEA] cursor-pointer"
-                >
-                  {isHindi ? 'इस प्रोफ़ाइल पर स्विच करें' : 'Switch Dashboard to This Member'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedMemberModal(null)}
-                  className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-bold cursor-pointer"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ADD FAMILY MEMBER MODAL */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-lg rounded-3xl bg-[#F6F0E4] dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525] p-6 sm:p-7 shadow-2xl space-y-4 text-slate-900 dark:text-white">
-            <div className="flex items-center justify-between pb-3 border-b border-[#E8DFD1] dark:border-[#4A3525]">
-              <div className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-[#2672A8] dark:text-[#A9D6F5]" />
-                <h3 className="text-lg font-extrabold">
-                  {isHindi ? 'नया परिवार सदस्य जोड़ें' : 'Add Family Member'}
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowAddModal(false)}
-                className="p-1 rounded-xl hover:bg-slate-200 dark:hover:bg-[#2A1D15] text-slate-500 cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+                );
+              })}
             </div>
 
-            <form onSubmit={handleAddMember} className="space-y-3.5 text-xs">
-              {/* Name & Relationship */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="font-bold uppercase tracking-wider text-[11px]">Full Name</label>
-                  <input
-                    type="text"
-                    value={newMember.name}
-                    onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
-                    placeholder="e.g. Robert Johnson, Emily Johnson"
-                    className="w-full p-3 rounded-2xl bg-white dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525] text-sm focus:outline-none focus:ring-2 focus:ring-[#A9D6F5]"
-                    required
-                  />
-                </div>
+            <p className="text-xs text-slate-500 flex gap-2">
+              <Lock className="w-4 h-4 shrink-0" />
+              All permissions are disabled by default. Membership does not automatically grant medical-data access.
+            </p>
+          </section>
 
-                <div className="space-y-1">
-                  <label className="font-bold uppercase tracking-wider text-[11px]">Relationship</label>
-                  <select
-                    value={newMember.relationship}
-                    onChange={(e) => setNewMember({ ...newMember, relationship: e.target.value })}
-                    className="w-full p-3 rounded-2xl bg-white dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525] text-sm focus:outline-none"
-                  >
-                    <option value="Parent">Parent (Father / Mother)</option>
-                    <option value="Spouse">Spouse / Partner</option>
-                    <option value="Child">Child (Son / Daughter)</option>
-                    <option value="Sibling">Sibling (Brother / Sister)</option>
-                    <option value="Grandparent">Grandparent</option>
-                    <option value="Other">Other Family Dependent</option>
-                  </select>
-                </div>
-              </div>
+          {/* SHARED HEALTH DASHBOARD */}
 
-              {/* Age, Gender, Blood Group */}
-              <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-1">
-                  <label className="font-bold uppercase tracking-wider text-[11px]">Age</label>
-                  <input
-                    type="number"
-                    value={newMember.age}
-                    onChange={(e) => setNewMember({ ...newMember, age: e.target.value })}
-                    placeholder="e.g. 68"
-                    className="w-full p-3 rounded-2xl bg-white dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525] text-sm focus:outline-none"
-                    required
-                  />
-                </div>
+          {activeMember && (
+            <section
+              ref={readingsSectionRef}
+              className="scroll-mt-6 p-6 rounded-3xl bg-white dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525] space-y-6"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">
+                    Shared Health Dashboard
+                  </h2>
 
-                <div className="space-y-1">
-                  <label className="font-bold uppercase tracking-wider text-[11px]">Gender</label>
-                  <select
-                    value={newMember.gender}
-                    onChange={(e) => setNewMember({ ...newMember, gender: e.target.value })}
-                    className="w-full p-3 rounded-2xl bg-white dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525] text-sm focus:outline-none"
-                  >
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold uppercase tracking-wider text-[11px]">Blood Group</label>
-                  <select
-                    value={newMember.bloodGroup}
-                    onChange={(e) => setNewMember({ ...newMember, bloodGroup: e.target.value })}
-                    className="w-full p-3 rounded-2xl bg-white dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525] text-sm focus:outline-none"
-                  >
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Primary Condition & Stage */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="font-bold uppercase tracking-wider text-[11px]">Primary Condition (Optional)</label>
-                  <input
-                    type="text"
-                    value={newMember.primaryCondition}
-                    onChange={(e) => setNewMember({ ...newMember, primaryCondition: e.target.value })}
-                    placeholder="e.g. Type 2 Diabetes, Hypertension"
-                    className="w-full p-3 rounded-2xl bg-white dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525] text-sm focus:outline-none"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold uppercase tracking-wider text-[11px]">Condition Stage</label>
-                  <input
-                    type="text"
-                    value={newMember.conditionStage}
-                    onChange={(e) => setNewMember({ ...newMember, conditionStage: e.target.value })}
-                    placeholder="e.g. Stage II, Mild, Controlled"
-                    className="w-full p-3 rounded-2xl bg-white dark:bg-[#2A1D15] border border-[#E8DFD1] dark:border-[#4A3525] text-sm focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* 1-Click Approval Toggle */}
-              <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  id="instantApprovalCheck"
-                  checked={newMember.instantApproval}
-                  onChange={(e) => setNewMember({ ...newMember, instantApproval: e.target.checked })}
-                  className="mt-0.5 accent-emerald-600 rounded cursor-pointer"
-                />
-                <label htmlFor="instantApprovalCheck" className="cursor-pointer space-y-0.5 flex-1">
-                  <strong className="block text-emerald-800 dark:text-emerald-300 font-extrabold text-xs">
-                    {isHindi ? '⚡ 1-क्लिक तुरंत स्वीकृति दें (Immediate 1-Click Access Granted)' : '⚡ Grant Immediate 1-Click Access (Pre-Authorized)'}
-                  </strong>
-                  <p className="text-[11px] text-emerald-900/80 dark:text-emerald-200/80">
-                    {isHindi
-                      ? 'स्वीकृत होने पर परिवार का स्वास्थ्य डेटा तुरंत आपके डैशबोर्ड में उपलब्ध हो जाएगा।'
-                      : 'Automatically authorizes 1-Click mutual health data sharing upon creation.'}
+                  <p className="text-sm text-slate-500 mt-1">
+                    Health records shared by {activeMember.name}
                   </p>
-                </label>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 text-xs font-bold">
+                    {readings.length} records
+                  </span>
+
+                  <button
+                    onClick={handleCloseReadings}
+                    className="p-2 rounded-lg border border-slate-300 dark:border-slate-700"
+                    title="Close readings"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
-              <div className="flex justify-end gap-2.5 pt-3 border-t border-[#E8DFD1] dark:border-[#4A3525]">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="px-5 py-2.5 rounded-2xl border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#2A1D15] cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={!newMember.name.trim()}
-                  className="px-6 py-2.5 rounded-2xl bg-[#A9D6F5] text-[#1F150E] text-xs font-black hover:bg-[#7CBFEA] disabled:opacity-50 transition-all shadow-sm cursor-pointer"
-                >
-                  {isHindi ? 'सदस्य जोड़ें' : 'Save & Enable Access'}
-                </button>
+              {activeMemberLoading && (
+                <div className="flex items-center gap-2 text-sm text-slate-500 py-6">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Loading authorized readings...
+                </div>
+              )}
+
+              {activeMemberError && (
+                <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-sm">
+                  <Lock className="w-4 h-4 inline mr-2" />
+                  {activeMemberError}
+                </div>
+              )}
+
+              {!activeMemberLoading && !activeMemberError && (
+                <>
+                  {activeMemberPermissions && (
+                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      Reading access: {activeMemberPermissions.viewReadings
+                        ? 'Granted'
+                        : 'Not granted'}
+                    </div>
+                  )}
+
+                  {readings.length === 0 ? (
+                    <div className="p-8 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 text-center">
+                      <Activity className="w-9 h-9 mx-auto text-slate-400 mb-3" />
+                      <h3 className="font-bold text-slate-700 dark:text-slate-200">
+                        No shared readings available
+                      </h3>
+                      <p className="text-sm text-slate-500 mt-1">
+                        This family member has not recorded any readings yet.
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      {/* SUMMARY CARDS */}
+
+                      <div>
+                        <h3 className="font-bold text-slate-900 dark:text-white mb-3">
+                          Latest Health Measurements
+                        </h3>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+                          <SummaryCard
+                            title="Heart Rate"
+                            value={formatMetricValue(heartRateValue, 'bpm')}
+                            subtitle={latestHeartRate
+                              ? formatDate(getDateValue(latestHeartRate))
+                              : 'No heart rate record'}
+                            icon={HeartPulse}
+                            color="#E45D70"
+                          />
+
+                          <SummaryCard
+                            title="Oxygen Saturation"
+                            value={formatMetricValue(spo2Value, '%')}
+                            subtitle={latestSpo2
+                              ? formatDate(getDateValue(latestSpo2))
+                              : 'No oxygen record'}
+                            icon={Droplets}
+                            color="#3988D6"
+                          />
+
+                          <SummaryCard
+                            title="Blood Pressure"
+                            value={
+                              systolic != null && diastolic != null
+                                ? `${systolic}/${diastolic}`
+                                : 'Not available'
+                            }
+                            subtitle={latestBP
+                              ? 'mmHg · Latest record'
+                              : 'No blood pressure record'}
+                            icon={Activity}
+                            color="#9B72CF"
+                          />
+
+                          <SummaryCard
+                            title="Daily Steps"
+                            value={stepsValue != null
+                              ? stepsValue.toLocaleString('en-IN')
+                              : 'Not available'}
+                            subtitle={latestActivity
+                              ? 'Latest activity record'
+                              : 'No activity record'}
+                            icon={Footprints}
+                            color="#269D78"
+                          />
+                        </div>
+                      </div>
+
+                      {/* TREND CHARTS */}
+
+                      <div>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                          <div>
+                            <h3 className="font-bold text-slate-900 dark:text-white">
+                              Health Trends
+                            </h3>
+                            <p className="text-xs text-slate-500 mt-1">
+                              Visual trends based on recorded measurements
+                            </p>
+                          </div>
+
+                          <select
+                            value={selectedChart}
+                            onChange={(e) => setSelectedChart(e.target.value)}
+                            className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white"
+                          >
+                            {Object.entries(METRICS).map(([type, metric]) => (
+                              <option key={type} value={type}>
+                                {metric.title}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <TrendChart
+                          readings={readings}
+                          type={selectedChart}
+                        />
+                      </div>
+
+                      {/* ALL AVAILABLE READING TYPES */}
+
+                      <div>
+                        <h3 className="font-bold text-slate-900 dark:text-white mb-3">
+                          All Health Records
+                        </h3>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                          {Object.entries(TYPE_LABELS).map(([type, label]) => {
+                            const count = readings.filter(
+                              (reading) => reading.type === type
+                            ).length;
+
+                            return (
+                              <div
+                                key={type}
+                                className="rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3"
+                              >
+                                <p className="text-xs text-slate-500">
+                                  {label}
+                                </p>
+                                <p className="text-xl font-extrabold text-slate-900 dark:text-white mt-1">
+                                  {count}
+                                </p>
+                                <p className="text-xs text-slate-500">
+                                  {count === 1 ? 'record' : 'records'}
+                                </p>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* READABLE RECORD CARDS */}
+
+                      <div>
+                        <div className="flex items-center justify-between gap-3 mb-3">
+                          <h3 className="font-bold text-slate-900 dark:text-white">
+                            Individual Health Records
+                          </h3>
+
+                          <button
+                            onClick={() => setShowAllReadings((value) => !value)}
+                            className="text-xs font-bold text-blue-600 flex items-center gap-1"
+                          >
+                            {showAllReadings ? 'Show recent only' : 'Show all records'}
+                            <ChevronDown className={`w-4 h-4 transition-transform ${showAllReadings ? 'rotate-180' : ''}`} />
+                          </button>
+                        </div>
+
+                        <div className="space-y-3">
+                          {(showAllReadings ? readings : readings.slice(0, 5)).map(
+                            (reading, index) => (
+                              <ReadingCard
+                                key={reading.id || index}
+                                reading={reading}
+                              />
+                            )
+                          )}
+                        </div>
+                      </div>
+
+                      {/* RECENT READINGS TABLE */}
+
+                      <div>
+                        <h3 className="font-bold text-slate-900 dark:text-white mb-3">
+                          Recent Readings Table
+                        </h3>
+
+                        <ReadingsTable readings={readings} />
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+            </section>
+          )}
+
+          {/* OWNER'S SENT INVITATIONS */}
+
+          {isOwner && (
+            <section className="p-6 rounded-3xl bg-white dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525] space-y-4">
+              <div className="flex items-center gap-3">
+                <Mail className="w-5 h-5 text-blue-500" />
+
+                <h2 className="font-extrabold text-slate-900 dark:text-white">
+                  Invitations Sent
+                </h2>
               </div>
-            </form>
-          </div>
-        </div>
+
+              {invitations.length === 0 ? (
+                <p className="text-sm text-slate-500">
+                  No pending invitations.
+                </p>
+              ) : (
+                invitations.map((invitation) => (
+                  <div
+                    key={invitation.id}
+                    className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  >
+                    <div>
+                      <p className="text-sm font-bold text-slate-900 dark:text-white">
+                        {invitation.email}
+                      </p>
+
+                      <p className="text-xs text-slate-500 mt-1">
+                        Expires: {formatFamilyDate(invitation.expiresAt)}
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => handleRevokeInvitation(invitation.id)}
+                      disabled={busy}
+                      className="px-3 py-2 rounded-lg border border-rose-500/30 text-rose-500 text-xs font-bold"
+                    >
+                      Revoke Invitation
+                    </button>
+                  </div>
+                ))
+              )}
+            </section>
+          )}
+        </>
       )}
+
+      {/* CREATE FAMILY MODAL */}
+
+      {showCreate && (
+        <Modal
+          title="Create Family"
+          onClose={() => setShowCreate(false)}
+        >
+          <form onSubmit={handleCreateFamily} className="space-y-4">
+            <label className="text-sm font-bold block">
+              Family Name
+            </label>
+
+            <input
+              value={familyName}
+              onChange={(e) => setFamilyName(e.target.value)}
+              placeholder="Enter family name"
+              className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+              required
+              minLength={2}
+              maxLength={80}
+            />
+
+            <button
+              disabled={busy}
+              className="w-full p-3 rounded-xl bg-[#A9D6F5] text-[#1F150E] font-extrabold"
+            >
+              {busyAction === 'create' ? 'Creating...' : 'Create Family'}
+            </button>
+          </form>
+        </Modal>
+      )}
+
+      {/* INVITE MODAL */}
+
+      {showInvite && (
+        <Modal
+          title="Invite Family Member"
+          onClose={() => setShowInvite(false)}
+        >
+          <form onSubmit={handleInvite} className="space-y-4">
+            <p className="text-sm text-slate-500">
+              Enter the email address of an existing registered BioTrajectory user. They will see your invitation in their Family Health page.
+            </p>
+
+            <input
+              type="email"
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              placeholder="member@example.com"
+              className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+              required
+            />
+
+            <button
+              disabled={busy}
+              className="w-full p-3 rounded-xl bg-[#A9D6F5] text-[#1F150E] font-extrabold"
+            >
+              {busyAction === 'invite' ? 'Sending invitation...' : 'Send Invitation'}
+            </button>
+          </form>
+        </Modal>
+      )}
+
+      {/* CONFIRMATION MODAL */}
+
+      {confirmAction && (
+        <Modal
+          title="Confirm Action"
+          onClose={() => setConfirmAction(null)}
+        >
+          <p className="text-sm text-slate-600 dark:text-slate-300 mb-5">
+            {confirmAction.type === 'remove' &&
+              `Remove ${confirmAction.name || 'this member'} from the family?`
+            }
+
+            {confirmAction.type === 'leave' &&
+              'Are you sure you want to leave this family?'
+            }
+
+            {confirmAction.type === 'disband' &&
+              'This will disband the entire family group. This action cannot be easily reversed.'
+            }
+          </p>
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => setConfirmAction(null)}
+              className="flex-1 p-3 rounded-xl border border-slate-300 dark:border-slate-700 font-bold text-sm"
+            >
+              Cancel
+            </button>
+
+            <button
+              disabled={busy}
+              onClick={() => {
+                if (confirmAction.type === 'remove') {
+                  handleRemoveMember(confirmAction.uid);
+                }
+
+                if (confirmAction.type === 'leave') {
+                  handleLeaveFamily();
+                }
+
+                if (confirmAction.type === 'disband') {
+                  handleDisbandFamily();
+                }
+              }}
+              className="flex-1 p-3 rounded-xl bg-rose-600 text-white font-bold text-sm"
+            >
+              Confirm
+            </button>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+/* --------------------------------------------------
+   REUSABLE MODAL
+-------------------------------------------------- */
+
+function Modal({ title, children, onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="w-full max-w-md rounded-3xl bg-white dark:bg-[#1F150E] border border-[#A9D6F5]/40 p-6 shadow-2xl">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">
+            {title}
+          </h2>
+
+          <button onClick={onClose}>
+            <XCircle className="w-5 h-5 text-slate-500" />
+          </button>
+        </div>
+
+        {children}
+      </div>
     </div>
   );
 }

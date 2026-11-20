@@ -1,0 +1,485 @@
+import hashlib
+import logging
+import secrets
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, Optional
+
+from fastapi import HTTPException, status
+from firebase_admin import auth, firestore
+
+from app.core.config import settings
+from app.core.security import initialize_firebase_admin
+
+logger = logging.getLogger("biotrajectory.family")
+
+DEFAULT_PERMISSIONS = {
+    "viewReadings": False,
+    "viewAnalytics": False,
+    "viewMedicalHistory": False,
+    "viewReports": False,
+}
+
+
+def utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def serialize(value: Any) -> Any:
+    if hasattr(value, "to_datetime"):
+        return value.to_datetime().isoformat()
+    if isinstance(value, datetime):
+        return value.isoformat()
+    return value
+
+
+def serialize_profile(data: Dict[str, Any], uid: str) -> Dict[str, Any]:
+    return {
+        "uid": uid,
+        "name": data.get("name") or data.get("fullName") or "Family member",
+        "email": data.get("email"),
+        "familyRole": data.get("familyRole", "MEMBER"),
+        "status": data.get("status", "ACTIVE"),
+        "permissions": {**DEFAULT_PERMISSIONS, **(data.get("permissions") or {})},
+        "joinedAt": serialize(data.get("joinedAt")),
+    }
+
+
+class FamilyService:
+    def __init__(self):
+        self._db = None
+
+    def db(self):
+        if not initialize_firebase_admin():
+            raise HTTPException(status_code=503, detail="Firebase Admin is not configured.")
+        if self._db is None:
+            self._db = firestore.client()
+        return self._db
+
+    def find_family_for_uid(self, uid: str) -> Optional[Dict[str, Any]]:
+        db = self.db()
+        membership = db.collection("users").document(uid).collection("familyMemberships").stream()
+        for snap in membership:
+            data = snap.to_dict() or {}
+            if data.get("status") == "ACTIVE":
+                family = db.collection("families").document(snap.id).get()
+                if family.exists:
+                    result = family.to_dict() or {}
+                    # Reject memberships whose family status is not ACTIVE
+                    if result.get("status") != "ACTIVE":
+                        continue
+                    # Reject memberships whose member record in family is not ACTIVE
+                    member_snap = family.reference.collection("members").document(uid).get()
+                    if not member_snap.exists or (member_snap.to_dict() or {}).get("status") != "ACTIVE":
+                        continue
+                    result["id"] = family.id
+                    result["createdAt"] = serialize(result.get("createdAt"))
+                    result["updatedAt"] = serialize(result.get("updatedAt"))
+                    return result
+        return None
+
+    def get_profile(self, uid: str) -> Dict[str, Any]:
+        db = self.db()
+        profile = db.collection("users").document(uid).get()
+        data = profile.to_dict() or {}
+        email = data.get("email")
+        name = data.get("name") or data.get("fullName")
+        try:
+            firebase_user = auth.get_user(uid)
+            email = firebase_user.email or email
+            name = name or firebase_user.display_name
+        except Exception:
+            pass
+        return {"uid": uid, "name": name or "Unnamed member", "email": email}
+
+    def create_family(self, uid: str, name: str) -> Dict[str, Any]:
+        db = self.db()
+        existing = self.find_family_for_uid(uid)
+        if existing:
+            raise HTTPException(status_code=409, detail="You already belong to a family.")
+
+        profile = self.get_profile(uid)
+        now = utc_now()
+        family_ref = db.collection("families").document()
+
+        @firestore.transactional
+        def create(transaction):
+            transaction.set(family_ref, {
+                "name": name,
+                "ownerUid": uid,
+                "status": "ACTIVE",
+                "createdAt": now,
+                "updatedAt": now,
+            })
+            member_ref = family_ref.collection("members").document(uid)
+            transaction.set(member_ref, {
+                "uid": uid,
+                "name": profile["name"],
+                "email": profile["email"],
+                "familyRole": "OWNER",
+                "status": "ACTIVE",
+                "permissions": DEFAULT_PERMISSIONS.copy(),
+                "joinedAt": now,
+            })
+            transaction.set(db.collection("users").document(uid).collection("familyMemberships").document(family_ref.id), {
+                "familyId": family_ref.id,
+                "familyRole": "OWNER",
+                "status": "ACTIVE",
+                "joinedAt": now,
+            })
+
+        transaction = db.transaction()
+        create(transaction)
+        return self.get_family(uid, family_ref.id)
+
+    def require_active_membership(self, uid: str, family_id: str) -> Dict[str, Any]:
+        db = self.db()
+        family = db.collection("families").document(family_id).get()
+        if not family.exists:
+            raise HTTPException(status_code=404, detail="Family not found.")
+	    # Verify that the requesting user is an active member
+# of the same active family before accessing health records.
+self.require_active_membership(viewer_uid, family_id)
+        family_data = family.to_dict() or {}
+        if family_data.get("status") != "ACTIVE":
+            raise HTTPException(status_code=403, detail="The family group is inactive or disbanded.")
+        member = family.reference.collection("members").document(uid).get()
+        if not member.exists:
+            raise HTTPException(status_code=403, detail="You are not a member of this family.")
+        data = member.to_dict() or {}
+        if data.get("status") != "ACTIVE":
+            raise HTTPException(status_code=403, detail="Your family membership is not active.")
+        return {**data, "uid": uid, "familyId": family_id}
+
+    def require_owner(self, uid: str, family_id: str) -> Dict[str, Any]:
+        member = self.require_active_membership(uid, family_id)
+        if member.get("familyRole") != "OWNER":
+            raise HTTPException(status_code=403, detail="Only the family owner can perform this action.")
+        return member
+
+    def get_family(self, uid: str, family_id: Optional[str] = None) -> Dict[str, Any]:
+        db = self.db()
+        family_id = family_id or (self.find_family_for_uid(uid) or {}).get("id")
+        if not family_id:
+            return {"family": None, "members": [], "invitations": []}
+        self.require_active_membership(uid, family_id)
+        family_ref = db.collection("families").document(family_id)
+        family = family_ref.get()
+        if not family.exists:
+            return {"family": None, "members": [], "invitations": []}
+        family_data = family.to_dict() or {}
+        member_docs = family_ref.collection("members").where("status", "==", "ACTIVE").stream()
+        members = [serialize_profile(doc.to_dict() or {}, doc.id) for doc in member_docs]
+        owner = next((m for m in members if m["familyRole"] == "OWNER"), None)
+        invitations = []
+        is_owner = bool(owner and owner["uid"] == uid)
+        if is_owner:
+            for doc in db.collection("family_invitations").where("familyId", "==", family_id).where("status", "==", "PENDING").stream():
+                data = doc.to_dict() or {}
+                invitations.append({
+                    "id": doc.id,
+                    "email": data.get("invitedEmail"),
+                    "status": data.get("status"),
+                    "expiresAt": serialize(data.get("expiresAt")),
+                    "createdAt": serialize(data.get("createdAt")),
+                })
+        return {
+            "family": {
+                "id": family_id,
+                "name": family_data.get("name"),
+                "ownerUid": family_data.get("ownerUid"),
+                "owner": owner,
+                "memberCount": len(members),
+                "status": family_data.get("status", "ACTIVE"),
+                "createdAt": serialize(family_data.get("createdAt")),
+                "updatedAt": serialize(family_data.get("updatedAt")),
+            },
+            "members": members,
+            "invitations": invitations,
+        }
+
+    def list_members(self, uid: str, family_id: str) -> Dict[str, Any]:
+        return self.get_family(uid, family_id)
+
+    def invite_member(self, uid: str, family_id: str, email: str) -> Dict[str, Any]:
+        self.require_owner(uid, family_id)
+        db = self.db()
+        clean_email = email.strip().lower()
+        now = utc_now()
+
+        family_ref = db.collection("families").document(family_id)
+        for doc in family_ref.collection("members").where("status", "==", "ACTIVE").stream():
+            m_data = doc.to_dict() or {}
+            if (m_data.get("email") or "").strip().lower() == clean_email:
+                raise HTTPException(status_code=409, detail="A family member with this email already belongs to the family.")
+
+        existing_pending = db.collection("family_invitations").where("familyId", "==", family_id).where("invitedEmail", "==", clean_email).where("status", "==", "PENDING").limit(1).stream()
+        if next(existing_pending, None):
+            raise HTTPException(status_code=409, detail="A pending invitation already exists for this email.")
+
+        token = secrets.token_urlsafe(32)
+        token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+        expires = now + timedelta(hours=48)
+        invitation_ref = db.collection("family_invitations").document()
+        invitation_ref.set({
+            "familyId": family_id,
+            "invitedBy": uid,
+            "invitedEmail": clean_email,
+            "tokenHash": token_hash,
+            "status": "PENDING",
+            "expiresAt": expires,
+            "createdAt": now,
+            "acceptedAt": None,
+        })
+
+        # Environment-safe invitation handling
+        email_delivery_configured = bool(settings.RESEND_API_KEY and settings.FAMILY_INVITE_FROM)
+        is_dev = settings.ENVIRONMENT.lower() == "development"
+
+        # Production error if email delivery is unavailable
+        if not is_dev and not email_delivery_configured:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Email delivery service is not configured. Invitations cannot be dispatched in production."
+            )
+
+        # In production, raw invitation tokens must NEVER be returned in API responses
+        development_token = token if is_dev else None
+        delivery_message = (
+            "Invitation created. Email delivery is not configured; share the development link securely."
+            if is_dev and not email_delivery_configured
+            else "Invitation created and dispatched."
+        )
+
+        return {
+            "success": True,
+            "invitation": {
+                "id": invitation_ref.id,
+                "email": clean_email,
+                "status": "PENDING",
+                "expiresAt": expires.isoformat(),
+                "createdAt": now.isoformat(),
+            },
+            "emailDelivered": email_delivery_configured,
+            "emailDeliveryConfigured": email_delivery_configured,
+            "developmentToken": development_token,
+            "message": delivery_message,
+        }
+
+    def accept_invitation(self, uid: str, token: str, authenticated_email: Optional[str] = None) -> Dict[str, Any]:
+        db = self.db()
+        if not authenticated_email:
+            try:
+                claims = auth.get_user(uid)
+                authenticated_email = (claims.email or "").strip().lower()
+            except Exception:
+                authenticated_email = ""
+        else:
+            authenticated_email = authenticated_email.strip().lower()
+
+        if not authenticated_email:
+            raise HTTPException(status_code=403, detail="The authenticated account does not have a verified email address.")
+
+        token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+        matches = list(db.collection("family_invitations").where("tokenHash", "==", token_hash).limit(1).stream())
+        if not matches:
+            raise HTTPException(status_code=404, detail="Invitation not found or already used.")
+
+        invitation_ref = matches[0].reference
+        invitation_snap = invitation_ref.get()
+        inv_data = invitation_snap.to_dict() or {}
+        if inv_data.get("status") != "PENDING":
+            raise HTTPException(status_code=409, detail="Invitation is no longer pending.")
+
+        target_family_id = inv_data.get("familyId")
+        existing_family = self.find_family_for_uid(uid)
+        if existing_family and existing_family.get("id") != target_family_id:
+            raise HTTPException(status_code=409, detail="You already belong to another family.")
+
+        transaction = db.transaction()
+
+        @firestore.transactional
+        def accept(transaction):
+            snap = invitation_ref.get(transaction=transaction)
+            data = snap.to_dict() or {}
+            if data.get("status") != "PENDING":
+                raise HTTPException(status_code=409, detail="Invitation is no longer pending.")
+            expires = data.get("expiresAt")
+            if hasattr(expires, "to_datetime"):
+                expires = expires.to_datetime()
+            if not expires or expires <= utc_now():
+                transaction.update(invitation_ref, {"status": "EXPIRED", "updatedAt": utc_now()})
+                raise HTTPException(status_code=410, detail="Invitation has expired.")
+            invited_email = str(data.get("invitedEmail") or "").strip().lower()
+            if authenticated_email != invited_email:
+                raise HTTPException(status_code=403, detail="This invitation was sent to a different email address.")
+
+            family_id = data["familyId"]
+            family_ref = db.collection("families").document(family_id)
+            family_snap = family_ref.get(transaction=transaction)
+            if not family_snap.exists:
+                raise HTTPException(status_code=404, detail="Family no longer exists.")
+
+            member_ref = family_ref.collection("members").document(uid)
+            existing_member = member_ref.get(transaction=transaction)
+            if existing_member.exists:
+                member_data = existing_member.to_dict() or {}
+                if member_data.get("status") == "ACTIVE":
+                    raise HTTPException(status_code=409, detail="You are already a family member.")
+
+            profile = self.get_profile(uid)
+            now = utc_now()
+            transaction.update(invitation_ref, {"status": "ACCEPTED", "acceptedAt": now, "acceptedUid": uid, "updatedAt": now})
+            transaction.set(member_ref, {
+                "uid": uid,
+                "name": profile["name"],
+                "email": authenticated_email,
+                "familyRole": "MEMBER",
+                "status": "ACTIVE",
+                "permissions": DEFAULT_PERMISSIONS.copy(),
+                "joinedAt": now,
+            })
+            transaction.set(db.collection("users").document(uid).collection("familyMemberships").document(family_id), {
+                "familyId": family_id,
+                "familyRole": "MEMBER",
+                "status": "ACTIVE",
+                "joinedAt": now,
+            })
+            transaction.update(family_ref, {"updatedAt": now})
+            return family_id
+
+        family_id = accept(transaction)
+        return self.get_family(uid, family_id)
+
+    def revoke_invitation(self, uid: str, family_id: str, invitation_id: str) -> Dict[str, Any]:
+        self.require_owner(uid, family_id)
+        db = self.db()
+        ref = db.collection("family_invitations").document(invitation_id)
+        snap = ref.get()
+        if not snap.exists:
+            raise HTTPException(status_code=404, detail="Invitation not found.")
+        data = snap.to_dict() or {}
+        if data.get("familyId") != family_id:
+            raise HTTPException(status_code=403, detail="Invitation belongs to a different family.")
+        if data.get("status") != "PENDING":
+            raise HTTPException(status_code=409, detail="Only pending invitations can be revoked.")
+        ref.update({"status": "REVOKED", "revokedAt": utc_now(), "updatedAt": utc_now()})
+        return {"success": True, "invitationId": invitation_id, "status": "REVOKED"}
+
+    def remove_member(self, owner_uid: str, family_id: str, member_uid: str) -> Dict[str, Any]:
+        self.require_owner(owner_uid, family_id)
+        if member_uid == owner_uid:
+            raise HTTPException(status_code=400, detail="The owner cannot remove themselves.")
+        db = self.db()
+        family_ref = db.collection("families").document(family_id)
+        member_ref = family_ref.collection("members").document(member_uid)
+        snap = member_ref.get()
+        if not snap.exists:
+            raise HTTPException(status_code=404, detail="Family member not found.")
+        transaction = db.transaction()
+
+        @firestore.transactional
+        def remove(transaction):
+            transaction.update(member_ref, {"status": "INACTIVE", "removedAt": utc_now(), "updatedAt": utc_now()})
+            membership_ref = db.collection("users").document(member_uid).collection("familyMemberships").document(family_id)
+            transaction.update(membership_ref, {"status": "INACTIVE", "leftAt": utc_now()})
+            transaction.update(family_ref, {"updatedAt": utc_now()})
+
+        remove(transaction)
+        return {"success": True, "removedUid": member_uid}
+
+    def leave_family(self, uid: str, family_id: str) -> Dict[str, Any]:
+        member = self.require_active_membership(uid, family_id)
+        if member.get("familyRole") == "OWNER":
+            raise HTTPException(status_code=400, detail="Owner cannot leave before transferring ownership or removing the family.")
+        db = self.db()
+        family_ref = db.collection("families").document(family_id)
+        member_ref = family_ref.collection("members").document(uid)
+        membership_ref = db.collection("users").document(uid).collection("familyMemberships").document(family_id)
+        transaction = db.transaction()
+
+        @firestore.transactional
+        def leave(transaction):
+            now = utc_now()
+            transaction.update(member_ref, {"status": "INACTIVE", "leftAt": now, "updatedAt": now})
+            transaction.update(membership_ref, {"status": "INACTIVE", "leftAt": now})
+            transaction.update(family_ref, {"updatedAt": now})
+
+        leave(transaction)
+        return {"success": True, "familyId": family_id}
+
+    def disband_family(self, uid: str, family_id: str) -> Dict[str, Any]:
+        self.require_owner(uid, family_id)
+        db = self.db()
+        family_ref = db.collection("families").document(family_id)
+        now = utc_now()
+        members = list(family_ref.collection("members").where("status", "==", "ACTIVE").stream())
+        for m in members:
+            m.reference.update({"status": "INACTIVE", "leftAt": now, "updatedAt": now})
+            try:
+                db.collection("users").document(m.id).collection("familyMemberships").document(family_id).update({
+                    "status": "INACTIVE",
+                    "leftAt": now,
+                })
+            except Exception:
+                pass
+        for inv in db.collection("family_invitations").where("familyId", "==", family_id).where("status", "==", "PENDING").stream():
+            inv.reference.update({"status": "REVOKED", "revokedAt": now, "updatedAt": now})
+        family_ref.update({"status": "DISBANDED", "updatedAt": now})
+        return {"success": True, "familyId": family_id, "status": "DISBANDED"}
+
+    def update_permissions(self, uid: str, family_id: str, member_uid: str, permissions: Dict[str, Optional[bool]]) -> Dict[str, Any]:
+        if uid != member_uid:
+            raise HTTPException(status_code=403, detail="Members can change only their own sharing permissions.")
+        self.require_active_membership(uid, family_id)
+        db = self.db()
+        ref = db.collection("families").document(family_id).collection("members").document(member_uid)
+        snap = ref.get()
+        if not snap.exists:
+            raise HTTPException(status_code=404, detail="Family member not found.")
+        current = (snap.to_dict() or {}).get("permissions") or {}
+        updated = {**DEFAULT_PERMISSIONS, **current}
+        for key, value in permissions.items():
+            if value is not None:
+                updated[key] = value
+        ref.update({"permissions": updated, "updatedAt": utc_now()})
+        return {"success": True, "permissions": updated}
+
+    def get_authorized_readings(self, viewer_uid: str, member_uid: str, limit_count: int = 100) -> Dict[str, Any]:
+        db = self.db()
+        if viewer_uid == member_uid:
+            membership = self.find_family_for_uid(viewer_uid)
+            family_id = membership.get("id") if membership else None
+        else:
+            viewer_membership = self.find_family_for_uid(viewer_uid)
+            if not viewer_membership:
+                raise HTTPException(status_code=403, detail="No active family membership.")
+            family_id = viewer_membership["id"]
+
+        if not family_id:
+            raise HTTPException(status_code=403, detail="No active family membership.")
+
+        target_membership = db.collection("families").document(family_id).collection("members").document(member_uid).get()
+        if not target_membership.exists:
+            raise HTTPException(status_code=403, detail="The requested member does not belong to your family.")
+        target = target_membership.to_dict() or {}
+        if target.get("status") != "ACTIVE":
+            raise HTTPException(status_code=403, detail="The requested family member is inactive.")
+        permissions = target.get("permissions") or DEFAULT_PERMISSIONS
+        if viewer_uid != member_uid and not permissions.get("viewReadings", False):
+            raise HTTPException(status_code=403, detail="This member has not granted reading access.")
+
+        readings_ref = db.collection("patient_records").document(member_uid).collection("readings")
+        try:
+            query = readings_ref.order_by("measuredAt", direction=firestore.Query.DESCENDING).limit(limit_count)
+            docs = list(query.stream())
+        except Exception:
+            docs = list(readings_ref.limit(limit_count).stream())
+        readings = [{"id": doc.id, **(doc.to_dict() or {})} for doc in docs]
+        for reading in readings:
+            for key in ("measuredAt", "createdAt", "updatedAt"):
+                if key in reading:
+                    reading[key] = serialize(reading[key])
+        return {"success": True, "uid": member_uid, "readings": readings, "permissions": permissions}
+
+
+family_service = FamilyService()

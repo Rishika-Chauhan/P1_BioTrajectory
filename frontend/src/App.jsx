@@ -11,6 +11,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { AuthProvider } from './context/AuthContext';
 import { DoctorAuthProvider } from './context/DoctorAuthContext';
+import { FamilyProvider } from './context/FamilyContext';
 
 import Navbar from './components/common/Navbar';
 import ProtectedRoute from './components/common/ProtectedRoute';
@@ -337,7 +338,9 @@ export default function App() {
           <LanguageProvider>
             <AuthProvider>
               <DoctorAuthProvider>
-                <AppRoutes />
+                <FamilyProvider>
+                  <AppRoutes />
+                </FamilyProvider>
               </DoctorAuthProvider>
             </AuthProvider>
           </LanguageProvider>

@@ -1,4 +1,3 @@
-
 """
 BioTrajectory Backend Configuration
 Core settings and environment variable management.
@@ -130,6 +129,10 @@ class Settings:
         "FIREBASE_CREDENTIALS_PATH",
         "secrets/firebase-service-account.json"
     ).strip()
+
+    # Optional family invitation email delivery (Resend)
+    RESEND_API_KEY: str = os.getenv("RESEND_API_KEY", "").strip()
+    FAMILY_INVITE_FROM: str = os.getenv("FAMILY_INVITE_FROM", "").strip()
 
     @property
     def firebase_credentials_file(self) -> Optional[Path]:
