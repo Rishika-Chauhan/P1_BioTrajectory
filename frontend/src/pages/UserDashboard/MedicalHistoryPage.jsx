@@ -1,9 +1,11 @@
+
 import React, {
   useCallback,
   useEffect,
   useMemo,
   useState
 } from 'react';
+
 import {
   FileText,
   UploadCloud,
@@ -16,144 +18,237 @@ import {
   Scan,
   Pill,
   Stethoscope,
-  Download,
   Calendar,
   Building,
   User,
   Eye,
   AlertCircle,
   Filter,
-  Sparkles,
   ArrowRight,
   Printer
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { healthReadingService } from '../../services/healthReadingService';
 import DisclaimerBanner from '../../components/common/DisclaimerBanner';
 
-// Date parser helper
 const toDate = (value) => {
   if (!value) return null;
-  if (typeof value.toDate === 'function') return value.toDate();
-  if (typeof value.seconds === 'number') return new Date(value.seconds * 1000);
+
+  if (typeof value.toDate === 'function') {
+    return value.toDate();
+  }
+
+  if (typeof value.seconds === 'number') {
+    return new Date(value.seconds * 1000);
+  }
+
   const date = value instanceof Date ? value : new Date(value);
+
   return Number.isNaN(date.getTime()) ? null : date;
 };
 
+const getLocalDateString = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+};
+
+const RECORD_TYPES = [
+  'blood_test',
+  'urine_test',
+  'imaging_scan',
+  'prescription',
+  'clinical_note',
+  'document'
+];
+
 export default function MedicalHistoryPage() {
   const { currentUser } = useAuth();
-  const { t, isHindi } = useLanguage();
+  const { isHindi } = useLanguage();
 
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [loadError, setLoadError] = useState('');
 
-  // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
-  // Modals state
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const [notification, setNotification] = useState(null);
+  const [notification, setNotification] = useState('');
 
-  // Upload Form state
   const [formType, setFormType] = useState('blood_test');
   const [formTitle, setFormTitle] = useState('');
-  const [formDate, setFormDate] = useState(new Date().toISOString().split('T')[0]);
+  const [formDate, setFormDate] = useState(getLocalDateString());
   const [formDoctor, setFormDoctor] = useState('');
   const [formFacility, setFormFacility] = useState('');
   const [formNotes, setFormNotes] = useState('');
-  const [formFileName, setFormFileName] = useState('');
   const [formSubmitting, setFormSubmitting] = useState(false);
 
-  // Load records
   const loadRecords = useCallback(async () => {
-    const uid = currentUser?.uid || 'demo-user-123';
-    setLoading(true);
-    try {
-      const data = await healthReadingService.listMedicalRecords(uid, 100);
-      // Strictly exclude daily vitals (BP, steps, HR, SpO2)
-      const clinicalOnly = (data || []).filter(
-        (r) => !['blood_pressure', 'activity', 'heart_rate', 'oxygen_saturation'].includes(r.type)
+    if (!currentUser?.uid) {
+      setRecords([]);
+      setLoadError(
+        isHindi
+          ? 'रिकॉर्ड देखने के लिए लॉगिन करें।'
+          : 'Please sign in to view your medical records.'
       );
-      setRecords(clinicalOnly.sort((a, b) => {
-        const da = toDate(a.measuredAt) || new Date(0);
-        const db = toDate(b.measuredAt) || new Date(0);
-        return db - da;
-      }));
-    } catch (err) {
-      console.error('Failed to load medical records:', err);
-    } finally {
       setLoading(false);
+      return;
     }
-  }, [currentUser]);
 
-  const handleManualRefresh = async () => {
-    setIsRefreshing(true);
     setLoading(true);
+    setLoadError('');
+
     try {
-      await new Promise((r) => setTimeout(r, 450));
-      await loadRecords();
+      const data = await healthReadingService.listMedicalRecords(
+        currentUser.uid,
+        100
+      );
+
+      const clinicalOnly = (data || []).filter(
+        (record) =>
+          ![
+            'blood_pressure',
+            'activity',
+            'heart_rate',
+            'oxygen_saturation'
+          ].includes(record.type)
+      );
+
+      clinicalOnly.sort((a, b) => {
+        const dateA = toDate(a.measuredAt) || new Date(0);
+        const dateB = toDate(b.measuredAt) || new Date(0);
+
+        return dateB - dateA;
+      });
+
+      setRecords(clinicalOnly);
+    } catch (error) {
+      console.error('Failed to load medical records:', error);
+
+      setRecords([]);
+      setLoadError(
+        isHindi
+          ? 'मेडिकल रिकॉर्ड लोड नहीं हो सके। कृपया दोबारा प्रयास करें।'
+          : 'Unable to load medical records. Please try again.'
+      );
     } finally {
-      setIsRefreshing(false);
       setLoading(false);
     }
-  };
+  }, [currentUser?.uid, isHindi]);
 
   useEffect(() => {
     loadRecords();
-  }, [loadRecords, refreshKey]);
+  }, [loadRecords]);
 
-  // Filter records
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+
+    try {
+      await loadRecords();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   const filteredRecords = useMemo(() => {
-    return records.filter((r) => {
-      // Category filter
-      if (selectedCategory !== 'all' && r.type !== selectedCategory) {
+    return records.filter((record) => {
+      if (
+        selectedCategory !== 'all' &&
+        record.type !== selectedCategory
+      ) {
         return false;
       }
-      // Search filter
+
       if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const title = (r.title || r.values?.title || '').toLowerCase();
-        const doc = (r.doctorName || r.values?.doctorName || '').toLowerCase();
-        const facility = (r.facility || r.values?.facility || '').toLowerCase();
-        const notes = (r.notes || '').toLowerCase();
-        const category = (r.category || '').toLowerCase();
-        return title.includes(q) || doc.includes(q) || facility.includes(q) || notes.includes(q) || category.includes(q);
+        const query = searchQuery.toLowerCase();
+        const values = record.values || {};
+
+        const searchableFields = [
+          record.title,
+          values.title,
+          record.doctorName,
+          values.doctorName,
+          record.facility,
+          values.facility,
+          record.notes,
+          record.category
+        ];
+
+        return searchableFields.some((field) =>
+          String(field || '').toLowerCase().includes(query)
+        );
       }
+
       return true;
     });
   }, [records, selectedCategory, searchQuery]);
 
-  // Categories list (strictly clinical - NO daily BP or walking history)
   const categories = [
-    { id: 'all', label: isHindi ? 'सभी रिकॉर्ड्स' : 'All Records', count: records.length },
-    { id: 'blood_test', label: isHindi ? 'रक्त परीक्षण एवं लैब' : 'Blood Tests & Labs', count: records.filter((r) => r.type === 'blood_test').length },
-    { id: 'urine_test', label: isHindi ? 'मूत्र परीक्षण रिपोर्ट' : 'Urine Test Reports', count: records.filter((r) => r.type === 'urine_test').length },
-    { id: 'imaging_scan', label: isHindi ? 'जांच स्कैन एवं इमेजिंग' : 'Diagnostic Scans', count: records.filter((r) => r.type === 'imaging_scan').length },
-    { id: 'prescription', label: isHindi ? 'डॉक्टर के पर्चे (Rx)' : 'Doctor Prescriptions', count: records.filter((r) => r.type === 'prescription').length },
-    { id: 'clinical_note', label: isHindi ? 'क्लिनिकल सारांश' : 'Clinical Summaries', count: records.filter((r) => r.type === 'clinical_note').length },
-    { id: 'document', label: isHindi ? 'अपलोड किए गए दस्तावेज़' : 'Uploaded Documents', count: records.filter((r) => r.type === 'document').length }
+    {
+      id: 'all',
+      label: isHindi ? 'सभी रिकॉर्ड्स' : 'All Records',
+      count: records.length
+    },
+    {
+      id: 'blood_test',
+      label: isHindi ? 'रक्त परीक्षण एवं लैब' : 'Blood Tests & Labs',
+      count: records.filter((r) => r.type === 'blood_test').length
+    },
+    {
+      id: 'urine_test',
+      label: isHindi ? 'मूत्र परीक्षण रिपोर्ट' : 'Urine Test Reports',
+      count: records.filter((r) => r.type === 'urine_test').length
+    },
+    {
+      id: 'imaging_scan',
+      label: isHindi ? 'जांच स्कैन एवं इमेजिंग' : 'Diagnostic Scans',
+      count: records.filter((r) => r.type === 'imaging_scan').length
+    },
+    {
+      id: 'prescription',
+      label: isHindi ? 'डॉक्टर के पर्चे (Rx)' : 'Doctor Prescriptions',
+      count: records.filter((r) => r.type === 'prescription').length
+    },
+    {
+      id: 'clinical_note',
+      label: isHindi ? 'क्लिनिकल सारांश' : 'Clinical Summaries',
+      count: records.filter((r) => r.type === 'clinical_note').length
+    },
+    {
+      id: 'document',
+      label: isHindi ? 'मेडिकल दस्तावेज़' : 'Medical Documents',
+      count: records.filter((r) => r.type === 'document').length
+    }
   ];
 
-  // Record Type Icon Helper
   const getRecordTypeIcon = (type) => {
     switch (type) {
       case 'blood_test':
         return <Droplet className="w-5 h-5 text-rose-500" />;
+
       case 'urine_test':
         return <Droplet className="w-5 h-5 text-amber-500" />;
+
       case 'imaging_scan':
-        return <Scan className="w-5 h-5 text-[#2672A8] dark:text-[#A9D6F5]" />;
+        return (
+          <Scan className="w-5 h-5 text-[#2672A8] dark:text-[#A9D6F5]" />
+        );
+
       case 'prescription':
         return <Pill className="w-5 h-5 text-emerald-500" />;
+
       case 'clinical_note':
         return <Stethoscope className="w-5 h-5 text-purple-500" />;
+
       default:
         return <FileSpreadsheet className="w-5 h-5 text-sky-500" />;
     }
@@ -163,167 +258,273 @@ export default function MedicalHistoryPage() {
     switch (type) {
       case 'blood_test':
         return isHindi ? 'रक्त परीक्षण' : 'Blood Laboratory Panel';
+
       case 'urine_test':
-        return isHindi ? 'मूत्र परीक्षण रिपोर्ट' : 'Urinalysis Diagnostic Report';
+        return isHindi ? 'मूत्र परीक्षण रिपोर्ट' : 'Urinalysis Report';
+
       case 'imaging_scan':
         return isHindi ? 'इमेजिंग एवं स्कैन' : 'Diagnostic Imaging & Scan';
+
       case 'prescription':
-        return isHindi ? 'पर्चा (Rx)' : 'Clinical Prescription';
+        return isHindi ? 'पर्चा (Rx)' : 'Prescription';
+
       case 'clinical_note':
-        return isHindi ? 'क्लिनिकल परामर्श' : 'Physician Consultation Summary';
+        return isHindi ? 'क्लिनिकल परामर्श' : 'Clinical Consultation Note';
+
       default:
-        return isHindi ? 'मेडिकल दस्तावेज़' : 'Medical Report Document';
+        return isHindi ? 'मेडिकल दस्तावेज़' : 'Medical Document';
     }
   };
 
-  // Handle Save New Record
-  const handleSaveRecord = async (e) => {
-    e.preventDefault();
+  const resetForm = () => {
+    setFormType('blood_test');
+    setFormTitle('');
+    setFormDate(getLocalDateString());
+    setFormDoctor('');
+    setFormFacility('');
+    setFormNotes('');
+  };
+
+  const handleSaveRecord = async (event) => {
+    event.preventDefault();
+
+    if (!currentUser?.uid) {
+      alert(
+        isHindi
+          ? 'रिकॉर्ड सहेजने के लिए लॉगिन करें।'
+          : 'Please sign in before saving a medical record.'
+      );
+      return;
+    }
+
+    if (!formTitle.trim()) {
+      alert(
+        isHindi
+          ? 'रिकॉर्ड का शीर्षक दर्ज करें।'
+          : 'Please enter a record title.'
+      );
+      return;
+    }
+
+    if (!RECORD_TYPES.includes(formType)) {
+      alert('Invalid record category.');
+      return;
+    }
+
+    if (
+      !formDate ||
+      Number.isNaN(Date.parse(`${formDate}T00:00:00`))
+    ) {
+      alert(
+        isHindi
+          ? 'कृपया सही तारीख चुनें।'
+          : 'Please select a valid date.'
+      );
+      return;
+    }
+
+    const today = getLocalDateString();
+
+    if (formDate > today) {
+      alert(
+        isHindi
+          ? 'भविष्य की तारीख स्वीकार नहीं है।'
+          : 'A future examination date is not allowed.'
+      );
+      return;
+    }
+
+    const selectedDate = new Date(`${formDate}T12:00:00`);
+
+    if (Number.isNaN(selectedDate.getTime())) {
+      alert(
+        isHindi
+          ? 'कृपया सही तारीख चुनें।'
+          : 'Please select a valid date.'
+      );
+      return;
+    }
+
     setFormSubmitting(true);
 
     try {
-      const uid = currentUser?.uid || 'demo-user-123';
-      let payloadValues = {
-        title: formTitle,
-        doctorName: formDoctor || 'Dr. Sarah Vance, MD',
-        facility: formFacility || 'Metropolitan Diagnostics Laboratory',
-        fileName: formFileName || 'diagnostic_report.pdf'
+      const values = {
+        title: formTitle.trim()
       };
 
-      let defaultFindings = [];
-      if (formType === 'blood_test') {
-        payloadValues.glucose = 95;
-        payloadValues.hemoglobin = 14.5;
-        defaultFindings = [
-          { name: 'Blood Glucose (Fasting)', value: '95 mg/dL', range: '70 – 99 mg/dL', status: 'optimal' },
-          { name: 'Hemoglobin (Hb)', value: '14.5 g/dL', range: '13.5 – 17.5 g/dL', status: 'optimal' }
-        ];
-      } else if (formType === 'urine_test') {
-        payloadValues.protein = 'Negative';
-        payloadValues.ph = 6.5;
-        defaultFindings = [
-          { name: 'Urinary Protein (Albumin)', value: 'Negative (0 mg/dL)', range: 'Negative (<30 mg/dL)', status: 'optimal' },
-          { name: 'Urine pH', value: '6.5', range: '5.0 – 8.0', status: 'optimal' }
-        ];
-      } else if (formType === 'prescription') {
-        payloadValues.medications = [
-          { name: 'Prescribed Medication', dosage: 'Daily', frequency: 'Once daily after breakfast', duration: '30 Days' }
-        ];
+      if (formDoctor.trim()) {
+        values.doctorName = formDoctor.trim();
       }
 
-      await healthReadingService.addMedicalRecord(uid, {
+      if (formFacility.trim()) {
+        values.facility = formFacility.trim();
+      }
+
+      await healthReadingService.addMedicalRecord(currentUser.uid, {
         type: formType,
-        measuredAt: new Date(formDate).toISOString(),
-        notes: formNotes || 'Clinically verified laboratory record added by patient.',
-        values: payloadValues,
-        findings: defaultFindings
+        measuredAt: selectedDate.toISOString(),
+        notes: formNotes.trim(),
+        values
       });
 
       setUploadModalOpen(false);
-      setFormTitle('');
-      setFormDoctor('');
-      setFormFacility('');
-      setFormNotes('');
-      setFormFileName('');
-      setNotification(isHindi ? 'मेडिकल रिकॉर्ड सफलतापूर्वक सहेज लिया गया!' : 'Medical record successfully saved to library!');
-      setTimeout(() => setNotification(null), 4000);
-      setRefreshKey((k) => k + 1);
-    } catch (err) {
-      alert(err.message || 'Failed to save record.');
+      resetForm();
+
+      setNotification(
+        isHindi
+          ? 'मेडिकल रिकॉर्ड सफलतापूर्वक सहेजा गया।'
+          : 'Medical record saved successfully.'
+      );
+
+      window.setTimeout(() => {
+        setNotification('');
+      }, 4000);
+
+      await loadRecords();
+    } catch (error) {
+      console.error('Failed to save medical record:', error);
+
+      alert(
+        error?.message ||
+          (isHindi
+            ? 'रिकॉर्ड सहेजा नहीं जा सका।'
+            : 'Unable to save the medical record.')
+      );
     } finally {
       setFormSubmitting(false);
     }
   };
 
+  const getRecordTitle = (record) =>
+    record.title ||
+    record.values?.title ||
+    (isHindi ? 'मेडिकल रिकॉर्ड' : 'Medical Record');
+
+  const getRecordDoctor = (record) =>
+    record.doctorName || record.values?.doctorName || '';
+
+  const getRecordFacility = (record) =>
+    record.facility || record.values?.facility || '';
+
   return (
     <div className="space-y-8 animate-fade-in p-2 sm:p-4 max-w-7xl mx-auto">
-      {/* SUCCESS NOTIFICATION TOAST */}
+
       {notification && (
         <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 flex items-center justify-between shadow-lg">
           <div className="flex items-center gap-2.5 font-bold text-sm">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <CheckCircle2 className="w-5 h-5" />
             <span>{notification}</span>
           </div>
-          <button onClick={() => setNotification(null)} className="p-1 hover:opacity-75">
+
+          <button
+            onClick={() => setNotification('')}
+            className="p-1 hover:opacity-75"
+            type="button"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
-      {/* HEADER SECTION */}
+      {/* HEADER */}
+
       <section className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <span className="px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-[#A9D6F5]/40 text-[#1F150E] dark:bg-[#A9D6F5]/20 dark:text-[#A9D6F5]">
-              {isHindi ? 'क्लिनिकल लाइब्रेरी' : 'Clinical Library'}
+              {isHindi ? 'मेडिकल लाइब्रेरी' : 'Medical Library'}
             </span>
           </div>
+
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#1F150E] dark:text-[#F6F0E4] mt-1">
-            {isHindi ? 'मेरे मेडिकल रिकॉर्ड्स एवं टेस्ट लाइब्रेरी' : 'My Medical Records & Test Library'}
+            {isHindi
+              ? 'मेरे मेडिकल रिकॉर्ड्स एवं टेस्ट लाइब्रेरी'
+              : 'My Medical Records & Test Library'}
           </h1>
+
           <p className="text-sm text-[#6B4F3A] dark:text-[#D5BF86] mt-1 max-w-3xl">
             {isHindi
-              ? 'प्रमाणित लैब टेस्ट, मूत्र परीक्षण रिपोर्ट, डायग्नोस्टिक स्कैन, डॉक्टर के पर्चे और परामर्श सारांश का व्यापक संग्रह।'
-              : 'Complete repository for blood test panels, urinalysis diagnostic reports, X-rays, clinical prescriptions, and medical files.'}
+              ? 'अपने मेडिकल रिकॉर्ड, लैब रिपोर्ट, स्कैन, पर्चे और क्लिनिकल नोट्स देखें।'
+              : 'View your medical records, laboratory reports, scans, prescriptions, and clinical notes.'}
           </p>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex items-center gap-3 self-start md:self-auto shrink-0">
           <button
             onClick={handleManualRefresh}
             disabled={loading || isRefreshing}
-            className="p-3 rounded-2xl bg-white dark:bg-[#2B1E15] border border-[#E8DFD1] dark:border-[#4A3525] text-[#6B4F3A] dark:text-[#D5BF86] hover:border-[#A9D6F5] shadow-xs cursor-pointer transition-all active:scale-95 disabled:opacity-60"
+            type="button"
+            className="p-3 rounded-2xl bg-white dark:bg-[#2B1E15] border border-[#E8DFD1] dark:border-[#4A3525] text-[#6B4F3A] dark:text-[#D5BF86] hover:border-[#A9D6F5] shadow-xs transition-all active:scale-95 disabled:opacity-60"
             title={isHindi ? 'रिफ्रेश करें' : 'Refresh Records'}
           >
-            <RefreshCw className={`w-5 h-5 ${loading || isRefreshing ? 'animate-spin text-[#2672A8] dark:text-[#A9D6F5]' : ''}`} />
+            <RefreshCw
+              className={`w-5 h-5 ${
+                loading || isRefreshing
+                  ? 'animate-spin text-[#2672A8] dark:text-[#A9D6F5]'
+                  : ''
+              }`}
+            />
           </button>
 
           <button
             onClick={() => setUploadModalOpen(true)}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-sm bg-[#A9D6F5] text-[#1F150E] hover:bg-[#7CBFEA] shadow-md shadow-sky-500/20 active:scale-95 transition-all cursor-pointer"
+            disabled={!currentUser?.uid}
+            type="button"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-sm bg-[#A9D6F5] text-[#1F150E] hover:bg-[#7CBFEA] shadow-md shadow-sky-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <UploadCloud className="w-5 h-5" />
-            <span>{isHindi ? 'नया मेडिकल रिकॉर्ड जोड़ें' : 'Upload Medical Record'}</span>
+            <span>
+              {isHindi ? 'नया मेडिकल रिकॉर्ड जोड़ें' : 'Add Medical Record'}
+            </span>
           </button>
         </div>
       </section>
 
-      {/* CLARIFICATION BANNER: VITALS VS CLINICAL RECORDS */}
+      {/* INFORMATION BANNER */}
+
       <div className="p-4 sm:p-5 rounded-3xl bg-[#F6F0E4]/80 dark:bg-[#2B1E15]/80 border border-[#E8DFD1] dark:border-[#4A3525] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm">
         <div className="flex items-center gap-3 text-[#6B4F3A] dark:text-[#D5BF86]">
           <AlertCircle className="w-5 h-5 text-[#2672A8] dark:text-[#A9D6F5] shrink-0" />
+
           <span>
             {isHindi
-              ? 'दैनिक रक्तचाप (BP), हृदय गति और चलने के कदम अलग से "माई हेल्थ एनालिटिक्स" ग्राफ़ में ट्रैक किए जाते हैं। यहाँ केवल अधिकृत मेडिकल रिकॉर्ड और लैब रिपोर्ट शामिल हैं।'
-              : 'Daily blood pressure readings, heart rate logs, and walking activity are tracked separately in the Health Analytics graphs. This library strictly maintains authentic clinical records & diagnostic panels.'}
+              ? 'दैनिक रक्तचाप, हृदय गति और गतिविधि अलग से हेल्थ एनालिटिक्स में ट्रैक किए जाते हैं। इस लाइब्रेरी में मेडिकल रिकॉर्ड दिखाए जाते हैं।'
+              : 'Daily blood pressure, heart rate, and activity are tracked separately in Health Analytics. This library displays medical records.'}
           </span>
         </div>
+
         <Link
           to="/dashboard/analytics"
           className="inline-flex items-center gap-1 font-bold text-[#2672A8] dark:text-[#A9D6F5] hover:underline whitespace-nowrap self-start sm:self-auto"
         >
-          <span>{isHindi ? 'स्वास्थ्य ग्राफ़ देखें' : 'View Vital Graphs'}</span>
+          <span>{isHindi ? 'स्वास्थ्य ग्राफ़ देखें' : 'View Health Analytics'}</span>
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
 
-      {/* SEARCH AND CATEGORY FILTER PILLS */}
+      {/* SEARCH AND FILTERS */}
+
       <section className="p-5 rounded-3xl bg-white dark:bg-[#2B1E15] border border-[#E8DFD1] dark:border-[#4A3525] shadow-xs space-y-4">
         <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
-          {/* Search Input */}
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B4F3A]/60 dark:text-[#D5BF86]/60" />
+
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={isHindi ? 'टेस्ट, डॉक्टर, या क्लिनिक का नाम खोजें...' : 'Search tests, doctors, clinics, or biomarkers...'}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder={
+                isHindi
+                  ? 'टेस्ट, डॉक्टर, या क्लिनिक का नाम खोजें...'
+                  : 'Search tests, doctors, clinics, or records...'
+              }
               className="w-full pl-10 pr-4 py-3 rounded-2xl bg-[#F6F0E4]/60 dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525] text-[#1F150E] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#A9D6F5]"
             />
+
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
+                type="button"
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
                 <X className="w-4 h-4" />
@@ -333,71 +534,100 @@ export default function MedicalHistoryPage() {
 
           <div className="text-xs font-semibold text-[#6B4F3A] dark:text-[#D5BF86] flex items-center gap-1">
             <Filter className="w-4 h-4 text-[#2672A8] dark:text-[#A9D6F5]" />
-            <span>{filteredRecords.length} {isHindi ? 'रिकॉर्ड मिले' : 'records available'}</span>
+            <span>
+              {filteredRecords.length}{' '}
+              {isHindi ? 'रिकॉर्ड मिले' : 'records found'}
+            </span>
           </div>
         </div>
 
-        {/* Category Pills (Strictly Clinical) */}
         <div className="flex flex-wrap gap-2 pt-2 border-t border-[#E8DFD1]/60 dark:border-[#4A3525]/60">
-          {categories.map((cat) => (
+          {categories.map((category) => (
             <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
-              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
-                selectedCategory === cat.id
-                  ? 'bg-[#A9D6F5] text-[#1F150E] shadow-sm font-extrabold scale-102'
+              key={category.id}
+              onClick={() => setSelectedCategory(category.id)}
+              type="button"
+              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 ${
+                selectedCategory === category.id
+                  ? 'bg-[#A9D6F5] text-[#1F150E] shadow-sm'
                   : 'bg-[#F6F0E4] dark:bg-[#1F150E] text-[#6B4F3A] dark:text-[#D5BF86] hover:bg-[#E8DFD1] dark:hover:bg-[#4A3525]'
               }`}
             >
-              <span>{cat.label}</span>
-              <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
-                selectedCategory === cat.id
-                  ? 'bg-[#1F150E]/15 text-[#1F150E]'
-                  : 'bg-black/5 dark:bg-white/10 text-slate-600 dark:text-slate-400'
-              }`}>
-                {cat.count}
+              <span>{category.label}</span>
+
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/5 dark:bg-white/10">
+                {category.count}
               </span>
             </button>
           ))}
         </div>
       </section>
 
-      {/* MEDICAL RECORDS LISTING */}
+      {/* RECORD LIST */}
+
       <section className="space-y-4">
         {loading ? (
-          <div className="rounded-3xl border border-[#E8DFD1] dark:border-[#4A3525] bg-white dark:bg-[#2B1E15] p-12 text-center text-[#6B4F3A] dark:text-[#D5BF86] space-y-3">
+          <div className="rounded-3xl border border-[#E8DFD1] dark:border-[#4A3525] bg-white dark:bg-[#2B1E15] p-12 text-center space-y-3">
             <RefreshCw className="w-8 h-8 animate-spin text-[#A9D6F5] mx-auto" />
+
             <p className="font-bold text-[#1F150E] dark:text-white">
-              {isHindi ? 'मेडिकल रिकॉर्ड्स लोड हो रहे हैं...' : 'Loading your medical records library...'}
+              {isHindi
+                ? 'मेडिकल रिकॉर्ड्स लोड हो रहे हैं...'
+                : 'Loading medical records...'}
             </p>
           </div>
+        ) : loadError ? (
+          <div className="rounded-3xl border border-red-300 dark:border-red-900 bg-white dark:bg-[#2B1E15] p-10 text-center space-y-4">
+            <AlertCircle className="w-10 h-10 text-red-500 mx-auto" />
+
+            <p className="text-sm text-red-600 dark:text-red-400">
+              {loadError}
+            </p>
+
+            <button
+              onClick={loadRecords}
+              type="button"
+              className="px-5 py-2.5 rounded-xl font-bold text-xs bg-[#A9D6F5] text-[#1F150E]"
+            >
+              {isHindi ? 'दोबारा प्रयास करें' : 'Try Again'}
+            </button>
+          </div>
         ) : filteredRecords.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-[#E8DFD1] dark:border-[#4A3525] bg-white dark:bg-[#2B1E15] p-12 text-center text-[#6B4F3A] dark:text-[#D5BF86] space-y-4">
+          <div className="rounded-3xl border border-dashed border-[#E8DFD1] dark:border-[#4A3525] bg-white dark:bg-[#2B1E15] p-12 text-center space-y-4">
             <FileText className="w-12 h-12 text-[#A9D6F5] mx-auto" />
+
             <div className="space-y-1">
               <h3 className="text-xl font-bold text-[#1F150E] dark:text-white">
-                {isHindi ? 'कोई मेल खाने वाला मेडिकल रिकॉर्ड नहीं मिला' : 'No matching medical records found'}
+                {isHindi
+                  ? 'कोई मेडिकल रिकॉर्ड नहीं मिला'
+                  : 'No medical records found'}
               </h3>
+
               <p className="text-sm text-[#6B4F3A] dark:text-[#D5BF86] max-w-md mx-auto">
                 {isHindi
-                  ? 'आपके चुने हुए फ़िल्टर या खोज के अनुसार कोई रिकॉर्ड उपलब्ध नहीं है।'
-                  : 'Try selecting a different category, clearing your search query, or upload a new record.'}
+                  ? 'अलग फ़िल्टर चुनें या नया मेडिकल रिकॉर्ड जोड़ें।'
+                  : 'Try another filter or add a new medical record.'}
               </p>
             </div>
+
             <button
-              onClick={() => { setSelectedCategory('all'); setSearchQuery(''); }}
-              className="px-5 py-2.5 rounded-xl font-bold text-xs bg-[#F6F0E4] dark:bg-[#1F150E] text-[#1F150E] dark:text-[#F6F0E4] border border-[#E8DFD1] dark:border-[#4A3525] hover:bg-[#A9D6F5] hover:text-[#1F150E] cursor-pointer"
+              onClick={() => {
+                setSelectedCategory('all');
+                setSearchQuery('');
+              }}
+              type="button"
+              className="px-5 py-2.5 rounded-xl font-bold text-xs bg-[#F6F0E4] dark:bg-[#1F150E] text-[#1F150E] dark:text-[#F6F0E4] border border-[#E8DFD1] dark:border-[#4A3525]"
             >
-              {isHindi ? 'सभी फ़िल्टर साफ़ करें' : 'Reset All Filters'}
+              {isHindi ? 'फ़िल्टर साफ़ करें' : 'Reset Filters'}
             </button>
           </div>
         ) : (
           <div className="grid gap-4">
             {filteredRecords.map((record) => {
-              const vals = record.values || {};
-              const docName = record.doctorName || vals.doctorName || 'Dr. Sarah Vance, MD';
-              const facName = record.facility || vals.facility || 'Metropolitan Diagnostics Laboratory';
-              const recDate = toDate(record.measuredAt);
+              const values = record.values || {};
+              const doctor = getRecordDoctor(record);
+              const facility = getRecordFacility(record);
+              const recordDate = toDate(record.measuredAt);
 
               return (
                 <article
@@ -406,20 +636,20 @@ export default function MedicalHistoryPage() {
                   className="rounded-3xl border border-[#E8DFD1] dark:border-[#4A3525] bg-white dark:bg-[#2B1E15] p-6 shadow-xs hover:border-[#A9D6F5] hover:shadow-md transition-all cursor-pointer group"
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                    {/* Left: Icon & Meta */}
                     <div className="flex items-start sm:items-center gap-4">
                       <div className="p-3.5 rounded-2xl bg-[#F6F0E4] dark:bg-[#1F150E] group-hover:bg-[#A9D6F5]/25 transition-colors shrink-0">
                         {getRecordTypeIcon(record.type)}
                       </div>
 
-                      <div className="space-y-1 min-w-0">
+                      <div className="space-y-2 min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-lg sm:text-xl font-bold text-[#1F150E] dark:text-white group-hover:text-[#2672A8] dark:group-hover:text-[#A9D6F5] transition-colors truncate">
-                            {record.title || vals.title || 'Diagnostic Clinical Record'}
+                          <h3 className="text-lg sm:text-xl font-bold text-[#1F150E] dark:text-white group-hover:text-[#2672A8] dark:group-hover:text-[#A9D6F5] transition-colors">
+                            {getRecordTitle(record)}
                           </h3>
-                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>{isHindi ? 'सत्यापित' : 'Clinically Verified'}</span>
+
+                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                            <AlertCircle className="w-3.5 h-3.5" />
+                            {isHindi ? 'असत्यापित' : 'Not Verified'}
                           </span>
                         </div>
 
@@ -427,59 +657,54 @@ export default function MedicalHistoryPage() {
                           <span className="font-semibold text-[#2672A8] dark:text-[#A9D6F5]">
                             {getRecordTypeLabel(record.type)}
                           </span>
-                          <span>•</span>
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                            {recDate
-                              ? recDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-                              : 'Date recorded'}
-                          </span>
-                          <span>•</span>
-                          <span className="flex items-center gap-1">
-                            <User className="w-3.5 h-3.5 text-slate-400" />
-                            {docName}
-                          </span>
-                          <span>•</span>
-                          <span className="flex items-center gap-1">
-                            <Building className="w-3.5 h-3.5 text-slate-400" />
-                            {facName}
-                          </span>
+
+                          {recordDate && (
+                            <span className="flex items-center gap-1">
+                              <Calendar className="w-3.5 h-3.5" />
+                              {recordDate.toLocaleDateString('en-IN', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric'
+                              })}
+                            </span>
+                          )}
+
+                          {doctor && (
+                            <span className="flex items-center gap-1">
+                              <User className="w-3.5 h-3.5" />
+                              {doctor}
+                            </span>
+                          )}
+
+                          {facility && (
+                            <span className="flex items-center gap-1">
+                              <Building className="w-3.5 h-3.5" />
+                              {facility}
+                            </span>
+                          )}
                         </p>
                       </div>
                     </div>
 
-                    {/* Right: Key Summary & Button */}
-                    <div className="flex items-center justify-between lg:justify-end gap-3 pt-3 lg:pt-0 border-t lg:border-t-0 border-[#E8DFD1]/60 dark:border-[#4A3525]/60 shrink-0">
-                      {/* Biomarker highlights */}
-                      {Array.isArray(record.findings) && record.findings.length > 0 && (
-                        <div className="hidden sm:flex items-center gap-2">
-                          {record.findings.slice(0, 2).map((f, idx) => (
-                            <span
-                              key={idx}
-                              className="px-3 py-1 rounded-xl bg-[#F6F0E4] dark:bg-[#1F150E] text-[11px] font-semibold text-[#1F150E] dark:text-[#F6F0E4] border border-[#E8DFD1] dark:border-[#4A3525]"
-                            >
-                              <strong className="text-[#6B4F3A] dark:text-[#D5BF86]">{f.name}: </strong>
-                              {f.value}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
-                      {record.type === 'prescription' && Array.isArray(vals.medications) && (
-                        <span className="hidden sm:inline-block px-3 py-1 rounded-xl bg-[#F6F0E4] dark:bg-[#1F150E] text-[11px] font-semibold text-[#1F150E] dark:text-[#F6F0E4] border border-[#E8DFD1] dark:border-[#4A3525]">
-                          {vals.medications.length} {isHindi ? 'दवाएं निर्धारित' : 'Medications Prescribed'}
-                        </span>
-                      )}
+                    <div className="flex items-center justify-end gap-3 pt-3 lg:pt-0 border-t lg:border-t-0 border-[#E8DFD1]/60 dark:border-[#4A3525]/60 shrink-0">
+                      {record.type === 'prescription' &&
+                        Array.isArray(values.medications) && (
+                          <span className="hidden sm:inline-block px-3 py-1 rounded-xl bg-[#F6F0E4] dark:bg-[#1F150E] text-[11px] font-semibold text-[#1F150E] dark:text-[#F6F0E4] border border-[#E8DFD1] dark:border-[#4A3525]">
+                            {values.medications.length}{' '}
+                            {isHindi ? 'दवाएं' : 'Medications'}
+                          </span>
+                        )}
 
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
+                        onClick={(event) => {
+                          event.stopPropagation();
                           setSelectedRecord(record);
                         }}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-[#A9D6F5]/40 hover:bg-[#A9D6F5] text-[#1F150E] dark:bg-[#A9D6F5]/20 dark:hover:bg-[#A9D6F5] dark:hover:text-[#1F150E] transition-all cursor-pointer"
+                        type="button"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-[#A9D6F5]/40 hover:bg-[#A9D6F5] text-[#1F150E] dark:bg-[#A9D6F5]/20 transition-all"
                       >
                         <Eye className="w-3.5 h-3.5" />
-                        <span>{isHindi ? 'विवरण देखें' : 'View Details'}</span>
+                        {isHindi ? 'विवरण देखें' : 'View Details'}
                       </button>
                     </div>
                   </div>
@@ -490,161 +715,207 @@ export default function MedicalHistoryPage() {
         )}
       </section>
 
-      {/* RECORD DETAIL MODAL */}
+      {/* RECORD DETAILS MODAL */}
+
       {selectedRecord && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="w-full max-w-2xl rounded-3xl bg-white dark:bg-[#2B1E15] border border-[#E8DFD1] dark:border-[#4A3525] shadow-2xl p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
+
             <div className="flex items-start justify-between pb-4 border-b border-[#E8DFD1] dark:border-[#4A3525]">
               <div className="flex items-center gap-3">
                 <div className="p-3.5 rounded-2xl bg-[#F6F0E4] dark:bg-[#1F150E]">
                   {getRecordTypeIcon(selectedRecord.type)}
                 </div>
+
                 <div>
                   <h3 className="text-xl sm:text-2xl font-bold text-[#1F150E] dark:text-white">
-                    {selectedRecord.title || selectedRecord.values?.title || 'Diagnostic Clinical Record'}
+                    {getRecordTitle(selectedRecord)}
                   </h3>
+
                   <p className="text-xs text-[#6B4F3A] dark:text-[#D5BF86] mt-0.5">
-                    {selectedRecord.category || getRecordTypeLabel(selectedRecord.type)} •{' '}
-                    {toDate(selectedRecord.measuredAt)?.toLocaleDateString('en-IN', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric'
-                    })}
+                    {getRecordTypeLabel(selectedRecord.type)}
+                    {' • '}
+                    {toDate(selectedRecord.measuredAt)?.toLocaleDateString(
+                      'en-IN',
+                      {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                      }
+                    ) || (isHindi ? 'तिथि उपलब्ध नहीं' : 'Date unavailable')}
                   </p>
                 </div>
               </div>
+
               <button
                 onClick={() => setSelectedRecord(null)}
-                className="p-2 rounded-xl text-[#6B4F3A] dark:text-[#D5BF86] hover:bg-[#F6F0E4] dark:hover:bg-[#1F150E] cursor-pointer"
+                type="button"
+                className="p-2 rounded-xl text-[#6B4F3A] dark:text-[#D5BF86] hover:bg-[#F6F0E4] dark:hover:bg-[#1F150E]"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Clinician and Facility Info Card */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-2xl bg-[#F6F0E4]/60 dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525] text-xs">
-              <div className="flex items-center gap-2.5">
-                <User className="w-4 h-4 text-[#2672A8] dark:text-[#A9D6F5]" />
-                <div>
-                  <p className="font-bold text-[#1F150E] dark:text-white">
-                    {selectedRecord.doctorName || selectedRecord.values?.doctorName || 'Dr. Sarah Vance, MD'}
-                  </p>
-                  <p className="text-[#6B4F3A] dark:text-[#D5BF86]">{isHindi ? 'उपस्थित चिकित्सक' : 'Attending Clinician'}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <Building className="w-4 h-4 text-[#2672A8] dark:text-[#A9D6F5]" />
-                <div>
-                  <p className="font-bold text-[#1F150E] dark:text-white">
-                    {selectedRecord.facility || selectedRecord.values?.facility || 'Metropolitan Diagnostics Laboratory'}
-                  </p>
-                  <p className="text-[#6B4F3A] dark:text-[#D5BF86]">{isHindi ? 'प्रयोगशाला / अस्पताल' : 'Laboratory / Facility'}</p>
-                </div>
-              </div>
+            <div className="flex items-center gap-2 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-semibold">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              {isHindi
+                ? 'यह रिकॉर्ड स्वतंत्र रूप से चिकित्सकीय रूप से सत्यापित नहीं है।'
+                : 'This record has not been independently clinically verified.'}
             </div>
 
-            {/* Findings Table */}
-            {Array.isArray(selectedRecord.findings) && selectedRecord.findings.length > 0 && (
-              <div className="space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-[#6B4F3A] dark:text-[#D5BF86]">
-                  {isHindi ? 'बायोमार्कर परिणाम एवं सामान्य संदर्भ सीमाएं' : 'Diagnostic Lab Parameters & Normal Reference Ranges'}
-                </h4>
-                <div className="rounded-2xl border border-[#E8DFD1] dark:border-[#4A3525] overflow-hidden">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-[#F6F0E4] dark:bg-[#1F150E] text-[#6B4F3A] dark:text-[#D5BF86] border-b border-[#E8DFD1] dark:border-[#4A3525]">
-                      <tr>
-                        <th className="p-3 font-bold">{isHindi ? 'बायोमार्कर' : 'Biomarker'}</th>
-                        <th className="p-3 font-bold">{isHindi ? 'अवलोकित मान' : 'Observed Value'}</th>
-                        <th className="p-3 font-bold">{isHindi ? 'संदर्भ सीमा' : 'Reference Range'}</th>
-                        <th className="p-3 font-bold">{isHindi ? 'स्थिति' : 'Status'}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#E8DFD1] dark:divide-[#4A3525]">
-                      {selectedRecord.findings.map((f, i) => (
-                        <tr key={i}>
-                          <td className="p-3 font-semibold text-[#1F150E] dark:text-white">{f.name}</td>
-                          <td className="p-3 font-mono font-bold text-[#2672A8] dark:text-[#A9D6F5]">{f.value}</td>
-                          <td className="p-3 text-[#6B4F3A] dark:text-[#D5BF86]">{f.range}</td>
-                          <td className="p-3 text-emerald-700 dark:text-emerald-400 font-bold">✓ {isHindi ? 'सामान्य' : 'Normal'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
+            {/* DOCTOR AND FACILITY */}
 
-            {/* Prescribed Medications */}
-            {selectedRecord.type === 'prescription' && Array.isArray(selectedRecord.values?.medications) && (
-              <div className="space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-[#6B4F3A] dark:text-[#D5BF86]">
-                  {isHindi ? 'निर्धारित दवाएं' : 'Prescribed Medications'}
-                </h4>
-                <div className="space-y-2">
-                  {selectedRecord.values.medications.map((m, idx) => (
-                    <div
-                      key={idx}
-                      className="p-3.5 rounded-2xl bg-[#F6F0E4]/60 dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525] flex justify-between items-center text-xs"
-                    >
-                      <div>
-                        <p className="font-bold text-[#1F150E] dark:text-white text-sm">{m.name}</p>
-                        <p className="text-[#6B4F3A] dark:text-[#D5BF86]">{m.frequency} • {m.duration || '30 Days'}</p>
-                      </div>
-                      <span className="px-3 py-1 rounded-xl bg-white dark:bg-[#2B1E15] font-mono font-bold text-[#2672A8] dark:text-[#A9D6F5]">
-                        {m.dosage}
-                      </span>
+            {(getRecordDoctor(selectedRecord) ||
+              getRecordFacility(selectedRecord)) && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-2xl bg-[#F6F0E4]/60 dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525] text-xs">
+
+                {getRecordDoctor(selectedRecord) && (
+                  <div className="flex items-center gap-2.5">
+                    <User className="w-4 h-4 text-[#2672A8] dark:text-[#A9D6F5]" />
+
+                    <div>
+                      <p className="font-bold text-[#1F150E] dark:text-white">
+                        {getRecordDoctor(selectedRecord)}
+                      </p>
+                      <p className="text-[#6B4F3A] dark:text-[#D5BF86]">
+                        {isHindi ? 'चिकित्सक' : 'Doctor / Clinician'}
+                      </p>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                )}
+
+                {getRecordFacility(selectedRecord) && (
+                  <div className="flex items-center gap-2.5">
+                    <Building className="w-4 h-4 text-[#2672A8] dark:text-[#A9D6F5]" />
+
+                    <div>
+                      <p className="font-bold text-[#1F150E] dark:text-white">
+                        {getRecordFacility(selectedRecord)}
+                      </p>
+                      <p className="text-[#6B4F3A] dark:text-[#D5BF86]">
+                        {isHindi ? 'अस्पताल / प्रयोगशाला' : 'Facility'}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Clinician Notes */}
+            {/* FINDINGS */}
+
+            {Array.isArray(selectedRecord.findings) &&
+              selectedRecord.findings.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#6B4F3A] dark:text-[#D5BF86]">
+                    {isHindi ? 'दर्ज किए गए परिणाम' : 'Recorded Findings'}
+                  </h4>
+
+                  <div className="rounded-2xl border border-[#E8DFD1] dark:border-[#4A3525] overflow-hidden">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-[#F6F0E4] dark:bg-[#1F150E] text-[#6B4F3A] dark:text-[#D5BF86]">
+                        <tr>
+                          <th className="p-3 font-bold">
+                            {isHindi ? 'पैरामीटर' : 'Parameter'}
+                          </th>
+                          <th className="p-3 font-bold">
+                            {isHindi ? 'दर्ज मान' : 'Recorded Value'}
+                          </th>
+                          <th className="p-3 font-bold">
+                            {isHindi ? 'संदर्भ सीमा' : 'Reference Range'}
+                          </th>
+                        </tr>
+                      </thead>
+
+                      <tbody className="divide-y divide-[#E8DFD1] dark:divide-[#4A3525]">
+                        {selectedRecord.findings.map((finding, index) => (
+                          <tr key={index}>
+                            <td className="p-3 font-semibold text-[#1F150E] dark:text-white">
+                              {finding.name || '—'}
+                            </td>
+
+                            <td className="p-3 font-mono font-bold text-[#2672A8] dark:text-[#A9D6F5]">
+                              {finding.value || '—'}
+                            </td>
+
+                            <td className="p-3 text-[#6B4F3A] dark:text-[#D5BF86]">
+                              {finding.range || '—'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+            {/* PRESCRIPTIONS */}
+
+            {selectedRecord.type === 'prescription' &&
+              Array.isArray(selectedRecord.values?.medications) &&
+              selectedRecord.values.medications.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#6B4F3A] dark:text-[#D5BF86]">
+                    {isHindi ? 'दर्ज दवाएं' : 'Recorded Medications'}
+                  </h4>
+
+                  <div className="space-y-2">
+                    {selectedRecord.values.medications.map(
+                      (medication, index) => (
+                        <div
+                          key={index}
+                          className="p-3.5 rounded-2xl bg-[#F6F0E4]/60 dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525] text-xs"
+                        >
+                          <p className="font-bold text-[#1F150E] dark:text-white text-sm">
+                            {medication.name || '—'}
+                          </p>
+
+                          <p className="text-[#6B4F3A] dark:text-[#D5BF86]">
+                            {medication.frequency || '—'}
+                          </p>
+
+                          <p className="text-[#2672A8] dark:text-[#A9D6F5] mt-1">
+                            {medication.dosage || '—'}
+                            {medication.duration
+                              ? ` • ${medication.duration}`
+                              : ''}
+                          </p>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
+              )}
+
+            {/* NOTES */}
+
             {selectedRecord.notes && (
               <div className="space-y-1.5">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-[#6B4F3A] dark:text-[#D5BF86]">
-                  {isHindi ? 'चिकित्सक की टिप्पणी' : 'Clinician Impression & Notes'}
+                  {isHindi ? 'टिप्पणियां' : 'Notes'}
                 </h4>
-                <p className="p-4 rounded-2xl bg-[#F6F0E4]/50 dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525] text-sm text-[#1F150E] dark:text-white leading-relaxed">
+
+                <p className="p-4 rounded-2xl bg-[#F6F0E4]/50 dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525] text-sm text-[#1F150E] dark:text-white leading-relaxed whitespace-pre-wrap">
                   {selectedRecord.notes}
                 </p>
               </div>
             )}
 
-            {/* Attached file info */}
-            {selectedRecord.values?.fileName && (
-              <div className="p-3 rounded-2xl bg-[#F6F0E4]/40 dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525] flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-[#2672A8] dark:text-[#A9D6F5]" />
-                  <span className="font-bold text-[#1F150E] dark:text-white">{selectedRecord.values.fileName}</span>
-                </div>
-                <span className="text-[#6B4F3A] dark:text-[#D5BF86]">PDF Document (Verified)</span>
-              </div>
-            )}
+            {/* ACTIONS */}
 
-            {/* Modal Actions */}
-            <div className="pt-3 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#E8DFD1] dark:border-[#4A3525]">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => alert(isHindi ? 'डाउनलोड शुरू हो गया है।' : 'Official clinical report PDF downloaded.')}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#A9D6F5] text-[#1F150E] font-bold text-xs hover:bg-[#7CBFEA] cursor-pointer"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>{isHindi ? 'रिपोर्ट PDF डाउनलोड करें' : 'Download PDF'}</span>
-                </button>
-                <button
-                  onClick={() => window.print()}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#F6F0E4] dark:bg-[#1F150E] text-[#1F150E] dark:text-white font-bold text-xs border border-[#E8DFD1] dark:border-[#4A3525] cursor-pointer"
-                >
-                  <Printer className="w-3.5 h-3.5" />
-                  <span>{isHindi ? 'प्रिंट करें' : 'Print'}</span>
-                </button>
-              </div>
+            <div className="pt-3 flex items-center justify-between gap-3 border-t border-[#E8DFD1] dark:border-[#4A3525]">
+              <button
+                onClick={() => window.print()}
+                type="button"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#F6F0E4] dark:bg-[#1F150E] text-[#1F150E] dark:text-white font-bold text-xs border border-[#E8DFD1] dark:border-[#4A3525]"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                {isHindi ? 'प्रिंट करें' : 'Print'}
+              </button>
 
               <button
                 onClick={() => setSelectedRecord(null)}
-                className="px-6 py-2.5 rounded-xl font-bold text-sm bg-[#1F150E] dark:bg-white text-white dark:text-[#1F150E] cursor-pointer"
+                type="button"
+                className="px-6 py-2.5 rounded-xl font-bold text-sm bg-[#1F150E] dark:bg-white text-white dark:text-[#1F150E]"
               >
                 {isHindi ? 'बंद करें' : 'Close'}
               </button>
@@ -653,9 +924,10 @@ export default function MedicalHistoryPage() {
         </div>
       )}
 
-      {/* UPLOAD MEDICAL RECORD MODAL */}
+      {/* ADD RECORD MODAL */}
+
       {uploadModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <form
             onSubmit={handleSaveRecord}
             className="w-full max-w-xl rounded-3xl bg-white dark:bg-[#2B1E15] border border-[#E8DFD1] dark:border-[#4A3525] shadow-2xl p-6 sm:p-8 space-y-5 max-h-[92vh] overflow-y-auto"
@@ -663,154 +935,174 @@ export default function MedicalHistoryPage() {
             <div className="flex items-start justify-between pb-3 border-b border-[#E8DFD1] dark:border-[#4A3525]">
               <div>
                 <h3 className="text-xl font-bold text-[#1F150E] dark:text-white">
-                  {isHindi ? 'नया मेडिकल रिकॉर्ड अपलोड करें' : 'Upload New Medical Record'}
+                  {isHindi ? 'नया मेडिकल रिकॉर्ड जोड़ें' : 'Add Medical Record'}
                 </h3>
-                <p className="text-xs text-[#6B4F3A] dark:text-[#D5BF86] mt-0.5">
+
+                <p className="text-xs text-[#6B4F3A] dark:text-[#D5BF86] mt-1">
                   {isHindi
-                    ? 'लैब टेस्ट पैनल, मूत्र रिपोर्ट, इमेजिंग स्कैन, डॉक्टर के पर्चे और परामर्श सारांश जोड़ें।'
-                    : 'Add lab test panels, urinalysis diagnostic reports, scans, prescriptions, or clinical notes.'}
+                    ? 'केवल वास्तविक जानकारी दर्ज करें।'
+                    : 'Enter information from your actual medical record.'}
                 </p>
               </div>
+
               <button
                 type="button"
                 onClick={() => setUploadModalOpen(false)}
-                className="p-2 rounded-xl text-[#6B4F3A] dark:text-[#D5BF86] hover:bg-[#F6F0E4] dark:hover:bg-[#1F150E] cursor-pointer"
+                className="p-2 rounded-xl text-[#6B4F3A] dark:text-[#D5BF86] hover:bg-[#F6F0E4] dark:hover:bg-[#1F150E]"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Category Select (Strictly Clinical) */}
+            {/* CATEGORY */}
+
             <div className="space-y-1.5">
               <label className="text-xs font-bold uppercase tracking-wider text-[#1F150E] dark:text-[#F6F0E4]">
                 {isHindi ? 'रिकॉर्ड श्रेणी' : 'Record Category'}
               </label>
+
               <select
                 value={formType}
-                onChange={(e) => setFormType(e.target.value)}
+                onChange={(event) => setFormType(event.target.value)}
                 className="w-full p-3 rounded-2xl bg-[#F6F0E4]/60 dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525] text-[#1F150E] dark:text-white text-sm"
               >
-                <option value="blood_test">{isHindi ? 'रक्त परीक्षण एवं लैब (Blood Tests & Labs)' : 'Blood Tests & Labs'}</option>
-                <option value="urine_test">{isHindi ? 'मूत्र परीक्षण रिपोर्ट (Urine Analysis Reports)' : 'Urine Analysis Reports'}</option>
-                <option value="imaging_scan">{isHindi ? 'जांच स्कैन एवं इमेजिंग (Diagnostic Scans & Imaging)' : 'Diagnostic Scans & Imaging'}</option>
-                <option value="prescription">{isHindi ? 'डॉक्टर के पर्चे (Doctor Prescriptions)' : 'Doctor Prescriptions'}</option>
-                <option value="clinical_note">{isHindi ? 'क्लिनिकल सारांश (Clinical Summaries)' : 'Clinical Summaries'}</option>
-                <option value="document">{isHindi ? 'अपलोड किए गए दस्तावेज़ (Uploaded Documents)' : 'Uploaded Documents'}</option>
+                <option value="blood_test">Blood Tests & Labs</option>
+                <option value="urine_test">Urine Analysis Reports</option>
+                <option value="imaging_scan">Diagnostic Scans & Imaging</option>
+                <option value="prescription">Doctor Prescriptions</option>
+                <option value="clinical_note">Clinical Notes</option>
+                <option value="document">Medical Documents</option>
               </select>
-              <p className="text-[11px] text-[#6B4F3A] dark:text-[#D5BF86]">
-                {isHindi
-                  ? 'दैनिक बीपी और कदमों का इतिहास अलग से स्वास्थ्य ग्राफ़ में दर्ज होता है।'
-                  : 'Daily BP and walking steps are logged under Health Analytics.'}
-              </p>
             </div>
 
-            {/* Title & Date */}
+            {/* TITLE AND DATE */}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-wider text-[#1F150E] dark:text-[#F6F0E4]">
-                  {isHindi ? 'रिकॉर्ड का नाम / शीर्षक' : 'Record Title'}
+                  {isHindi ? 'रिकॉर्ड का शीर्षक' : 'Record Title'}
                 </label>
+
                 <input
                   required
+                  maxLength={120}
                   value={formTitle}
-                  onChange={(e) => setFormTitle(e.target.value)}
-                  placeholder={isHindi ? 'जैसे: कम्पलीट ब्लड काउंट (CBC)' : 'e.g., Complete Blood Count (CBC)'}
+                  onChange={(event) => setFormTitle(event.target.value)}
+                  placeholder="e.g., Complete Blood Count (CBC)"
                   className="w-full p-3 rounded-2xl bg-[#F6F0E4]/60 dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525] text-[#1F150E] dark:text-white text-sm"
                 />
               </div>
+
               <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-wider text-[#1F150E] dark:text-[#F6F0E4]">
                   {isHindi ? 'जांच तिथि' : 'Examination Date'}
                 </label>
+
                 <input
                   type="date"
                   required
+                  max={getLocalDateString()}
                   value={formDate}
-                  onChange={(e) => setFormDate(e.target.value)}
+                  onChange={(event) => setFormDate(event.target.value)}
                   className="w-full p-3 rounded-2xl bg-[#F6F0E4]/60 dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525] text-[#1F150E] dark:text-white text-sm"
                 />
               </div>
             </div>
 
-            {/* Doctor & Clinic */}
+            {/* DOCTOR AND FACILITY */}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-wider text-[#1F150E] dark:text-[#F6F0E4]">
-                  {isHindi ? 'उपस्थित चिकित्सक' : 'Attending Physician'}
+                  {isHindi ? 'चिकित्सक का नाम' : 'Doctor Name (Optional)'}
                 </label>
+
                 <input
+                  maxLength={120}
                   value={formDoctor}
-                  onChange={(e) => setFormDoctor(e.target.value)}
-                  placeholder="Dr. Sarah Vance, MD"
+                  onChange={(event) => setFormDoctor(event.target.value)}
+                  placeholder="Enter actual doctor name"
                   className="w-full p-3 rounded-2xl bg-[#F6F0E4]/60 dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525] text-[#1F150E] dark:text-white text-sm"
                 />
               </div>
+
               <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-wider text-[#1F150E] dark:text-[#F6F0E4]">
-                  {isHindi ? 'प्रयोगशाला / अस्पताल' : 'Clinic / Hospital'}
+                  {isHindi ? 'अस्पताल / लैब' : 'Hospital / Lab (Optional)'}
                 </label>
+
                 <input
+                  maxLength={150}
                   value={formFacility}
-                  onChange={(e) => setFormFacility(e.target.value)}
-                  placeholder="Metropolitan Diagnostics Laboratory"
+                  onChange={(event) => setFormFacility(event.target.value)}
+                  placeholder="Enter actual facility name"
                   className="w-full p-3 rounded-2xl bg-[#F6F0E4]/60 dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525] text-[#1F150E] dark:text-white text-sm"
                 />
               </div>
             </div>
 
-            {/* Notes */}
+            {/* NOTES */}
+
             <div className="space-y-1.5">
               <label className="text-xs font-bold uppercase tracking-wider text-[#1F150E] dark:text-[#F6F0E4]">
-                {isHindi ? 'क्लिनिकल टिप्पणी / परिणाम' : 'Clinical Notes / Findings'}
+                {isHindi ? 'टिप्पणियां' : 'Notes (Optional)'}
               </label>
+
               <textarea
-                rows={2}
+                rows={3}
+                maxLength={2000}
                 value={formNotes}
-                onChange={(e) => setFormNotes(e.target.value)}
-                placeholder={isHindi ? 'डॉक्टर की सलाह या निष्कर्ष दर्ज करें...' : 'Clinician remarks, findings, or impressions...'}
+                onChange={(event) => setFormNotes(event.target.value)}
+                placeholder={
+                  isHindi
+                    ? 'रिकॉर्ड से संबंधित वास्तविक जानकारी दर्ज करें...'
+                    : 'Enter notes from your actual medical record...'
+                }
                 className="w-full p-3 rounded-2xl bg-[#F6F0E4]/60 dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525] text-[#1F150E] dark:text-white text-sm"
               />
             </div>
 
-            {/* File Upload */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#1F150E] dark:text-[#F6F0E4]">
-                {isHindi ? 'रिपोर्ट फ़ाइल संलग्न करें (PDF / छवि)' : 'Attach Report (PDF / Image)'}
-              </label>
-              <input
-                type="file"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) setFormFileName(f.name);
-                }}
-                className="w-full p-2.5 text-xs rounded-xl bg-[#F6F0E4]/60 dark:bg-[#1F150E] border border-[#E8DFD1] dark:border-[#4A3525]"
-              />
+            {/* FILE STORAGE NOTICE */}
+
+            <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-700 dark:text-amber-300 flex gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+
+              <span>
+                {isHindi
+                  ? 'फ़ाइल अटैचमेंट अभी उपलब्ध नहीं है। वास्तविक फ़ाइल स्टोरेज कॉन्फ़िगर होने के बाद यह सुविधा जोड़ी जाएगी।'
+                  : 'File attachments are temporarily unavailable. Actual file upload and download will be enabled after secure file storage is configured.'}
+              </span>
             </div>
 
-            {/* Actions */}
+            {/* ACTIONS */}
+
             <div className="pt-2 flex justify-end gap-3 border-t border-[#E8DFD1] dark:border-[#4A3525]">
               <button
                 type="button"
                 onClick={() => setUploadModalOpen(false)}
-                className="px-5 py-2.5 rounded-xl font-semibold text-sm border border-[#E8DFD1] dark:border-[#4A3525] text-[#6B4F3A] cursor-pointer"
+                className="px-5 py-2.5 rounded-xl font-semibold text-sm border border-[#E8DFD1] dark:border-[#4A3525] text-[#6B4F3A]"
               >
                 {isHindi ? 'रद्द करें' : 'Cancel'}
               </button>
+
               <button
                 type="submit"
                 disabled={formSubmitting}
-                className="px-6 py-2.5 rounded-xl font-bold text-sm bg-[#A9D6F5] text-[#1F150E] hover:bg-[#7CBFEA] disabled:opacity-50 cursor-pointer"
+                className="px-6 py-2.5 rounded-xl font-bold text-sm bg-[#A9D6F5] text-[#1F150E] hover:bg-[#7CBFEA] disabled:opacity-50"
               >
                 {formSubmitting
-                  ? (isHindi ? 'सहेज रहे हैं...' : 'Saving...')
-                  : (isHindi ? 'रिकॉर्ड सहेजें' : 'Save to Medical Records')}
+                  ? isHindi
+                    ? 'सहेज रहे हैं...'
+                    : 'Saving...'
+                  : isHindi
+                    ? 'रिकॉर्ड सहेजें'
+                    : 'Save Record'}
               </button>
             </div>
           </form>
         </div>
       )}
 
-      {/* FOOTER DISCLAIMER */}
       <DisclaimerBanner
         text={
           isHindi

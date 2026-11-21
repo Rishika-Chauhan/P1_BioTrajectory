@@ -8,7 +8,6 @@ import {
   FileText,
   Clock,
   QrCode,
-  PlusCircle,
   ArrowRight,
   AlertCircle,
   ChevronRight,
@@ -20,7 +19,6 @@ import {
 import { useDoctorAuth } from "../../context/DoctorAuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { appointmentService } from "../../services/appointmentService";
-import { formatDoctorTitle } from "../../services/doctorService";
 
 function getToday() {
   const now = new Date();
@@ -77,6 +75,7 @@ export default function DoctorOverviewPage() {
 
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -93,12 +92,13 @@ export default function DoctorOverviewPage() {
       appointmentService.subscribeToDoctorAppointments(
         doctor.uid,
         (data) => {
-          setAppointments(data);
+          setAppointments(Array.isArray(data) ? data : []);
           setLoading(false);
+          setError("");
         },
         (err) => {
           console.error("Doctor overview appointment error:", err);
-          setError(err.message || "Unable to load appointments.");
+          setError(err?.message || "Unable to load appointments.");
           setLoading(false);
         }
       );
@@ -107,19 +107,25 @@ export default function DoctorOverviewPage() {
   }, [doctor?.uid, isVerified]);
 
   const handleRefresh = async () => {
-    setLoading(true);
+    if (!doctor?.uid || !isVerified) {
+      setError("Verified doctor account is required.");
+      return;
+    }
+
+    setRefreshing(true);
     setError("");
+
     try {
-      await new Promise((r) => setTimeout(r, 450));
-      const uid = doctor?.uid || 'doc_mock_1';
-      const data = await appointmentService.getDoctorAppointments(uid);
-      if (Array.isArray(data)) {
-        setAppointments(data);
-      }
+      const data = await appointmentService.getDoctorAppointments(
+        doctor.uid
+      );
+
+      setAppointments(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("Overview refresh failed:", err);
+      console.error("Doctor overview refresh failed:", err);
+      setError(err?.message || "Unable to refresh appointments.");
     } finally {
-      setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -152,6 +158,20 @@ export default function DoctorOverviewPage() {
     [appointments]
   );
 
+  const uniquePatientCount = useMemo(() => {
+    const patientIds = new Set(
+      appointments
+        .map((appointment) => appointment.patientId)
+        .filter(Boolean)
+    );
+
+    return patientIds.size;
+  }, [appointments]);
+
+  const doctorName = doctor?.fullName || doctor?.name || "";
+  const specialization = doctor?.specialization || "";
+  const clinicName = doctor?.clinicName || "";
+
   return (
     <div className="space-y-8 pb-12">
 
@@ -161,38 +181,52 @@ export default function DoctorOverviewPage() {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <span className="text-xs font-semibold tracking-wider uppercase px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
-                {t('doctor.practicePortal', {}, 'Doctor Practice Portal')}
+                {t("doctor.practicePortal", {}, "Doctor Practice Portal")}
               </span>
 
               {isVerified && (
                 <span className="text-xs font-medium px-2 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  {t('doctor.verifiedPractitioner', {}, 'Verified Practitioner')}
+                  {t("doctor.verifiedPractitioner", {}, "Verified Practitioner")}
                 </span>
               )}
             </div>
 
             <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
-              {t('doctor.welcomeBack', {}, 'Welcome back,')}{" "}
-              {formatDoctorTitle(doctor?.fullName || doctor?.name)}
+              {t("doctor.welcomeBack", {}, "Welcome back,")}{" "}
+              {doctorName ? `Dr. ${doctorName.replace(/^(Dr\.?\s*)+/i, "")}` : "Doctor"}
             </h1>
 
-            <p className="text-slate-600 dark:text-slate-300 text-sm mt-1">
-              {doctor?.specialization || (isHindi ? "कार्डियोलॉजी एवं फिजिशियन" : "Cardiology & Physician")}
-              {" • "}
-              {doctor?.clinicName || (isHindi ? "मेट्रो हेल्थ क्लिनिक" : "Metro Health Clinic")}
-            </p>
+            {(specialization || clinicName) && (
+              <p className="text-slate-600 dark:text-slate-300 text-sm mt-1">
+                {specialization}
+                {specialization && clinicName ? " • " : ""}
+                {clinicName}
+              </p>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={handleRefresh}
-              disabled={loading}
+              disabled={loading || refreshing || !isVerified}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm font-semibold hover:border-blue-500 cursor-pointer active:scale-95 transition-all disabled:opacity-60 shadow-xs"
-              title={isHindi ? 'डैशबोर्ड रिफ्रेश करें' : 'Refresh Dashboard'}
+              title={isHindi ? "डैशबोर्ड रिफ्रेश करें" : "Refresh Dashboard"}
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-blue-500' : ''}`} />
-              <span>{loading ? (isHindi ? 'रिफ्रेश...' : 'Refreshing...') : (isHindi ? 'रिफ्रेश' : 'Refresh')}</span>
+              <RefreshCw
+                className={`w-4 h-4 ${
+                  refreshing ? "animate-spin text-blue-500" : ""
+                }`}
+              />
+              <span>
+                {refreshing
+                  ? isHindi
+                    ? "रिफ्रेश..."
+                    : "Refreshing..."
+                  : isHindi
+                    ? "रिफ्रेश"
+                    : "Refresh"}
+              </span>
             </button>
 
             <Link
@@ -200,7 +234,7 @@ export default function DoctorOverviewPage() {
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition-all"
             >
               <Calendar className="w-4 h-4" />
-              {t('doctor.appointments', {}, 'Appointments')}
+              {t("doctor.appointments", {}, "Appointments")}
             </Link>
 
             <Link
@@ -208,7 +242,7 @@ export default function DoctorOverviewPage() {
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 dark:bg-slate-800 text-white text-sm font-medium hover:bg-slate-800 transition-all"
             >
               <QrCode className="w-4 h-4" />
-              {t('doctor.scanQr', {}, 'Scan Patient QR')}
+              {t("doctor.scanQr", {}, "Scan Patient QR")}
             </Link>
           </div>
         </div>
@@ -222,37 +256,53 @@ export default function DoctorOverviewPage() {
         </div>
       )}
 
-      {/* Real appointment metrics */}
+      {/* Appointment metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <MetricCard
           icon={Users}
-          title={t('doctor.authorizedPatients', {}, 'Authorized Patients')}
-          value={isHindi ? "4 सक्रिय मरीज" : "4 Patients"}
-          subtitle={isHindi ? "सत्यापित सहमति के साथ सक्रिय मरीज।" : "Active patient access with verified consent."}
+          title={isHindi ? "अपॉइंटमेंट वाले मरीज" : "Patients with Appointments"}
+          value={loading ? "—" : uniquePatientCount}
+          subtitle={
+            isHindi
+              ? "अपॉइंटमेंट रिकॉर्ड में अलग-अलग मरीज।"
+              : "Distinct patients in your appointment records."
+          }
           color="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
         />
 
         <MetricCard
           icon={Calendar}
-          title={t('doctor.todayAppointments', {}, "Today's Appointments")}
+          title={t("doctor.todayAppointments", {}, "Today's Appointments")}
           value={loading ? "—" : todayAppointments.length}
-          subtitle={isHindi ? "आज के लिए निर्धारित परामर्श।" : "Appointments scheduled for today."}
+          subtitle={
+            isHindi
+              ? "आज के लिए निर्धारित परामर्श।"
+              : "Appointments scheduled for today."
+          }
           color="bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400"
         />
 
         <MetricCard
           icon={Video}
-          title={t('doctor.upcomingVideo', {}, 'Upcoming Video Consultations')}
+          title={t("doctor.upcomingVideo", {}, "Upcoming Video Consultations")}
           value={loading ? "—" : upcomingVideoAppointments.length}
-          subtitle={isHindi ? "स्वीकृत वीडियो परामर्श बुकिंग।" : "Accepted video appointment bookings."}
+          subtitle={
+            isHindi
+              ? "स्वीकृत वीडियो परामर्श बुकिंग।"
+              : "Accepted video appointment bookings."
+          }
           color="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400"
         />
 
         <MetricCard
           icon={FileText}
           title={isHindi ? "क्लिनिकल रिपोर्ट" : "Clinical Reports"}
-          value={isHindi ? "3 सहेजी गई" : "3 Saved"}
-          subtitle={isHindi ? "दैनिक रोगी स्वास्थ्य रिपोर्ट और नुस्खे।" : "Patient health summaries and prescriptions."}
+          value="Not connected"
+          subtitle={
+            isHindi
+              ? "रिपोर्ट स्टोरेज अभी उपलब्ध नहीं है।"
+              : "Clinical report storage is not connected yet."
+          }
           color="bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400"
         />
       </div>
@@ -263,16 +313,21 @@ export default function DoctorOverviewPage() {
           <div>
             <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <Calendar className="w-5 h-5 text-blue-500" />
-              {isHindi ? "आज का परामर्श कार्यक्रम" : "Today's Consultation Schedule"}
+              {isHindi
+                ? "आज का परामर्श कार्यक्रम"
+                : "Today's Consultation Schedule"}
             </h2>
 
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              {new Date().toLocaleDateString(isHindi ? "hi-IN" : "en-IN", {
-                weekday: "long",
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-              })}
+              {new Date().toLocaleDateString(
+                isHindi ? "hi-IN" : "en-IN",
+                {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                }
+              )}
             </p>
           </div>
 
@@ -280,7 +335,8 @@ export default function DoctorOverviewPage() {
             to="/doctor/appointments"
             className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
           >
-            {isHindi ? "पूरा कार्यक्रम देखें" : "Full Schedule"} <ArrowRight className="w-3 h-3" />
+            {isHindi ? "पूरा कार्यक्रम देखें" : "Full Schedule"}
+            <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
 
@@ -292,7 +348,9 @@ export default function DoctorOverviewPage() {
         ) : todayAppointments.length === 0 ? (
           <div className="text-center py-10 text-slate-500">
             <Calendar className="mx-auto mb-3" size={34} />
-            <p className="font-semibold">No appointments scheduled today</p>
+            <p className="font-semibold">
+              No appointments scheduled today
+            </p>
             <p className="text-xs mt-1">
               New appointment requests will appear here automatically.
             </p>
@@ -306,7 +364,9 @@ export default function DoctorOverviewPage() {
               >
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-bold flex items-center justify-center text-sm">
-                    {(appointment.patientName || "P").charAt(0).toUpperCase()}
+                    {(appointment.patientName || "P")
+                      .charAt(0)
+                      .toUpperCase()}
                   </div>
 
                   <div>
@@ -383,7 +443,8 @@ export default function DoctorOverviewPage() {
           to="/doctor/appointments"
           className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
         >
-          Review appointments <ChevronRight className="w-3 h-3" />
+          Review appointments
+          <ChevronRight className="w-3 h-3" />
         </Link>
       </div>
 

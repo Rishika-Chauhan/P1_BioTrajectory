@@ -1,762 +1,822 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import {
-  FileText,
-  Pill,
-  Calendar,
-  FolderOpen,
-  ShieldCheck,
-  ArrowRight,
-  Activity,
-  Stethoscope,
-  CheckCircle2,
-  Check,
-  AlertCircle,
-  Plus,
-  Search,
-  ExternalLink,
-  X,
-  Printer,
-  User,
-  AlertOctagon,
-  Heart,
-  Sparkles,
-  Eye,
-  Video,
-  Phone,
-  Clock
-} from 'lucide-react';
-import { useDoctorAuth } from '../../context/DoctorAuthContext';
-import { useLanguage } from '../../context/LanguageContext';
-import { DoctorService, formatDoctorTitle } from '../../services/doctorService';
-import { appointmentService } from '../../services/appointmentService';
 
-export default function DoctorMedicalRecordsPage() {
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  Calendar as CalendarIcon,
+  Clock,
+  Video,
+  User,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  CalendarDays,
+  List,
+  RefreshCw,
+  Search,
+  Plus,
+  X,
+  Building,
+  ChevronRight,
+} from "lucide-react";
+
+import { useDoctorAuth } from "../../context/DoctorAuthContext";
+import { useLanguage } from "../../context/LanguageContext";
+import { appointmentService } from "../../services/appointmentService";
+import { doctorPatientService } from "../../services/doctorPatientService";
+
+function getToday() {
+  const now = new Date();
+
+  return [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, "0"),
+    String(now.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
+function formatDate(value) {
+  if (!value) return "Date not provided";
+
+  const date = new Date(`${value}T00:00:00`);
+
+  if (Number.isNaN(date.getTime())) return value;
+
+  return date.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function statusStyle(status) {
+  switch (status) {
+    case "ACCEPTED":
+      return "bg-emerald-100 text-emerald-700";
+    case "REJECTED":
+      return "bg-rose-100 text-rose-700";
+    case "COMPLETED":
+      return "bg-blue-100 text-blue-700";
+    case "CANCELLED":
+      return "bg-slate-100 text-slate-600";
+    default:
+      return "bg-amber-100 text-amber-700";
+  }
+}
+
+export default function DoctorAppointmentsPage() {
   const { doctor } = useDoctorAuth();
   const { isHindi } = useLanguage();
 
-  const [patients, setPatients] = useState([]);
   const [appointments, setAppointments] = useState([]);
-  const [reports, setReports] = useState([]);
-  const [prescriptions, setPrescriptions] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'completed' | 'ongoing' | 'priority'
-  const [selectedReportModal, setSelectedReportModal] = useState(null);
-  const [toastMessage, setToastMessage] = useState(null);
+  const [patients, setPatients] = useState([]);
 
-  const doctorUid = doctor?.uid || 'demo-doctor-uid-002';
+  const [activeTab, setActiveTab] = useState("all");
+  const [viewMode, setViewMode] = useState("list");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [updatingId, setUpdatingId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const loadAllData = () => {
-    try {
-      const pts = (typeof DoctorService?.getDoctorPatients === 'function' ? DoctorService.getDoctorPatients(doctorUid) : []) || [];
-      const appts = (typeof appointmentService?.getDoctorAppointments === 'function'
-        ? appointmentService.getDoctorAppointments(doctorUid)
-        : (typeof appointmentService?.getStoredDoctorAppointments === 'function'
-            ? appointmentService.getStoredDoctorAppointments(doctorUid)
-            : [])) || [];
-      const reps = (typeof DoctorService?.getDoctorReports === 'function' ? DoctorService.getDoctorReports(doctorUid) : []) || [];
-      const rxs = (typeof DoctorService?.getDoctorPrescriptions === 'function' ? DoctorService.getDoctorPrescriptions(doctorUid) : []) || [];
-
-      setPatients(pts);
-      setAppointments(appts);
-      setReports(reps);
-      setPrescriptions(rxs);
-    } catch (err) {
-      console.warn('Error loading doctor medical records data:', err);
-    }
-  };
+  const [newSchedule, setNewSchedule] = useState({
+    patientId: "",
+    appointmentDate: getToday(),
+    appointmentTime: "10:30",
+    type: "video",
+    reason: "",
+  });
 
   useEffect(() => {
-    loadAllData();
+    if (!doctor?.uid) {
+      setAppointments([]);
+      setPatients([]);
+      setLoading(false);
+      return;
+    }
 
-    // Listen to appointment changes across tabs
-    const handleApptUpdate = () => {
-      loadAllData();
-    };
+    setLoading(true);
+    setError("");
 
-    window.addEventListener('bt_doctor_appointments_updated', handleApptUpdate);
-    window.addEventListener('storage', handleApptUpdate);
+    const unsubscribeAppointments =
+      appointmentService.subscribeToDoctorAppointments(
+        doctor.uid,
+        (data) => {
+          setAppointments(data);
+          setLoading(false);
+        },
+        (err) => {
+          console.error("Appointment subscription failed:", err);
+          setError(
+            err?.message || "Unable to load appointments."
+          );
+          setLoading(false);
+        }
+      );
+
+    const unsubscribePatients =
+      doctorPatientService.subscribeToDoctorPatients(
+        doctor.uid,
+        (data) => setPatients(data),
+        (err) => {
+          console.error("Patient roster subscription failed:", err);
+          setError(
+            err?.message || "Unable to load patient directory."
+          );
+        }
+      );
 
     return () => {
-      window.removeEventListener('bt_doctor_appointments_updated', handleApptUpdate);
-      window.removeEventListener('storage', handleApptUpdate);
+      unsubscribeAppointments?.();
+      unsubscribePatients?.();
     };
-  }, [doctorUid]);
+  }, [doctor?.uid]);
 
-  const showToast = (msg) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 4000);
-  };
+  const handleRefresh = async () => {
+    if (!doctor?.uid) return;
 
-  // Mark appointment as completed directly from records page
-  const handleMarkAppointmentCompleted = async (patientName, apptId) => {
+    setLoading(true);
+    setError("");
+
     try {
-      if (apptId) {
-        await appointmentService.updateStatus(apptId, 'COMPLETED', doctorUid);
-      } else {
-        // Add completed appointment record if none existed
-        const updated = appointments.map((a) => {
-          if (a.patientName?.toLowerCase() === patientName?.toLowerCase()) {
-            return { ...a, status: 'COMPLETED' };
-          }
-          return a;
-        });
-        localStorage.setItem(`bt_doctor_appointments_${doctorUid}`, JSON.stringify(updated));
-      }
-      loadAllData();
-      showToast(
-        isHindi
-          ? `✓ ${patientName} का परामर्श सफलतापूर्वक 'पूर्ण' (Completed) चिह्नित किया गया!`
-          : `✓ Appointment for ${patientName} marked as Completed!`
-      );
-    } catch (e) {
-      console.error(e);
-      showToast(e.message || 'Failed to update status.');
+      const [appointmentData, patientData] = await Promise.all([
+        appointmentService.getDoctorAppointments(doctor.uid),
+        doctorPatientService.getDoctorPatients(doctor.uid),
+      ]);
+
+      setAppointments(appointmentData);
+      setPatients(patientData);
+    } catch (err) {
+      console.error("Manual refresh failed:", err);
+      setError(err?.message || "Unable to refresh appointments.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Associate each patient with their appointment completion status & reports
-  const enrichedPatients = useMemo(() => {
-    return patients.map((patient) => {
-      const pName = (patient.patientName || patient.name || '').trim().toLowerCase();
+  const filteredAppointments = useMemo(() => {
+    let list = [...appointments];
 
-      // Find matching appointments
-      const matchedAppts = appointments.filter(
-        (a) =>
-          a.patientId === patient.id ||
-          a.patientId === patient.patientId ||
-          (a.patientName && a.patientName.trim().toLowerCase() === pName)
+    if (activeTab === "today") {
+      list = list.filter(
+        (apt) => apt.appointmentDate === getToday()
+      );
+    } else if (activeTab === "video") {
+      list = list.filter((apt) => apt.type === "video");
+    } else if (activeTab === "in-person") {
+      list = list.filter((apt) => apt.type === "in-person");
+    } else if (activeTab === "completed") {
+      list = list.filter((apt) => apt.status === "COMPLETED");
+    } else if (activeTab === "pending") {
+      list = list.filter((apt) => apt.status === "PENDING");
+    }
+
+    if (searchQuery.trim()) {
+      const term = searchQuery.toLowerCase().trim();
+
+      list = list.filter((apt) => {
+        return (
+          (apt.patientName || "").toLowerCase().includes(term) ||
+          (apt.reason || "").toLowerCase().includes(term) ||
+          (apt.appointmentDate || "").toLowerCase().includes(term) ||
+          (apt.type || "").toLowerCase().includes(term) ||
+          (apt.id || "").toLowerCase().includes(term)
+        );
+      });
+    }
+
+    return list;
+  }, [appointments, activeTab, searchQuery]);
+
+  const handleUpdateStatus = async (appointmentId, status) => {
+    try {
+      setUpdatingId(appointmentId);
+      setError("");
+
+      await appointmentService.updateStatus(
+        appointmentId,
+        status
       );
 
-      // Check for completed appointment
-      const completedAppt = matchedAppts.find((a) => a.status === 'COMPLETED');
-      const activeAppt = matchedAppts.find((a) => a.status === 'ACCEPTED' || a.status === 'PENDING');
-
-      // Check if patient metadata specifies completed
-      const isCompleted =
-        Boolean(completedAppt) ||
-        patient.appointmentStatus === 'COMPLETED' ||
-        patient.status === 'Consultation Completed';
-
-      const completedDate =
-        completedAppt?.appointmentDate ||
-        patient.completedAppointmentDate ||
-        (isCompleted ? patient.lastVisit?.replace(/\(.*?\)/g, '').trim() : null);
-
-      const completedTime = completedAppt?.appointmentTime || patient.completedAppointmentTime || '11:15';
-      const completedType = completedAppt?.type === 'in-person' ? 'In-Person Visit' : 'Video Consultation';
-
-      // Find previous reports for this patient
-      const patientReports = reports.filter(
-        (r) =>
-          r.patientId === patient.id ||
-          r.patientId === patient.patientId ||
-          (r.patientName && r.patientName.trim().toLowerCase() === pName)
+      setToastMessage(
+        isHindi
+          ? `अपॉइंटमेंट स्थिति ${status} में अपडेट की गई।`
+          : `Appointment status updated to ${status}.`
       );
 
-      // Find previous prescriptions for this patient
-      const patientPrescriptions = prescriptions.filter(
-        (rx) =>
-          rx.patientId === patient.id ||
-          rx.patientId === patient.patientId ||
-          (rx.patientName && rx.patientName.trim().toLowerCase() === pName)
+      setTimeout(() => setToastMessage(""), 3500);
+    } catch (err) {
+      console.error("Appointment update failed:", err);
+      setError(err?.message || "Could not update appointment.");
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const handleAddScheduleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!doctor?.uid) {
+      setError("Doctor account is not available.");
+      return;
+    }
+
+    const selectedPatient = patients.find(
+      (patient) => patient.patientId === newSchedule.patientId
+    );
+
+    if (!selectedPatient) {
+      setError(
+        isHindi
+          ? "कृपया सूची से एक वैध मरीज चुनें।"
+          : "Please select a valid patient from the list."
+      );
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setError("");
+
+      await appointmentService.addDoctorAppointment(doctor, {
+        patientId: selectedPatient.patientId,
+        patientName:
+          selectedPatient.patientName ||
+          selectedPatient.name ||
+          "Patient",
+        appointmentDate: newSchedule.appointmentDate,
+        appointmentTime: newSchedule.appointmentTime,
+        type: newSchedule.type,
+        reason: newSchedule.reason,
+      });
+
+      setShowAddModal(false);
+
+      setToastMessage(
+        isHindi
+          ? "अपॉइंटमेंट अनुरोध Firestore में सहेजा गया।"
+          : "Appointment request saved to Firestore."
       );
 
-      return {
-        ...patient,
-        hasCompletedAppointment: isCompleted,
-        completedAppointmentDetails: isCompleted
-          ? {
-              date: completedDate,
-              time: completedTime,
-              type: completedType,
-              apptId: completedAppt?.id || null
-            }
-          : null,
-        activeAppointmentDetails: activeAppt
-          ? {
-              id: activeAppt.id,
-              date: activeAppt.appointmentDate,
-              time: activeAppt.appointmentTime,
-              type: activeAppt.type,
-              status: activeAppt.status
-            }
-          : null,
-        previousReports: patientReports,
-        previousPrescriptions: patientPrescriptions
-      };
-    });
-  }, [patients, appointments, reports, prescriptions]);
+      setTimeout(() => setToastMessage(""), 4000);
 
-  // Filter & Search Logic
-  const filteredPatients = useMemo(() => {
-    return enrichedPatients.filter((p) => {
-      const q = searchQuery.toLowerCase().trim();
-      const nameMatch = (p.name || p.patientName || '').toLowerCase().includes(q);
-      const condMatch = (p.condition || p.primaryCondition || '').toLowerCase().includes(q);
-      const idMatch = (p.id || '').toLowerCase().includes(q);
+      setNewSchedule({
+        patientId: "",
+        appointmentDate: getToday(),
+        appointmentTime: "10:30",
+        type: "video",
+        reason: "",
+      });
+    } catch (err) {
+      console.error("Failed to add appointment:", err);
+      setError(err?.message || "Failed to schedule appointment.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-      if (q && !nameMatch && !condMatch && !idMatch) {
-        return false;
-      }
-
-      if (activeFilter === 'completed') {
-        return p.hasCompletedAppointment;
-      }
-      if (activeFilter === 'priority') {
-        return p.isPriority || p.isDanger;
-      }
-      if (activeFilter === 'ongoing') {
-        return !p.hasCompletedAppointment;
-      }
-      return true;
-    });
-  }, [enrichedPatients, searchQuery, activeFilter]);
-
-  const completedCount = enrichedPatients.filter((p) => p.hasCompletedAppointment).length;
-  const priorityCount = enrichedPatients.filter((p) => p.isPriority || p.isDanger).length;
+  const tabs = [
+    { id: "all", label: isHindi ? "सभी नियुक्तियां" : "All Appointments" },
+    { id: "pending", label: isHindi ? "लंबित अनुरोध" : "Pending Requests" },
+    { id: "today", label: isHindi ? "आज का कार्यक्रम" : "Today's Schedule" },
+    { id: "video", label: isHindi ? "वीडियो परामर्श" : "Video Consultations" },
+    { id: "in-person", label: isHindi ? "प्रत्यक्ष मुलाकात" : "In-Person Visits" },
+    { id: "completed", label: isHindi ? "पूर्ण" : "Completed" },
+  ];
 
   return (
     <div className="space-y-7 pb-12">
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 p-4 rounded-2xl bg-[#1F150E] text-white border border-cyan-500/40 shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-5">
-          <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-          <span className="text-xs sm:text-sm font-bold">{toastMessage}</span>
-        </div>
-      )}
-
-      {/* Top Banner & Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-            <span className="text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full bg-cyan-100 dark:bg-cyan-900/40 text-cyan-800 dark:text-cyan-300">
-              {isHindi ? 'मरीज मेडिकल रिकॉर्ड्स' : 'Clinical Medical Records Registry'}
-            </span>
-            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
-              <ShieldCheck className="w-3.5 h-3.5" /> {isHindi ? 'सत्यापित क्लिनिकल रिकॉर्ड' : 'Certified Clinical Access'}
-            </span>
-          </div>
+          <span className="text-xs font-semibold px-3 py-1 rounded-full bg-teal-100 text-teal-700">
+            {isHindi ? "क्लिनिक शेड्यूलिंग" : "Practice Scheduling"}
+          </span>
 
-          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white">
-            {isHindi ? 'मेडिकल रिकॉर्ड्स एवं परामर्श पूर्णता सारांश' : 'Medical Records & Care Management'}
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mt-3">
+            {isHindi ? "परामर्श नियुक्तियां" : "Consultation Appointments"}
           </h1>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">
+
+          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
             {isHindi
-              ? 'मरीज का नाम, परामर्श पूर्णता मार्क, निदान बीमारी जांचें तथा रिपोर्ट लिखें या नुस्खा (Prescription) जोड़ें।'
-              : 'Review patient records, appointment completion marks, diagnosed diseases, write clinical reports, and issue prescriptions.'}
+              ? "अपने मरीजों से प्राप्त परामर्श अनुरोध प्रबंधित करें।"
+              : "Manage appointment requests from your patients."}
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap shrink-0">
-          <Link
-            to="/doctor/reports/new"
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm shadow-sm transition-all cursor-pointer active:scale-95"
-            title={isHindi ? 'नई रिपोर्ट लिखें' : 'Write New Clinical Report'}
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => setShowAddModal(true)}
+            disabled={patients.length === 0}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50"
           >
-            <FileText className="w-4 h-4" />
-            <span>{isHindi ? 'नई रिपोर्ट लिखें' : 'Write Report'}</span>
-          </Link>
+            <Plus className="w-4 h-4" />
+            {isHindi ? "नया शेड्यूल" : "Add Schedule"}
+          </button>
 
-          <Link
-            to="/doctor/prescriptions/new"
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs sm:text-sm shadow-sm transition-all cursor-pointer active:scale-95"
-            title={isHindi ? 'नया नुस्खा जोड़ें' : 'Add New Prescription'}
+          <button
+            type="button"
+            onClick={handleRefresh}
+            disabled={loading}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 border dark:border-slate-700 text-slate-700 dark:text-slate-200 disabled:opacity-60"
           >
-            <Pill className="w-4 h-4" />
-            <span>{isHindi ? '+ नुस्खा जोड़ें' : '+ Add Prescription'}</span>
-          </Link>
-        </div>
-      </div>
-
-      {/* Top 4 Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-xs font-bold uppercase tracking-wider">{isHindi ? 'कुल मरीज' : 'Active Patients'}</span>
-            <FolderOpen className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-          </div>
-          <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">{enrichedPatients.length}</p>
-          <span className="text-[11px] text-slate-500 font-medium">{isHindi ? 'सत्यापित केयर सर्कल' : 'Direct clinical roster'}</span>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 shadow-xs space-y-1">
-          <div className="flex items-center justify-between text-emerald-800 dark:text-emerald-300">
-            <span className="text-xs font-bold uppercase tracking-wider">{isHindi ? 'परामर्श पूर्ण' : 'Completed Appts'}</span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-          </div>
-          <p className="text-2xl sm:text-3xl font-black text-emerald-950 dark:text-emerald-200">{completedCount}</p>
-          <span className="text-[11px] text-emerald-700 dark:text-emerald-300 font-bold">✓ {isHindi ? 'पूर्णता मार्क सहित' : 'Marked Completed'}</span>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-xs font-bold uppercase tracking-wider">{isHindi ? 'हस्ताक्षरित रिपोर्ट्स' : 'Signed Reports'}</span>
-            <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-          </div>
-          <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">{reports.length}</p>
-          <span className="text-[11px] text-slate-500 font-medium">{isHindi ? 'सत्यापित विजिट नोट्स' : 'Clinical visit notes'}</span>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-xs font-bold uppercase tracking-wider">{isHindi ? 'सक्रिय नुस्खे (Rx)' : 'Active Prescriptions'}</span>
-            <Pill className="w-4 h-4 text-teal-600 dark:text-teal-400" />
-          </div>
-          <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">{prescriptions.length}</p>
-          <span className="text-[11px] text-slate-500 font-medium">{isHindi ? 'ई-नुस्खे जारी' : 'Issued treatment plans'}</span>
-        </div>
-      </div>
-
-      {/* Search Bar & Filter Options */}
-      <div className="p-3 sm:p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          {/* Search Input */}
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={
-                isHindi
-                  ? 'मरीज का नाम, बीमारी (Disease), या अपॉइंटमेंट स्थिति से खोजें...'
-                  : 'Search by patient name, diagnosed disease, or appointment status...'
-              }
-              className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/40"
+            <RefreshCw
+              className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
             />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
+            {isHindi ? "रिफ्रेश" : "Refresh"}
+          </button>
 
-          {/* Filter Pills */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {[
-              { id: 'all', label: isHindi ? `सभी रिकॉर्ड्स (${enrichedPatients.length})` : `All Records (${enrichedPatients.length})` },
-              { id: 'completed', label: isHindi ? `✓ पूर्ण नियुक्तियां (${completedCount})` : `✓ Completed Appts (${completedCount})` },
-              { id: 'priority', label: isHindi ? `🚨 उच्च जोखिम / कैंसर (${priorityCount})` : `🚨 High Risk (${priorityCount})` },
-              { id: 'ongoing', label: isHindi ? 'लंबित / समीक्षाधीन' : 'Scheduled / Pending' }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveFilter(tab.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  activeFilter === tab.id
-                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-xs'
-                    : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+          <button
+            type="button"
+            onClick={() => setViewMode("list")}
+            className={`p-2 rounded-lg ${
+              viewMode === "list"
+                ? "bg-blue-600 text-white"
+                : "bg-slate-200 dark:bg-slate-800"
+            }`}
+            title="List View"
+          >
+            <List size={18} />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setViewMode("calendar")}
+            className={`p-2 rounded-lg ${
+              viewMode === "calendar"
+                ? "bg-blue-600 text-white"
+                : "bg-slate-200 dark:bg-slate-800"
+            }`}
+            title="Calendar View"
+          >
+            <CalendarDays size={18} />
+          </button>
         </div>
       </div>
 
-      {/* Patient Medical Records List */}
-      <div className="space-y-4">
-        {filteredPatients.length === 0 ? (
-          <div className="p-8 text-center rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
-            <AlertCircle className="w-8 h-8 text-slate-400 mx-auto" />
-            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
-              {isHindi ? 'कोई मेडिकल रिकॉर्ड नहीं मिला' : 'No matching medical records found'}
-            </h3>
-            <p className="text-xs text-slate-500">
-              {isHindi ? 'खोज शब्द बदलकर पुनः प्रयास करें।' : 'Try clearing your search query or filter options.'}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          {
+            label: isHindi ? "कुल" : "Total",
+            value: appointments.length,
+            color: "text-slate-900 dark:text-white",
+          },
+          {
+            label: isHindi ? "लंबित" : "Pending",
+            value: appointments.filter((a) => a.status === "PENDING").length,
+            color: "text-amber-600",
+          },
+          {
+            label: isHindi ? "स्वीकृत" : "Accepted",
+            value: appointments.filter((a) => a.status === "ACCEPTED").length,
+            color: "text-emerald-600",
+          },
+          {
+            label: isHindi ? "पूर्ण" : "Completed",
+            value: appointments.filter((a) => a.status === "COMPLETED").length,
+            color: "text-blue-600",
+          },
+        ].map((item) => (
+          <div
+            key={item.label}
+            className="bg-white dark:bg-slate-900 rounded-xl p-4 border dark:border-slate-800"
+          >
+            <p className="text-xs text-slate-500">{item.label}</p>
+            <p className={`text-2xl font-bold ${item.color}`}>
+              {loading ? "—" : item.value}
             </p>
           </div>
-        ) : (
-          filteredPatients.map((patient) => {
-            const isCompleted = patient.hasCompletedAppointment;
-            const completed = patient.completedAppointmentDetails;
-            const activeAppt = patient.activeAppointmentDetails;
-            const isDanger = patient.isPriority || patient.isDanger;
-            const primaryDisease = patient.condition || patient.primaryCondition || 'Essential Health Care';
+        ))}
+      </div>
 
-            // Extract clean disease name & stage
-            let cleanDiseaseName = primaryDisease;
-            let diseaseStage = null;
-            if (primaryDisease.toLowerCase().includes('cancer')) {
-              cleanDiseaseName = 'Colorectal Carcinoma';
-              diseaseStage = 'Stage II (Active Oncology)';
-            } else if (primaryDisease.toLowerCase().includes('hypertension')) {
-              cleanDiseaseName = 'Essential Hypertension';
-              diseaseStage = 'Stage 1 (Cardiovascular)';
-            } else if (primaryDisease.toLowerCase().includes('fatigue') || primaryDisease.toLowerCase().includes('iron')) {
-              cleanDiseaseName = 'Post-Viral Fatigue & Mild Iron Deficiency';
-              diseaseStage = 'Mild Microcytic';
-            } else if (primaryDisease.toLowerCase().includes('diabetes')) {
-              cleanDiseaseName = 'Type 2 Diabetes Mellitus Screening';
-              diseaseStage = 'Metabolic Surveillance';
+      <div className="bg-white dark:bg-slate-900 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
+        <div className="relative">
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder={
+              isHindi
+                ? "मरीज का नाम, समस्या, दिनांक या आईडी से खोजें..."
+                : "Search by patient name, reason, date or appointment ID..."
             }
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+          />
+        </div>
+      </div>
 
-            return (
-              <div
-                key={patient.id}
-                className={`p-5 sm:p-6 rounded-3xl border transition-all space-y-4 shadow-xs ${
-                  isDanger
-                    ? 'bg-gradient-to-r from-red-600/10 via-rose-600/5 to-white dark:to-slate-900 border-red-500/50 dark:border-red-500/60 shadow-red-500/5'
-                    : isCompleted
-                    ? 'bg-white dark:bg-slate-900 border-emerald-500/30 dark:border-emerald-500/40 shadow-emerald-500/5'
-                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'
-                }`}
-              >
-                {/* 1. Header Row: Patient Name & Details + Appointed Completed Mark */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3.5 border-b border-slate-100 dark:border-slate-800">
-                  {/* Patient Name & Bio */}
-                  <div className="flex items-center gap-3.5">
-                    <div className="relative w-13 h-13 sm:w-14 sm:h-14 rounded-2xl overflow-hidden border-2 border-cyan-500/40 bg-gradient-to-tr from-cyan-400 to-blue-500 text-white font-black text-xl flex items-center justify-center shrink-0 shadow-xs">
-                      {patient.avatar ? (
-                        <img src={patient.avatar} alt={patient.name} className="w-full h-full object-cover" />
-                      ) : (
-                        (patient.name || 'P').charAt(0)
-                      )}
-                      {isCompleted && (
-                        <span className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 flex items-center justify-center text-[10px] text-white">
-                          ✓
-                        </span>
-                      )}
-                    </div>
+      {error && (
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm">
+          <AlertCircle className="inline mr-2" size={17} />
+          {error}
+        </div>
+      )}
 
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Link
-                          to={`/doctor/patients/${patient.id}`}
-                          className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                        >
-                          {patient.patientName || patient.name}
-                        </Link>
+      <div className="flex gap-2 overflow-x-auto pb-2">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap ${
+              activeTab === tab.id
+                ? "bg-blue-600 text-white"
+                : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border dark:border-slate-700"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-                        {isDanger && (
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-black bg-rose-600 text-white shadow-xs animate-pulse">
-                            🚨 CRITICAL PRIORITY PATIENT
-                          </span>
-                        )}
-                      </div>
-
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5 flex items-center gap-2 flex-wrap">
-                        <span>{patient.age || 34} yrs • {patient.gender || 'Patient'}</span>
-                        <span>•</span>
-                        <span>Blood: <strong className="text-rose-600">{patient.bloodGroup || 'O+'}</strong></span>
-                        <span>•</span>
-                        <span>ID: <code className="font-mono text-cyan-700 dark:text-cyan-300">{patient.id}</code></span>
-                        <span>•</span>
-                        <span>Phone: {patient.phone || '+1 (555) 019-2834'}</span>
-                      </p>
-                    </div>
+      {loading ? (
+        <div className="text-center py-16 text-slate-500">
+          <RefreshCw className="animate-spin mx-auto mb-3" />
+          {isHindi
+            ? "Firestore से अपॉइंटमेंट लोड हो रहे हैं..."
+            : "Loading appointments from Firestore..."}
+        </div>
+      ) : viewMode === "list" ? (
+        <div className="space-y-4">
+          {filteredAppointments.map((apt) => (
+            <div
+              key={apt.id}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm"
+            >
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
+                    <User size={22} />
                   </div>
 
-                  {/* APPOINTED COMPLETED MARK (Prominent Badge) */}
-                  <div className="flex items-center gap-2 flex-wrap md:flex-nowrap">
-                    {isCompleted ? (
-                      <div className="p-2.5 px-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-950 dark:text-emerald-100 flex items-center gap-2.5 shadow-xs">
-                        <div className="w-7 h-7 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-                          ✓
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs font-black tracking-wide uppercase text-emerald-800 dark:text-emerald-300">
-                              {isHindi ? '✓ परामर्श पूर्ण (Completed)' : '✓ APPOINTMENT COMPLETED'}
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">
-                            {completed?.date || 'Nov 17, 2026'} ({completed?.time || '11:15'}) • {completed?.type || 'Video Consultation'}
-                          </p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <div className="p-2.5 px-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs">
-                          <span className="font-bold flex items-center gap-1">
-                            <Clock className="w-3.5 h-3.5 text-amber-600" />
-                            <span>{activeAppt ? `Scheduled: ${activeAppt.time || '10:30'}` : 'Appointment Pending'}</span>
-                          </span>
-                          <span className="text-[10px] text-slate-500 block">
-                            {activeAppt ? `${activeAppt.date} (${activeAppt.type})` : 'Awaiting clinical completion'}
-                          </span>
-                        </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900 dark:text-white">
+                      {apt.patientName || "Patient"}
+                    </h3>
 
-                        <button
-                          type="button"
-                          onClick={() => handleMarkAppointmentCompleted(patient.name || patient.patientName, activeAppt?.id)}
-                          className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-xs transition-all cursor-pointer active:scale-95 whitespace-nowrap flex items-center gap-1"
-                          title="Mark this patient's appointment as completed"
-                        >
-                          <Check className="w-3.5 h-3.5" />
-                          <span>{isHindi ? 'पूर्ण चिह्नित करें' : 'Mark Completed'}</span>
-                        </button>
-                      </div>
-                    )}
+                    <p className="text-xs text-slate-500 mt-1">
+                      {apt.reason || "No reason provided"}
+                    </p>
+
+                    <div className="flex flex-wrap gap-3 mt-3 text-xs text-slate-500">
+                      <span className="flex items-center gap-1">
+                        <CalendarIcon size={14} />
+                        {formatDate(apt.appointmentDate)}
+                      </span>
+
+                      <span className="flex items-center gap-1">
+                        <Clock size={14} />
+                        {apt.appointmentTime || "Time not provided"}
+                      </span>
+
+                      <span className="flex items-center gap-1">
+                        {apt.type === "video" ? (
+                          <Video size={14} />
+                        ) : (
+                          <User size={14} />
+                        )}
+                        {apt.type === "video" ? "Video" : "In-person"}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                {/* 2. Middle Row: Diagnosed Disease & Clinical Trajectory Details */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5 pt-1">
-                  {/* Disease Info Box (7 cols) */}
-                  <div className="md:col-span-7 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-1.5">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                        <Stethoscope className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                        <span>{isHindi ? 'निदान बीमारी (Diagnosed Disease):' : 'Diagnosed Disease & Condition:'}</span>
-                      </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={`text-xs font-semibold px-3 py-1.5 rounded-full ${statusStyle(
+                      apt.status
+                    )}`}
+                  >
+                    {apt.status || "PENDING"}
+                  </span>
 
-                      <div className="flex items-center gap-1.5">
-                        {diseaseStage && (
-                          <span className="px-2 py-0.5 rounded-lg text-xs font-black bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30">
-                            {diseaseStage}
-                          </span>
-                        )}
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          isDanger
-                            ? 'bg-rose-500/20 text-rose-800 dark:text-rose-300'
-                            : 'bg-emerald-500/20 text-emerald-800 dark:text-emerald-300'
-                        }`}>
-                          {patient.status || 'Active Care'}
-                        </span>
-                      </div>
-                    </div>
+                  {apt.status === "PENDING" && (
+                    <>
+                      <button
+                        type="button"
+                        disabled={updatingId === apt.id}
+                        onClick={() =>
+                          handleUpdateStatus(apt.id, "ACCEPTED")
+                        }
+                        className="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs disabled:opacity-50"
+                      >
+                        <CheckCircle2 size={14} className="inline mr-1" />
+                        {isHindi ? "स्वीकार करें" : "Accept"}
+                      </button>
 
-                    <h4 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
-                      {cleanDiseaseName}
-                    </h4>
+                      <button
+                        type="button"
+                        disabled={updatingId === apt.id}
+                        onClick={() =>
+                          handleUpdateStatus(apt.id, "REJECTED")
+                        }
+                        className="px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs disabled:opacity-50"
+                      >
+                        <XCircle size={14} className="inline mr-1" />
+                        {isHindi ? "अस्वीकार करें" : "Reject"}
+                      </button>
+                    </>
+                  )}
 
-                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                      {patient.condition || 'Longitudinal vital sign monitoring with certified clinical telemetry tracking.'}
+                  {apt.status === "ACCEPTED" && (
+                    <button
+                      type="button"
+                      disabled={updatingId === apt.id}
+                      onClick={() =>
+                        handleUpdateStatus(apt.id, "COMPLETED")
+                      }
+                      className="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs disabled:opacity-50"
+                    >
+                      {isHindi ? "पूर्ण चिह्नित करें" : "Mark completed"}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {filteredAppointments.length === 0 && (
+            <div className="text-center py-14 bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800">
+              <CalendarIcon className="mx-auto mb-3 text-slate-400" size={34} />
+              <p className="font-semibold text-slate-800 dark:text-white">
+                {isHindi ? "कोई नियुक्ति नहीं मिली" : "No appointments found"}
+              </p>
+              <p className="text-xs text-slate-500 mt-1">
+                {isHindi
+                  ? "नए मरीज अनुरोध यहां दिखाई देंगे।"
+                  : "New patient requests will appear here."}
+              </p>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-5">
+          <h3 className="font-bold mb-4">
+            {isHindi ? "नियुक्ति कैलेंडर" : "Appointment Calendar"}
+          </h3>
+
+          <div className="space-y-3">
+            {[...filteredAppointments]
+              .filter((apt) => apt.appointmentDate)
+              .sort((a, b) =>
+                a.appointmentDate.localeCompare(b.appointmentDate)
+              )
+              .map((apt) => (
+                <div
+                  key={apt.id}
+                  className="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800"
+                >
+                  <div>
+                    <p className="font-semibold text-sm">
+                      {formatDate(apt.appointmentDate)}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {apt.appointmentTime} · {apt.patientName || "Patient"}
                     </p>
                   </div>
 
-                  {/* Vitals / Last Care Actions Box (5 cols) */}
-                  <div className="md:col-span-5 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex flex-col justify-between gap-2">
-                    <div>
-                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-                        {isHindi ? 'क्लिनिकल रिकॉर्ड स्थिति' : 'Care Record Summary'}
-                      </span>
-                      <div className="mt-1.5 flex items-center gap-4 text-xs font-bold text-slate-700 dark:text-slate-300">
-                        <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
-                          <FileText className="w-3.5 h-3.5" />
-                          <span>{patient.previousReports?.length || 1} {isHindi ? 'रिपोर्ट्स' : 'Report(s)'}</span>
-                        </span>
-                        <span className="flex items-center gap-1 text-teal-600 dark:text-teal-400">
-                          <Pill className="w-3.5 h-3.5" />
-                          <span>{patient.previousPrescriptions?.length || 1} {isHindi ? 'नुस्खे' : 'Rx Plan(s)'}</span>
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="text-[11px] text-slate-500 pt-1 border-t border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between">
-                      <span>{isHindi ? 'अंतिम परामर्श:' : 'Last Visit:'} {patient.lastVisit || 'Today'}</span>
-                      <span>{isHindi ? 'फॉलो-अप:' : 'Next Review:'} <strong className="text-slate-700 dark:text-slate-300">{patient.nextFollowUp || 'In 2 weeks'}</strong></span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 3. Bottom Row: 4 Clinical Actions (Details, Write Report, Add Prescription, Previous Report) */}
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
-                  {/* Primary Link to Patient Details */}
-                  <Link
-                    to={`/doctor/patients/${patient.id}`}
-                    className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-extrabold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                  <span
+                    className={`text-xs px-2 py-1 rounded-full ${statusStyle(
+                      apt.status
+                    )}`}
                   >
-                    <span>{isHindi ? 'मरीज का संपूर्ण विवरण देखें' : 'Check Patient Details & Full Record'}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
-
-                  {/* Action Buttons: Write Report + Add Prescription + Check Previous Report */}
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {/* Check Previous Report */}
-                    {patient.previousReports && patient.previousReports.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => setSelectedReportModal(patient.previousReports[0])}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-700 dark:text-purple-300 font-bold text-xs transition-all cursor-pointer shadow-xs active:scale-95"
-                        title={isHindi ? 'पिछली क्लिनिकल रिपोर्ट देखें' : 'View Previous Clinical Report'}
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>{isHindi ? 'पिछली रिपोर्ट जांचें' : 'Check Previous Report'}</span>
-                      </button>
-                    )}
-
-                    {/* Write Report */}
-                    <Link
-                      to={`/doctor/reports/new?patientId=${patient.id}&name=${encodeURIComponent(patient.name || patient.patientName)}&age=${patient.age || 34}&gender=${patient.gender || 'Male'}`}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs shadow-xs transition-all cursor-pointer active:scale-95"
-                      title={isHindi ? 'इस मरीज के लिए रिपोर्ट लिखें' : 'Write Report for Patient'}
-                    >
-                      <FileText className="w-3.5 h-3.5" />
-                      <span>{isHindi ? 'रिपोर्ट लिखें' : 'Write Report'}</span>
-                    </Link>
-
-                    {/* Add Prescription */}
-                    <Link
-                      to={`/doctor/prescriptions/new?patientId=${patient.id}&name=${encodeURIComponent(patient.name || patient.patientName)}`}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-extrabold text-xs shadow-xs transition-all cursor-pointer active:scale-95"
-                      title={isHindi ? 'नुस्खा (Prescription) जोड़ें' : 'Add Electronic Prescription'}
-                    >
-                      <Pill className="w-3.5 h-3.5" />
-                      <span>{isHindi ? '+ नुस्खा जोड़ें' : '+ Add Prescription'}</span>
-                    </Link>
-                  </div>
+                    {apt.status}
+                  </span>
                 </div>
-              </div>
-            );
-          })
-        )}
-      </div>
+              ))}
 
-      {/* ========================================================================= */}
-      {/* CHECK PREVIOUS REPORT MODAL (Full 13-field clinical document view)         */}
-      {/* ========================================================================= */}
-      {selectedReportModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 sm:p-7 shadow-2xl space-y-5 animate-in fade-in duration-200">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between pb-3.5 border-b border-slate-200 dark:border-slate-800">
+            {filteredAppointments.length === 0 && (
+              <p className="text-center text-sm text-slate-500 py-8">
+                {isHindi
+                  ? "प्रदर्शित करने के लिए कोई नियुक्ति नहीं है।"
+                  : "No appointments to display."}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 p-4 rounded-2xl bg-slate-900 text-white border border-cyan-500/40 shadow-2xl flex items-center gap-3">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+          <span className="text-xs sm:text-sm font-bold">
+            {toastMessage}
+          </span>
+        </div>
+      )}
+
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-[#1F150E] border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-xl p-6 sm:p-7 shadow-2xl space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
-                  <FileText className="w-5 h-5" />
+                <div className="w-10 h-10 rounded-2xl bg-blue-500/15 border border-blue-500/30 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                  <CalendarIcon className="w-5 h-5" />
                 </div>
+
                 <div>
-                  <h3 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">
-                    {isHindi ? 'पिछली क्लिनिकल परामर्श रिपोर्ट' : 'Previous Clinical Consultation Report'}
+                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
+                    {isHindi
+                      ? "मरीज परामर्श शेड्यूल करें"
+                      : "Schedule Patient Consultation"}
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Patient: <strong className="text-slate-800 dark:text-slate-200">{selectedReportModal.patientName}</strong> • ID: {selectedReportModal.id}
+                    {isHindi
+                      ? "मौजूदा मरीज चुनें और समय दर्ज करें।"
+                      : "Select an existing patient and enter appointment details."}
                   </p>
                 </div>
               </div>
 
               <button
                 type="button"
-                onClick={() => setSelectedReportModal(null)}
-                className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 cursor-pointer"
-                title="Close"
+                onClick={() => setShowAddModal(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Document Content */}
-            <div className="space-y-4 text-xs sm:text-sm">
-              {/* Doctor / Clinic Header */}
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between">
-                <div>
-                  <p className="font-extrabold text-slate-900 dark:text-white text-sm">
-                    {formatDoctorTitle(selectedReportModal.doctorName || doctor?.fullName || 'Dr. Sarah Mitchell')}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {selectedReportModal.clinicName || 'BioTrajectory Specialty Health Center'} • Reg: {selectedReportModal.doctorRegNumber || 'MD-89241-US'}
-                  </p>
-                </div>
-                <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-                  ✓ SIGNED
-                </span>
-              </div>
+            <form
+              onSubmit={handleAddScheduleSubmit}
+              className="space-y-4 text-xs sm:text-sm"
+            >
+              <div className="space-y-1.5">
+                <label className="font-bold text-slate-700 dark:text-slate-300 block">
+                  {isHindi ? "मरीज चुनें" : "Select Patient"} *
+                </label>
 
-              {/* Diagnosis Banner */}
-              <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/30 space-y-1">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-blue-800 dark:text-blue-300">
-                  {isHindi ? 'चिकित्सीय निदान (Diagnosis):' : 'Primary Clinical Diagnosis:'}
-                </span>
-                <p className="font-black text-base text-slate-900 dark:text-white">
-                  {selectedReportModal.diagnosis || 'Clinical evaluation completed'}
-                </p>
-              </div>
-
-              {/* Vitals Snapshot */}
-              {selectedReportModal.vitals && (
-                <div className="space-y-1.5">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                    {isHindi ? 'परामर्श के दौरान मापे गए वाइटल्स (Recorded Vitals):' : 'Recorded Vitals During Visit:'}
-                  </span>
-                  <div className="grid grid-cols-4 gap-2 text-center text-xs">
-                    <div className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                      <span className="text-slate-400 text-[10px] block">BP</span>
-                      <strong className="text-slate-900 dark:text-white font-bold">{selectedReportModal.vitals.bp || '136/86'}</strong>
-                    </div>
-                    <div className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                      <span className="text-slate-400 text-[10px] block">Heart Rate</span>
-                      <strong className="text-slate-900 dark:text-white font-bold">{selectedReportModal.vitals.heartRate || '74'} bpm</strong>
-                    </div>
-                    <div className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                      <span className="text-slate-400 text-[10px] block">SpO2</span>
-                      <strong className="text-slate-900 dark:text-white font-bold">{selectedReportModal.vitals.spo2 || '98'} %</strong>
-                    </div>
-                    <div className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                      <span className="text-slate-400 text-[10px] block">Temp</span>
-                      <strong className="text-slate-900 dark:text-white font-bold">{selectedReportModal.vitals.temp || '98.6'} °F</strong>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Complaints & History */}
-              <div className="space-y-1">
-                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  {isHindi ? 'लक्षण एवं इतिहास:' : 'Chief Complaints & History:'}
-                </span>
-                <p className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300">
-                  {selectedReportModal.complaints || selectedReportModal.hpi || 'Occasional morning tension and routine clinical check.'}
-                </p>
-              </div>
-
-              {/* Clinical Advice & Care Plan */}
-              <div className="space-y-1">
-                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  {isHindi ? 'डॉक्टर का परामर्श एवं उपचार योजना:' : 'Physician Guidance & Care Plan:'}
-                </span>
-                <p className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-slate-800 dark:text-slate-200 font-medium leading-relaxed">
-                  {selectedReportModal.advice || selectedReportModal.treatmentPlan || 'Follow low-sodium DASH nutritional guidelines and regular 30 min daily brisk walking.'}
-                </p>
-              </div>
-
-              {/* Follow-up & Tests */}
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-0.5">
-                  <span className="text-slate-400 text-[10px] uppercase font-bold">Recommended Tests</span>
-                  <p className="font-semibold text-slate-800 dark:text-slate-200">{selectedReportModal.tests || 'Fasting blood sugar, lipid panel'}</p>
-                </div>
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-0.5">
-                  <span className="text-slate-400 text-[10px] uppercase font-bold">Next Follow-Up</span>
-                  <p className="font-bold text-blue-600 dark:text-blue-400">{selectedReportModal.followUp || 'In 2 weeks'}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Footer Actions */}
-            <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={() => window.print()}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-              >
-                <Printer className="w-3.5 h-3.5" />
-                <span>{isHindi ? 'प्रिंट / सेव करें' : 'Print / Export'}</span>
-              </button>
-
-              <div className="flex items-center gap-2">
-                <Link
-                  to={`/doctor/reports/new?patientId=${selectedReportModal.patientId}&name=${encodeURIComponent(selectedReportModal.patientName)}`}
-                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-xs transition-colors"
+                <select
+                  required
+                  value={newSchedule.patientId}
+                  onChange={(event) =>
+                    setNewSchedule({
+                      ...newSchedule,
+                      patientId: event.target.value,
+                    })
+                  }
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-semibold text-slate-900 dark:text-white"
                 >
-                  {isHindi ? 'नई रिपोर्ट लिखें' : 'Write Follow-Up Report'}
-                </Link>
+                  <option value="">
+                    {isHindi ? "-- मरीज चुनें --" : "-- Select a patient --"}
+                  </option>
 
+                  {patients.map((patient) => (
+                    <option
+                      key={patient.patientId}
+                      value={patient.patientId}
+                    >
+                      {patient.patientName || patient.name} ·{" "}
+                      {patient.patientId}
+                    </option>
+                  ))}
+                </select>
+
+                <p className="text-xs text-slate-500">
+                  {isHindi
+                    ? "केवल आपके स्वीकृत या पूर्ण अपॉइंटमेंट वाले मरीज सूची में दिखते हैं।"
+                    : "Only patients with accepted or completed appointments appear here."}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="font-bold text-slate-700 dark:text-slate-300 block">
+                    {isHindi ? "परामर्श दिनांक" : "Appointment Date"} *
+                  </label>
+
+                  <input
+                    type="date"
+                    required
+                    min={getToday()}
+                    value={newSchedule.appointmentDate}
+                    onChange={(event) =>
+                      setNewSchedule({
+                        ...newSchedule,
+                        appointmentDate: event.target.value,
+                      })
+                    }
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-semibold text-slate-900 dark:text-white"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="font-bold text-slate-700 dark:text-slate-300 block">
+                    {isHindi ? "परामर्श समय" : "Appointment Time"} *
+                  </label>
+
+                  <input
+                    type="time"
+                    required
+                    value={newSchedule.appointmentTime}
+                    onChange={(event) =>
+                      setNewSchedule({
+                        ...newSchedule,
+                        appointmentTime: event.target.value,
+                      })
+                    }
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-semibold text-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="font-bold text-slate-700 dark:text-slate-300 block">
+                  {isHindi ? "परामर्श का प्रकार" : "Consultation Mode"}
+                </label>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setNewSchedule({
+                        ...newSchedule,
+                        type: "video",
+                      })
+                    }
+                    className={`p-3 rounded-2xl border text-xs sm:text-sm font-bold flex items-center justify-center gap-2 ${
+                      newSchedule.type === "video"
+                        ? "bg-purple-500/15 border-purple-500/50 text-purple-700 dark:text-purple-300"
+                        : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"
+                    }`}
+                  >
+                    <Video className="w-4 h-4" />
+                    {isHindi ? "वीडियो परामर्श" : "Video"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setNewSchedule({
+                        ...newSchedule,
+                        type: "in-person",
+                      })
+                    }
+                    className={`p-3 rounded-2xl border text-xs sm:text-sm font-bold flex items-center justify-center gap-2 ${
+                      newSchedule.type === "in-person"
+                        ? "bg-blue-500/15 border-blue-500/50 text-blue-700 dark:text-blue-300"
+                        : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"
+                    }`}
+                  >
+                    <Building className="w-4 h-4" />
+                    {isHindi ? "प्रत्यक्ष मुलाकात" : "In-Person"}
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="font-bold text-slate-700 dark:text-slate-300 block">
+                  {isHindi ? "परामर्श का कारण" : "Reason for Consultation"}
+                </label>
+
+                <input
+                  type="text"
+                  value={newSchedule.reason}
+                  onChange={(event) =>
+                    setNewSchedule({
+                      ...newSchedule,
+                      reason: event.target.value,
+                    })
+                  }
+                  placeholder={
+                    isHindi
+                      ? "परामर्श का कारण दर्ज करें..."
+                      : "Enter the reason for consultation..."
+                  }
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-medium text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => setSelectedReportModal(null)}
-                  className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs cursor-pointer"
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold"
                 >
-                  {isHindi ? 'बंद करें' : 'Close'}
+                  {isHindi ? "रद्द करें" : "Cancel"}
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting || patients.length === 0}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold shadow-md disabled:opacity-50"
+                >
+                  {isSubmitting ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Plus className="w-4 h-4" />
+                  )}
+                  {isSubmitting
+                    ? isHindi
+                      ? "सहेज रहे हैं..."
+                      : "Scheduling..."
+                    : isHindi
+                      ? "शेड्यूल जोड़ें"
+                      : "Add to Schedule"}
                 </button>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       )}

@@ -5,6 +5,7 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useRef,
 } from "react";
 
 import { useAuth } from "./AuthContext";
@@ -105,13 +106,17 @@ export function DoctorAuthProvider({ children }) {
   const [authError, setAuthError] = useState(null);
   const [loadingDoctor, setLoadingDoctor] = useState(true);
 
-  // Load the authenticated doctor's real application/profile.
+  // Prevent older requests from overwriting newer authentication state.
+  const requestSequence = useRef(0);
+
   const refreshDoctor = useCallback(
     async (userOverride = null) => {
+      const requestId = ++requestSequence.current;
       const user = userOverride || auth.currentUser;
 
       if (!user?.uid || !VALID_DOCTOR_ROLES.has(user.role)) {
         setCurrentDoctor(null);
+        setAuthError(null);
         setLoadingDoctor(false);
         return null;
       }
@@ -125,14 +130,22 @@ export function DoctorAuthProvider({ children }) {
         try {
           application = await doctorApi.getMyApplication();
         } catch (error) {
-          // A missing application can be valid for an account
-          // whose role has already been assigned by the backend.
+          // A missing application is acceptable only when
+          // the backend has already assigned a trusted doctor role.
           if (!isNotFound(error)) {
             throw error;
           }
         }
 
-        const doctor = buildDoctorFromUser(user, application);
+        // Ignore results belonging to an older login/request.
+        if (requestId !== requestSequence.current) {
+          return null;
+        }
+
+        const doctor = buildDoctorFromUser(
+          user,
+          application
+        );
 
         setCurrentDoctor(doctor);
 
@@ -143,20 +156,23 @@ export function DoctorAuthProvider({ children }) {
           error
         );
 
+        if (requestId !== requestSequence.current) {
+          return null;
+        }
+
+        // Do not show a fallback profile after a failed request.
+        setCurrentDoctor(null);
+
         setAuthError(
           error?.message ||
-          "Unable to load doctor information."
+          "Unable to load doctor information. Please try again."
         );
 
-        // Keep only information supplied by the authenticated user.
-        // No demo profile or fictional doctor data is used.
-        const basicDoctor = buildDoctorFromUser(user);
-
-        setCurrentDoctor(basicDoctor);
-
-        return basicDoctor;
+        return null;
       } finally {
-        setLoadingDoctor(false);
+        if (requestId === requestSequence.current) {
+          setLoadingDoctor(false);
+        }
       }
     },
     [auth.currentUser]
@@ -165,10 +181,17 @@ export function DoctorAuthProvider({ children }) {
   // Refresh doctor data when the authenticated user changes.
   useEffect(() => {
     refreshDoctor();
+
+    return () => {
+      // Invalidate pending requests when the user changes
+      // or this provider unmounts.
+      requestSequence.current += 1;
+    };
   }, [refreshDoctor]);
 
   const loginDoctor = async (email, password) => {
     setAuthError(null);
+    setCurrentDoctor(null);
     setLoadingDoctor(true);
 
     try {
@@ -186,7 +209,15 @@ export function DoctorAuthProvider({ children }) {
         );
       }
 
-      return await refreshDoctor(user);
+      const doctor = await refreshDoctor(user);
+
+      if (!doctor) {
+        throw new Error(
+          "Doctor authentication succeeded, but the doctor profile could not be loaded. Please try again."
+        );
+      }
+
+      return doctor;
     } catch (error) {
       setAuthError(error?.message || "Doctor login failed.");
       setCurrentDoctor(null);
@@ -198,6 +229,7 @@ export function DoctorAuthProvider({ children }) {
 
   const registerDoctor = async (doctorData) => {
     setAuthError(null);
+    setCurrentDoctor(null);
     setLoadingDoctor(true);
 
     try {
@@ -248,11 +280,31 @@ export function DoctorAuthProvider({ children }) {
 
       await doctorApi.submitApplication(application);
 
+      // The backend must assign DOCTOR_PENDING through
+      // trusted role management. The frontend cannot assign it.
       const updatedUser = await auth.refreshToken();
 
-      return await refreshDoctor(updatedUser);
+      if (!updatedUser || !VALID_DOCTOR_ROLES.has(updatedUser.role)) {
+        throw new Error(
+          "Your application was submitted, but the doctor role has not yet been assigned by the backend. Please sign in again after processing."
+        );
+      }
+
+      const doctor = await refreshDoctor(updatedUser);
+
+      if (!doctor) {
+        throw new Error(
+          "Your application was submitted, but your doctor profile could not be loaded."
+        );
+      }
+
+      return doctor;
     } catch (error) {
-      setAuthError(error?.message || "Doctor registration failed.");
+      setAuthError(
+        error?.message || "Doctor registration failed."
+      );
+
+      setCurrentDoctor(null);
       throw error;
     } finally {
       setLoadingDoctor(false);
@@ -260,13 +312,14 @@ export function DoctorAuthProvider({ children }) {
   };
 
   const logoutDoctor = async () => {
+    requestSequence.current += 1;
+
     setAuthError(null);
+    setCurrentDoctor(null);
+    setLoadingDoctor(false);
 
     try {
       await auth.logout();
-
-      setCurrentDoctor(null);
-
       return true;
     } catch (error) {
       setAuthError(error?.message || "Logout failed.");
