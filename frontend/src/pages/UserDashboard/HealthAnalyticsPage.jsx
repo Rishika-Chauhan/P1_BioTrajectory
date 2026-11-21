@@ -1,5 +1,4 @@
 import React, {
-  useCallback,
   useEffect,
   useMemo,
   useState
@@ -230,7 +229,6 @@ export default function HealthAnalyticsPage() {
   const { t, isHindi } = useLanguage();
 
   const uid = currentUser?.uid;
-  const activeUid = uid || 'demo-user-123';
 
   const [readings, setReadings] = useState([]);
   const [timeRange, setTimeRange] = useState('30D');
@@ -238,13 +236,24 @@ export default function HealthAnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState('');
-  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     let ignore = false;
+
     async function fetchReadings() {
+      if (!uid) {
+        setReadings([]);
+        setError('');
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setError('');
+
       try {
-        const result = await healthReadingService.list(activeUid, MAX_READINGS);
+        const result = await healthReadingService.list(uid, MAX_READINGS);
+
         if (!ignore) {
           setReadings(Array.isArray(result) ? result : []);
         }
@@ -260,11 +269,13 @@ export default function HealthAnalyticsPage() {
         }
       }
     }
+
     fetchReadings();
+
     return () => {
       ignore = true;
     };
-  }, [activeUid]);
+  }, [uid]);
 
   // Filter readings by selected calendar range (7D, 30D, 90D, or All)
   const filteredReadings = useMemo(() => {
@@ -472,10 +483,17 @@ export default function HealthAnalyticsPage() {
   }, [filteredReadings, isHindi]);
 
   const handleRefresh = async () => {
+    if (!uid) {
+      setReadings([]);
+      setError('');
+      return;
+    }
+
     setIsRefreshing(true);
+    setError('');
+
     try {
-      await new Promise((r) => setTimeout(r, 450));
-      const result = await healthReadingService.list(activeUid, MAX_READINGS);
+      const result = await healthReadingService.list(uid, MAX_READINGS);
       setReadings(Array.isArray(result) ? result : []);
     } catch (loadError) {
       console.error('Analytics load failed:', loadError);
@@ -580,15 +598,18 @@ export default function HealthAnalyticsPage() {
                 </div>
               </div>
               <p className="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white font-mono">
-                {latestSummary.blood_pressure?.values?.systolic != null
-                  ? `${latestSummary.blood_pressure.values.systolic}/${latestSummary.blood_pressure.values.diastolic}`
-                  : '118/78'}
+                {
+                  latestSummary.blood_pressure?.values?.systolic != null &&
+                  latestSummary.blood_pressure?.values?.diastolic != null
+                    ? `${latestSummary.blood_pressure.values.systolic}/${latestSummary.blood_pressure.values.diastolic}`
+                    : '—'
+                }
                 <span className="text-sm font-medium text-slate-500 ml-1.5">mmHg</span>
               </p>
               <div className="mt-2 flex items-center justify-between text-xs sm:text-sm font-semibold">
                 <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4" />
-                  {isHindi ? 'सामान्य सीमा (≤120/80)' : 'Optimal (≤120/80)'}
+                  {isHindi ? 'नवीनतम दर्ज माप' : 'Latest recorded value'}
                 </span>
               </div>
             </div>
@@ -611,15 +632,17 @@ export default function HealthAnalyticsPage() {
                 </div>
               </div>
               <p className="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white font-mono">
-                {latestSummary.heart_rate?.values?.bpm != null
-                  ? latestSummary.heart_rate.values.bpm
-                  : '72'}
+                {
+                  latestSummary.heart_rate?.values?.bpm != null
+                    ? latestSummary.heart_rate.values.bpm
+                    : '—'
+                }
                 <span className="text-sm font-medium text-slate-500 ml-1.5">bpm</span>
               </p>
               <div className="mt-2 flex items-center justify-between text-xs sm:text-sm font-semibold">
                 <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4" />
-                  {isHindi ? 'सामान्य सीमा (60–100)' : 'Resting (60–100 bpm)'}
+                  {isHindi ? 'नवीनतम दर्ज माप' : 'Latest recorded value'}
                 </span>
               </div>
             </div>
@@ -642,15 +665,17 @@ export default function HealthAnalyticsPage() {
                 </div>
               </div>
               <p className="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white font-mono">
-                {latestSummary.oxygen_saturation?.values?.spo2 != null
-                  ? latestSummary.oxygen_saturation.values.spo2
-                  : '99'}
+                {
+                  latestSummary.oxygen_saturation?.values?.spo2 != null
+                    ? latestSummary.oxygen_saturation.values.spo2
+                    : '—'
+                }
                 <span className="text-sm font-medium text-slate-500 ml-1.5">%</span>
               </p>
               <div className="mt-2 flex items-center justify-between text-xs sm:text-sm font-semibold">
                 <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4" />
-                  {isHindi ? 'सुरक्षित सीमा (≥95%)' : 'Healthy (≥95%)'}
+                  {isHindi ? 'नवीनतम दर्ज माप' : 'Latest recorded value'}
                 </span>
               </div>
             </div>
@@ -673,9 +698,11 @@ export default function HealthAnalyticsPage() {
                 </div>
               </div>
               <p className="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white font-mono">
-                {latestSummary.activity?.values?.steps != null
-                  ? Number(latestSummary.activity.values.steps).toLocaleString()
-                  : '8,420'}
+                {
+                  latestSummary.activity?.values?.steps != null
+                    ? Number(latestSummary.activity.values.steps).toLocaleString()
+                    : '—'
+                }
                 <span className="text-sm font-medium text-slate-500 ml-1.5">{isHindi ? 'कदम' : 'steps'}</span>
               </p>
               <div className="mt-2 flex items-center justify-between text-xs sm:text-sm font-semibold">

@@ -25,14 +25,17 @@ import {
   Settings as SettingsIcon,
   AlertCircle,
   AlertOctagon,
-  ShieldAlert,
   Zap
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { healthReadingService } from '../../services/healthReadingService';
-import { getPatientPriorityStatus, subscribeToPriorityChanges } from '../../services/patientPriorityService';
+import {
+  getPatientPriorityStatus,
+  subscribeToPriorityChanges
+} from '../../services/patientPriorityService';
+
 import DisclaimerBanner from '../../components/common/DisclaimerBanner';
 import WeeklyLoggingRhythm from '../../components/dashboard/WeeklyLoggingRhythm';
 
@@ -152,22 +155,35 @@ export default function OverviewPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState('');
-  const [priorityStatus, setPriorityStatus] = useState(() => getPatientPriorityStatus(healthProfile));
+
+  const [priorityStatus, setPriorityStatus] = useState(() =>
+    getPatientPriorityStatus(healthProfile)
+  );
 
   useEffect(() => {
     setPriorityStatus(getPatientPriorityStatus(healthProfile));
+
     const unsubscribe = subscribeToPriorityChanges((status) => {
       setPriorityStatus(status);
     });
+
     return unsubscribe;
   }, [healthProfile]);
 
   const loadReadings = useCallback(async (showRefresh = false) => {
-    const activeUid = currentUser?.uid || 'demo-user-123';
+    const activeUid = currentUser?.uid;
+
+    // Never query Firestore with a fabricated/demo UID.
+    if (!activeUid) {
+      setReadings([]);
+      setError('');
+      setIsLoading(false);
+      setIsRefreshing(false);
+      return;
+    }
 
     if (showRefresh) {
       setIsRefreshing(true);
-      await new Promise((r) => setTimeout(r, 450));
     } else {
       setIsLoading(true);
     }
@@ -175,22 +191,22 @@ export default function OverviewPage() {
     setError('');
 
     try {
-      const result = await healthReadingService.list(
-        activeUid,
-        100
-      );
+      const result = await healthReadingService.list(activeUid, 100);
 
-      const sortedReadings = [...(result || [])].sort(
-        (a, b) => getTimestamp(b) - getTimestamp(a)
-      );
+      const sortedReadings = [
+        ...(Array.isArray(result) ? result : [])
+      ].sort((a, b) => getTimestamp(b) - getTimestamp(a));
 
       setReadings(sortedReadings);
     } catch (err) {
       console.error('Firestore reading load failed:', err);
 
       setError(
+        err?.message ||
         'Unable to load your health readings. Please try again.'
       );
+
+      setReadings([]);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -230,7 +246,6 @@ export default function OverviewPage() {
     <div className="space-y-10 max-w-7xl mx-auto">
 
       {/* Header */}
-
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
           <div className="flex items-center gap-3 flex-wrap">
@@ -245,12 +260,15 @@ export default function OverviewPage() {
 
           <p className="text-[16px] text-slate-600 dark:text-slate-400">
             {isHindi ? 'आज है ' : 'Today is '}
-            {new Date().toLocaleDateString(isHindi ? 'hi-IN' : 'en-US', {
-              weekday: 'long',
-              month: 'long',
-              day: 'numeric',
-              year: 'numeric'
-            })}
+            {new Date().toLocaleDateString(
+              isHindi ? 'hi-IN' : 'en-US',
+              {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+              }
+            )}
             .
           </p>
         </div>
@@ -261,7 +279,9 @@ export default function OverviewPage() {
             className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl text-[15px] font-bold bg-cyan-500/15 text-cyan-500 dark:text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/25 transition-all"
           >
             <Bluetooth className="w-5 h-5" />
-            <span>{isHindi ? 'कनेक्टेड डिवाइसेस' : 'Connected Devices'}</span>
+            <span>
+              {isHindi ? 'कनेक्टेड डिवाइसेस' : 'Connected Devices'}
+            </span>
           </Link>
 
           <Link
@@ -269,7 +289,9 @@ export default function OverviewPage() {
             className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-[15px] font-bold bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 hover:from-cyan-300 hover:to-blue-400 transition-all shadow-md shadow-cyan-500/20"
           >
             <Plus className="w-5 h-5" />
-            <span>{isHindi ? 'आज की रीडिंग जोड़ें' : "Add Today's Reading"}</span>
+            <span>
+              {isHindi ? 'आज की रीडिंग जोड़ें' : "Add Today's Reading"}
+            </span>
           </Link>
 
           <Link
@@ -290,20 +312,20 @@ export default function OverviewPage() {
         </div>
       </div>
 
-      {/* Priority Person Banner (Danger Disease Protocol) */}
+      {/* Priority Person Banner */}
       {priorityStatus?.isPriority && (() => {
-        const raw = priorityStatus.primaryDisease || '';
-        let diseaseName = 'Colorectal Cancer';
-        let diseaseStage = 'Stage II';
+        const raw = String(
+          priorityStatus.primaryDisease || ''
+        ).trim();
 
-        if (raw.toLowerCase().includes('colorectal') || raw.toLowerCase().includes('cancer')) {
-          diseaseName = 'Colorectal Cancer';
-          diseaseStage = 'Stage II';
-        } else {
-          const stageMatch = raw.match(/(Stage\s+[IVXLCDM\d]+)/i);
-          diseaseStage = stageMatch ? stageMatch[1] : null;
-          diseaseName = raw.replace(/^Ongoing\s+/i, '').replace(/\(.*?\)/g, '').replace(/—.*$/g, '').trim() || raw;
-        }
+        const stageMatch = raw.match(/Stage\s+[IVXLCDM\d]+/i);
+        const diseaseStage = stageMatch ? stageMatch[0] : null;
+
+        const diseaseName = raw
+          .replace(/^Ongoing\s+/i, '')
+          .replace(/\s*[—-]\s*Stage\s+[IVXLCDM\d]+/i, '')
+          .replace(/\([^)]*\)/g, '')
+          .trim() || (isHindi ? 'प्राथमिकता देखभाल' : 'Priority care');
 
         return (
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-red-600/15 via-rose-600/10 to-red-600/5 border-2 border-red-500/50 p-5 sm:p-6 shadow-xl shadow-red-500/10">
@@ -316,10 +338,15 @@ export default function OverviewPage() {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2.5 flex-wrap">
                     <span className="text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-red-600 text-white shadow-xs">
-                      {isHindi ? '🚨 उच्च प्राथमिकता रोगी' : '🚨 CRITICAL PRIORITY PATIENT'}
+                      {isHindi
+                        ? '🚨 उच्च प्राथमिकता रोगी'
+                        : '🚨 CRITICAL PRIORITY PATIENT'}
                     </span>
+
                     <span className="text-xs font-bold text-red-600 dark:text-red-400">
-                      {isHindi ? 'गंभीर रोग प्रोटोकॉल सक्रिय' : 'Danger Illness Care Protocol Active'}
+                      {isHindi
+                        ? 'गंभीर रोग प्रोटोकॉल सक्रिय'
+                        : 'Danger Illness Care Protocol Active'}
                     </span>
                   </div>
 
@@ -327,6 +354,7 @@ export default function OverviewPage() {
                     <h3 className="text-lg sm:text-2xl font-extrabold text-slate-900 dark:text-white">
                       {diseaseName}
                     </h3>
+
                     {diseaseStage && (
                       <span className="px-2.5 py-0.5 rounded-lg text-xs sm:text-sm font-extrabold bg-red-600/20 text-red-700 dark:text-red-300 border border-red-500/40">
                         {diseaseStage}
@@ -342,13 +370,20 @@ export default function OverviewPage() {
                   className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-extrabold bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg shadow-red-600/30 hover:from-red-700 hover:to-rose-700 transition-all cursor-pointer whitespace-nowrap active:scale-95"
                 >
                   <Zap className="w-4 h-4 text-amber-300" />
-                  <span>{isHindi ? 'त्वरित डॉक्टर परामर्श' : 'Fast-Track Consultation'}</span>
+                  <span>
+                    {isHindi
+                      ? 'त्वरित डॉक्टर परामर्श'
+                      : 'Fast-Track Consultation'}
+                  </span>
                 </Link>
+
                 <Link
                   to="/dashboard/settings"
                   className="inline-flex items-center gap-2 px-4 py-3 rounded-2xl text-xs sm:text-sm font-bold bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 transition-all cursor-pointer whitespace-nowrap"
                 >
-                  <span>{isHindi ? 'चिकित्सा इतिहास देखें' : 'View Medical History'}</span>
+                  <span>
+                    {isHindi ? 'चिकित्सा इतिहास देखें' : 'View Medical History'}
+                  </span>
                   <ChevronRight className="w-4 h-4" />
                 </Link>
               </div>
@@ -358,7 +393,6 @@ export default function OverviewPage() {
       })()}
 
       {/* Health Data Status */}
-
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -404,6 +438,7 @@ export default function OverviewPage() {
                 isRefreshing ? 'animate-spin' : ''
               }`}
             />
+
             <span>
               {isRefreshing
                 ? (isHindi ? 'रीफ्रेश हो रहा है...' : 'Refreshing...')
@@ -422,11 +457,9 @@ export default function OverviewPage() {
       </motion.div>
 
       {/* Loading */}
-
       {isLoading && (
         <div className="p-8 rounded-3xl glass-card text-center">
           <RefreshCw className="w-8 h-8 mx-auto text-cyan-500 animate-spin" />
-
           <p className="mt-3 text-slate-500 dark:text-slate-400">
             Loading your Firestore health readings...
           </p>
@@ -434,7 +467,6 @@ export default function OverviewPage() {
       )}
 
       {/* Error */}
-
       {!isLoading && error && (
         <div className="p-5 rounded-2xl border border-rose-500/30 bg-rose-500/10 flex items-center gap-3">
           <AlertCircle className="w-6 h-6 text-rose-500 shrink-0" />
@@ -459,16 +491,12 @@ export default function OverviewPage() {
       )}
 
       {/* Dashboard Content */}
-
       {!isLoading && !error && (
         <>
-
           {/* Vital Cards */}
-
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
             {/* Blood Pressure */}
-
             <motion.div
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
@@ -517,7 +545,6 @@ export default function OverviewPage() {
             </motion.div>
 
             {/* Steps */}
-
             <motion.div
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
@@ -552,7 +579,7 @@ export default function OverviewPage() {
                       initial={{ width: 0 }}
                       animate={{
                         width: `${Math.min(
-                          Math.max(Number(vitals.steps), 0) / 8000 * 100,
+                          (Math.max(Number(vitals.steps) || 0, 0) / 8000) * 100,
                           100
                         )}%`
                       }}
@@ -580,7 +607,6 @@ export default function OverviewPage() {
             </motion.div>
 
             {/* Exercise Time */}
-
             <motion.div
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
@@ -622,7 +648,6 @@ export default function OverviewPage() {
             </motion.div>
 
             {/* Oxygen Saturation */}
-
             <motion.div
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
@@ -662,13 +687,11 @@ export default function OverviewPage() {
                 {hasSpo2 ? 'Recorded in Firestore' : 'Not available'}
               </div>
             </motion.div>
-
           </div>
 
           <WeeklyLoggingRhythm readings={readings} />
 
           {/* Urine Health Readings */}
-
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -761,9 +784,7 @@ export default function OverviewPage() {
           </motion.div>
 
           {/* Health Summary and Quick Actions */}
-
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-
             <div className="lg:col-span-7 p-8 rounded-3xl glass-card space-y-5 flex flex-col justify-between shadow-sm">
               <div className="space-y-4">
                 <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -829,7 +850,6 @@ export default function OverviewPage() {
             </div>
 
             {/* Quick Consult and Records */}
-
             <div className="lg:col-span-5 p-8 rounded-3xl glass-card space-y-5 flex flex-col justify-between shadow-sm">
               <div>
                 <h2 className="text-xl font-bold text-slate-900 dark:text-white">
@@ -842,7 +862,6 @@ export default function OverviewPage() {
               </div>
 
               <div className="space-y-3 pt-2">
-
                 <Link
                   to="/dashboard/consultation"
                   className="w-full flex items-center justify-between p-4 rounded-2xl bg-slate-50/80 dark:bg-[#1F150E]/80 hover:border-cyan-500/50 border border-slate-200 dark:border-slate-800 text-[15px] font-semibold text-slate-800 dark:text-slate-200 transition-colors"
@@ -878,7 +897,6 @@ export default function OverviewPage() {
 
                   <ChevronRight className="w-5 h-5 text-slate-400" />
                 </Link>
-
               </div>
             </div>
           </div>
