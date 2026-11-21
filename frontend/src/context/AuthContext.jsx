@@ -1,3 +1,4 @@
+
 import React, {
   createContext,
   useContext,
@@ -62,6 +63,7 @@ export const DEMO_ACCOUNTS = {
     joinedDate: '2024-01-01',
     isDemo: true
   },
+
   'doctor@biotrajectory.health': {
     uid: 'demo-doctor-uid-002',
     id: 'demo-doctor-uid-002',
@@ -75,6 +77,7 @@ export const DEMO_ACCOUNTS = {
     joinedDate: '2024-01-15',
     isDemo: true
   },
+
   'doctor.pending@biotrajectory.health': {
     uid: 'demo-doctor-pending-004',
     id: 'demo-doctor-pending-004',
@@ -88,6 +91,7 @@ export const DEMO_ACCOUNTS = {
     joinedDate: '2024-03-01',
     isDemo: true
   },
+
   'patient@biotrajectory.health': {
     uid: 'demo-patient-uid-003',
     id: 'demo-patient-uid-003',
@@ -116,14 +120,19 @@ export const getDashboardPath = (role) => {
   switch (role) {
     case USER_ROLES.ADMIN:
       return '/admin/dashboard';
+
     case USER_ROLES.DOCTOR:
       return '/doctor/dashboard';
+
     case USER_ROLES.DOCTOR_PENDING:
       return '/doctor/pending';
+
     case USER_ROLES.DOCTOR_SUSPENDED:
       return '/doctor/suspended';
+
     case USER_ROLES.UNKNOWN:
       return '/account-setup';
+
     case USER_ROLES.USER:
     default:
       return '/dashboard';
@@ -138,25 +147,49 @@ function getTrustedRole(claims) {
     : USER_ROLES.USER;
 }
 
+function isValidName(value) {
+  if (typeof value !== 'string') return false;
+
+  const cleaned = value.trim();
+
+  if (!cleaned) return false;
+
+  const placeholders = [
+    'user',
+    'unknown',
+    'undefined',
+    'null',
+    'patient'
+  ];
+
+  return !placeholders.includes(cleaned.toLowerCase());
+}
+
+function resolveName(...values) {
+  return values.find(isValidName)?.trim() || 'User';
+}
+
 function buildAppUser(firebaseUser, claims = {}, profile = null) {
-  const profileName =
-    profile?.name ||
-    profile?.fullName ||
-    firebaseUser.displayName ||
-    firebaseUser.email?.split('@')[0] ||
-    'User';
+  const profileName = resolveName(
+    profile?.name,
+    profile?.fullName,
+    profile?.displayName,
+    firebaseUser.displayName,
+    firebaseUser.email?.split('@')[0]
+  );
 
   return {
     uid: firebaseUser.uid,
     id: firebaseUser.uid,
     email: firebaseUser.email,
     name: profileName,
-    displayName: firebaseUser.displayName || profileName,
+    displayName: profileName,
     photoURL: firebaseUser.photoURL || null,
     avatar: firebaseUser.photoURL || null,
     emailVerified: firebaseUser.emailVerified,
     role: getTrustedRole(claims),
     claims,
+
     joinedDate: firebaseUser.metadata?.creationTime
       ? new Date(firebaseUser.metadata.creationTime)
           .toISOString()
@@ -165,42 +198,114 @@ function buildAppUser(firebaseUser, claims = {}, profile = null) {
   };
 }
 
-const getEmptyHealthProfile = () => ({
+/*
+ * This is an in-memory display profile.
+ * It does not create or save a Firestore health record.
+ * Health consent remains false until the user explicitly accepts it.
+ */
+const getEmptyHealthProfile = (name = 'User') => ({
   ...DEFAULT_HEALTH_PROFILE,
+  name: resolveName(name),
+  consent: {
+    storeAndProcessHealthData: false,
+    shareWithClinician: false,
+    aiAssistantAnalysis: false,
+    nonDiagnosticScopeAcknowledged: false
+  },
   onboardingCompleted: false
 });
 
 export function AuthProvider({ children }) {
   const initialDemoUser = getStoredDemoUser();
+
   const [currentUser, setCurrentUser] = useState(initialDemoUser);
+
   const [isAuthLoading, setIsAuthLoading] = useState(!initialDemoUser);
+
   const [authError, setAuthError] = useState(null);
-  const [tokenClaims, setTokenClaims] = useState(initialDemoUser?.claims || null);
+
+  const [tokenClaims, setTokenClaims] = useState(
+    initialDemoUser?.claims || null
+  );
 
   const [healthProfile, setHealthProfile] = useState(() => {
     if (initialDemoUser?.role === USER_ROLES.USER) {
       return getDemoHealthProfile();
     }
-    return getEmptyHealthProfile();
+
+    return getEmptyHealthProfile(
+      initialDemoUser?.name || 'User'
+    );
   });
 
+  /*
+   * Load basic account identity independently from health information.
+   * The name must be available even when patient_records/{uid}
+   * does not exist.
+   */
   const loadUserProfiles = async (firebaseUser) => {
-    const basicProfile =
+    let basicProfile =
       await userProfileService.createIfMissing(firebaseUser);
 
+    // Resolve name from the basic user document first.
+    // Firebase Auth and email are fallback sources.
+    const accountName = resolveName(
+      basicProfile?.name,
+      basicProfile?.fullName,
+      basicProfile?.displayName,
+      firebaseUser.displayName,
+      firebaseUser.email?.split('@')[0]
+    );
+
+    // Repair an existing users/{uid} document if its name is invalid.
+    if (!isValidName(basicProfile?.name)) {
+      basicProfile = await userProfileService.update(
+        firebaseUser.uid,
+        {
+          name: accountName,
+          displayName: accountName
+        }
+      );
+
+      // Fallback if the update service does not return the document.
+      if (!basicProfile) {
+        basicProfile = {
+          uid: firebaseUser.uid,
+          name: accountName,
+          displayName: accountName,
+          email: firebaseUser.email || ''
+        };
+      }
+    }
+
+    // Health data is optional and separate from basic identity.
     const remoteHealthProfile =
       await patientHealthService.get(firebaseUser.uid);
 
     if (remoteHealthProfile) {
-      setHealthProfile(remoteHealthProfile);
-      trajectoryStorage.saveHealthProfile(remoteHealthProfile);
+      const mergedHealthProfile = {
+        ...getEmptyHealthProfile(accountName),
+        ...remoteHealthProfile,
+        name: resolveName(
+          remoteHealthProfile.name,
+          accountName
+        )
+      };
+
+      setHealthProfile(mergedHealthProfile);
+
+      // Keep the existing local profile cache synchronized.
+      trajectoryStorage.saveHealthProfile(mergedHealthProfile);
     } else {
-      setHealthProfile(getEmptyHealthProfile());
+      // No health record? Still show the account name.
+      // Do not create a patient_records document here.
+      setHealthProfile(getEmptyHealthProfile(accountName));
     }
 
     return basicProfile;
   };
 
+  // Firebase authentication listener.
   useEffect(() => {
     let active = true;
     let unsubscribe = () => {};
@@ -210,8 +315,8 @@ export function AuthProvider({ children }) {
         async (firebaseUser) => {
           if (!active) return;
 
-          // If a demo user session is currently active, preserve it
           const storedDemo = getStoredDemoUser();
+
           if (storedDemo && !firebaseUser) {
             setIsAuthLoading(false);
             return;
@@ -227,12 +332,17 @@ export function AuthProvider({ children }) {
 
           try {
             const tokenResult =
-              await FirebaseService.getIdTokenResult(firebaseUser, true);
+              await FirebaseService.getIdTokenResult(
+                firebaseUser,
+                true
+              );
 
             if (!active) return;
 
             const claims = tokenResult?.claims || {};
-            const basicProfile = await loadUserProfiles(firebaseUser);
+
+            const basicProfile =
+              await loadUserProfiles(firebaseUser);
 
             if (!active) return;
 
@@ -255,8 +365,10 @@ export function AuthProvider({ children }) {
               setCurrentUser(null);
               setTokenClaims(null);
               setHealthProfile(getEmptyHealthProfile());
+
               setAuthError(
-                error.message || 'Unable to initialize your account.'
+                error.message ||
+                'Unable to initialize your account.'
               );
             }
           } finally {
@@ -267,19 +379,28 @@ export function AuthProvider({ children }) {
         }
       );
     } catch (error) {
-      console.error('Failed to start Firebase auth listener:', error);
-      setAuthError(error.message || 'Authentication is unavailable.');
+      console.error(
+        'Failed to start Firebase auth listener:',
+        error
+      );
+
+      setAuthError(
+        error.message || 'Authentication is unavailable.'
+      );
+
       setIsAuthLoading(false);
     }
 
     return () => {
       active = false;
+
       if (typeof unsubscribe === 'function') {
         unsubscribe();
       }
     };
   }, []);
 
+  // Listen for health profile updates from other components.
   useEffect(() => {
     const handleProfileUpdate = (event) => {
       if (event.detail?.profile) {
@@ -300,54 +421,75 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
+  // Login.
   const login = async (email, password, rememberMe = true) => {
     setAuthError(null);
 
     try {
       if (!email?.trim() || !password) {
-        throw new Error('Please enter your email and password.');
+        throw new Error(
+          'Please enter your email and password.'
+        );
       }
 
       const cleanEmail = email.trim().toLowerCase();
+
       const demoAccount = DEMO_ACCOUNTS[cleanEmail];
 
+      // Demo account login.
       if (demoAccount) {
         if (password !== demoAccount.password) {
           throw new Error('Invalid email or password.');
         }
 
         const appUser = { ...demoAccount };
-        localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(appUser));
+
+        localStorage.setItem(
+          DEMO_STORAGE_KEY,
+          JSON.stringify(appUser)
+        );
+
         setCurrentUser(appUser);
         setTokenClaims(appUser.claims);
 
         if (appUser.role === USER_ROLES.USER) {
           const demoHealth = getDemoHealthProfile();
+
           setHealthProfile(demoHealth);
           trajectoryStorage.saveHealthProfile(demoHealth);
         } else {
-          setHealthProfile(getEmptyHealthProfile());
+          setHealthProfile(
+            getEmptyHealthProfile(appUser.name)
+          );
         }
 
         setIsAuthLoading(false);
+
         return appUser;
       }
 
-      const firebaseUser = await FirebaseService.signInWithEmail(
-        email.trim(),
-        password,
-        rememberMe
-      );
+      // Firebase login.
+      const firebaseUser =
+        await FirebaseService.signInWithEmail(
+          cleanEmail,
+          password,
+          rememberMe
+        );
 
       if (!firebaseUser) {
         throw new Error('Firebase authentication failed.');
       }
 
       const tokenResult =
-        await FirebaseService.getIdTokenResult(firebaseUser, true);
+        await FirebaseService.getIdTokenResult(
+          firebaseUser,
+          true
+        );
 
       const claims = tokenResult?.claims || {};
-      const basicProfile = await loadUserProfiles(firebaseUser);
+
+      const basicProfile =
+        await loadUserProfiles(firebaseUser);
 
       const appUser = buildAppUser(
         firebaseUser,
@@ -357,6 +499,7 @@ export function AuthProvider({ children }) {
 
       setCurrentUser(appUser);
       setTokenClaims(claims);
+      setAuthError(null);
 
       return appUser;
     } catch (error) {
@@ -376,10 +519,12 @@ export function AuthProvider({ children }) {
       }
 
       setAuthError(message);
+
       throw new Error(message);
     }
   };
 
+  // Registration.
   const register = async ({
     fullName,
     email,
@@ -390,40 +535,73 @@ export function AuthProvider({ children }) {
 
     try {
       if (!privacyConsent) {
-        throw new Error('Please accept the privacy policy.');
+        throw new Error(
+          'Please accept the privacy policy.'
+        );
       }
 
-      if (!fullName?.trim() || !email?.trim() || !password) {
-        throw new Error('Please complete all required fields.');
+      if (
+        !fullName?.trim() ||
+        !email?.trim() ||
+        !password
+      ) {
+        throw new Error(
+          'Please complete all required fields.'
+        );
       }
 
       if (password.length < 8) {
-        throw new Error('Password must contain at least 8 characters.');
+        throw new Error(
+          'Password must contain at least 8 characters.'
+        );
       }
+
+      const cleanName = fullName.trim();
 
       const firebaseUser = await FirebaseService.signUp(
         email.trim(),
         password,
-        fullName.trim()
+        cleanName
       );
 
       const tokenResult =
-        await FirebaseService.getIdTokenResult(firebaseUser, true);
+        await FirebaseService.getIdTokenResult(
+          firebaseUser,
+          true
+        );
 
       const claims = tokenResult?.claims || {};
 
-      const basicProfile =
-        await userProfileService.createIfMissing(firebaseUser);
+      await userProfileService.createIfMissing(firebaseUser);
+
+      // Save the registration name to users/{uid}.
+      const basicProfile = await userProfileService.update(
+        firebaseUser.uid,
+        {
+          name: cleanName,
+          displayName: cleanName
+        }
+      );
 
       const appUser = buildAppUser(
         firebaseUser,
         claims,
-        basicProfile
+        basicProfile || {
+          name: cleanName,
+          displayName: cleanName
+        }
       );
 
       setCurrentUser(appUser);
       setTokenClaims(claims);
-      setHealthProfile(getEmptyHealthProfile());
+
+      // The name is available immediately.
+      // No health record is created and no health consent is assumed.
+      setHealthProfile(
+        getEmptyHealthProfile(cleanName)
+      );
+
+      setAuthError(null);
 
       return appUser;
     } catch (error) {
@@ -434,17 +612,21 @@ export function AuthProvider({ children }) {
       if (error.code === 'auth/email-already-in-use') {
         message = 'This email is already registered.';
       } else if (error.code === 'auth/weak-password') {
-        message = 'Use a stronger password with at least 8 characters.';
+        message =
+          'Use a stronger password with at least 8 characters.';
       }
 
       setAuthError(message);
+
       throw new Error(message);
     }
   };
 
+  // Logout.
   const logout = async () => {
     try {
       localStorage.removeItem(DEMO_STORAGE_KEY);
+
       await FirebaseService.signOut().catch(() => {});
 
       setCurrentUser(null);
@@ -455,21 +637,28 @@ export function AuthProvider({ children }) {
       return true;
     } catch (error) {
       console.error('Logout error:', error);
+
       setAuthError(error.message || 'Logout failed.');
+
       return false;
     }
   };
 
+  // Refresh Firebase token and account profile.
   const refreshToken = async () => {
     if (currentUser?.isDemo) {
       try {
-        const stored = sessionStorage.getItem(DEMO_STORAGE_KEY) || localStorage.getItem(DEMO_STORAGE_KEY);
+        const stored =
+          sessionStorage.getItem(DEMO_STORAGE_KEY) ||
+          localStorage.getItem(DEMO_STORAGE_KEY);
+
         if (stored) {
           const parsed = JSON.parse(stored);
           setCurrentUser(parsed);
           return parsed;
         }
       } catch {}
+
       return currentUser;
     }
 
@@ -483,10 +672,21 @@ export function AuthProvider({ children }) {
 
     try {
       const tokenResult =
-        await FirebaseService.getIdTokenResult(firebaseUser, true);
+        await FirebaseService.getIdTokenResult(
+          firebaseUser,
+          true
+        );
 
       const claims = tokenResult?.claims || {};
-      const updatedUser = buildAppUser(firebaseUser, claims);
+
+      const basicProfile =
+        await loadUserProfiles(firebaseUser);
+
+      const updatedUser = buildAppUser(
+        firebaseUser,
+        claims,
+        basicProfile
+      );
 
       setCurrentUser(updatedUser);
       setTokenClaims(claims);
@@ -498,6 +698,7 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // Update basic account information in React state.
   const updateProfile = (updates = {}) => {
     const {
       role,
@@ -511,11 +712,15 @@ export function AuthProvider({ children }) {
     } = updates;
 
     setCurrentUser((previous) =>
-      previous ? { ...previous, ...safeUpdates } : previous
+      previous
+        ? { ...previous, ...safeUpdates }
+        : previous
     );
   };
 
+  // Update health information.
   const updateHealthProfile = async (updates) => {
+    // Demo user.
     if (currentUser?.isDemo) {
       const merged = {
         ...healthProfile,
@@ -528,20 +733,28 @@ export function AuthProvider({ children }) {
         },
         updatedAt: new Date().toISOString()
       };
+
       trajectoryStorage.saveHealthProfile(merged);
       setHealthProfile(merged);
-      if (merged?.name) {
+
+      if (isValidName(merged?.name)) {
         setCurrentUser((previous) =>
           previous
-            ? { ...previous, name: merged.name, displayName: merged.name }
+            ? {
+                ...previous,
+                name: merged.name,
+                displayName: merged.name
+              }
             : previous
         );
       }
+
       return merged;
     }
 
     const firebaseUser = auth?.currentUser;
 
+    // Local-only mode.
     if (!firebaseUser) {
       const merged = {
         ...healthProfile,
@@ -554,15 +767,21 @@ export function AuthProvider({ children }) {
         },
         updatedAt: new Date().toISOString()
       };
+
       trajectoryStorage.saveHealthProfile(merged);
       setHealthProfile(merged);
+
       return merged;
     }
 
+    // Require explicit consent before saving health information.
     if (
-      updates?.consent?.storeAndProcessHealthData !== true
+      updates?.consent?.storeAndProcessHealthData !== true ||
+      updates?.consent?.nonDiagnosticScopeAcknowledged !== true
     ) {
-      throw new Error('Consent is required to save health information.');
+      throw new Error(
+        'Please provide the required health data consent before saving health information.'
+      );
     }
 
     const savedProfile = await patientHealthService.save(
@@ -573,10 +792,23 @@ export function AuthProvider({ children }) {
     trajectoryStorage.saveHealthProfile(savedProfile);
     setHealthProfile(savedProfile);
 
-    if (savedProfile?.name) {
+    // Keep the basic account name synchronized.
+    // This is separate from the health record.
+    if (isValidName(savedProfile?.name)) {
+      const cleanName = savedProfile.name.trim();
+
+      await userProfileService.update(firebaseUser.uid, {
+        name: cleanName,
+        displayName: cleanName
+      });
+
       setCurrentUser((previous) =>
         previous
-          ? { ...previous, name: savedProfile.name }
+          ? {
+              ...previous,
+              name: cleanName,
+              displayName: cleanName
+            }
           : previous
       );
     }
@@ -584,6 +816,7 @@ export function AuthProvider({ children }) {
     return savedProfile;
   };
 
+  // Delete local account data.
   const deleteAccountData = async () => {
     trajectoryStorage.deleteAccountData();
     await logout();
@@ -609,10 +842,13 @@ export function AuthProvider({ children }) {
     isUser: currentUser?.role === USER_ROLES.USER,
     isDoctor: currentUser?.role === USER_ROLES.DOCTOR,
     isAdmin: currentUser?.role === USER_ROLES.ADMIN,
+
     isDoctorPending:
       currentUser?.role === USER_ROLES.DOCTOR_PENDING,
+
     isDoctorSuspended:
       currentUser?.role === USER_ROLES.DOCTOR_SUSPENDED,
+
     isUnknownRole:
       currentUser?.role === USER_ROLES.UNKNOWN,
 
@@ -640,7 +876,9 @@ export function useAuth() {
   const context = useContext(AuthContext);
 
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error(
+      'useAuth must be used within an AuthProvider'
+    );
   }
 
   return context;

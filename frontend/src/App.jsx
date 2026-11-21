@@ -23,6 +23,8 @@ import AdminDashboardLayout from './components/layout/AdminDashboardLayout';
 
 import HomePage from './pages/Home/HomePage';
 
+import './App.css';
+
 // --------------------------------------------------
 // Public pages
 // --------------------------------------------------
@@ -94,7 +96,10 @@ const AdminPopulationAnalyticsPage = lazy(() => import('./pages/AdminDashboard/A
 const AdminFeedbackPage = lazy(() => import('./pages/AdminDashboard/AdminFeedbackPage'));
 const AdminSettingsPage = lazy(() => import('./pages/AdminDashboard/AdminSettingsPage'));
 
-import './App.css';
+// New admin medical records page
+const AdminMedicalRecordsPage = lazy(
+  () => import('./pages/AdminDashboard/AdminMedicalRecordsPage')
+);
 
 // --------------------------------------------------
 // Loading screen
@@ -181,6 +186,7 @@ function AppRoutes() {
 
         <Route path="/doctor/login" element={<DoctorLoginPage />} />
         <Route path="/doctor/register" element={<DoctorRegisterPage />} />
+
         <Route
           path="/doctor/forgot-password"
           element={<DoctorForgotPasswordPage />}
@@ -212,7 +218,7 @@ function AppRoutes() {
           <Route path="settings" element={<SettingsPage />} />
         </Route>
 
-        {/* Pending doctor: application status only */}
+        {/* Pending doctor */}
 
         <Route
           path="/doctor/pending"
@@ -223,7 +229,7 @@ function AppRoutes() {
           }
         />
 
-        {/* Suspended doctor: suspension information only */}
+        {/* Suspended doctor */}
 
         <Route
           path="/doctor/suspended"
@@ -234,7 +240,7 @@ function AppRoutes() {
           }
         />
 
-        {/* Verified doctor dashboard only */}
+        {/* Verified doctor dashboard */}
 
         <Route
           path="/doctor"
@@ -254,19 +260,23 @@ function AppRoutes() {
           <Route path="patients" element={<DoctorPatientsPage />} />
           <Route path="patients/:id" element={<DoctorPatientDetailPage />} />
           <Route path="appointments" element={<DoctorAppointmentsPage />} />
+
           <Route
             path="video-consultation"
             element={<DoctorVideoConsultationPage />}
           />
+
           <Route path="reports" element={<DoctorReportsPage />} />
           <Route path="reports/new" element={<DoctorNewReportPage />} />
           <Route path="medical-records" element={<DoctorMedicalRecordsPage />} />
           <Route path="records" element={<DoctorMedicalRecordsPage />} />
           <Route path="prescriptions" element={<DoctorPrescriptionsPage />} />
+
           <Route
             path="prescriptions/new"
             element={<DoctorNewPrescriptionPage />}
           />
+
           <Route path="explore" element={<DoctorExplorePage />} />
           <Route path="profile" element={<DoctorProfilePage />} />
           <Route path="settings" element={<DoctorSettingsPage />} />
@@ -291,31 +301,53 @@ function AppRoutes() {
           <Route path="users" element={<AdminUsersPage />} />
           <Route path="roles" element={<AdminRolesPage />} />
           <Route path="patients" element={<AdminPatientManagementPage />} />
+
           <Route
             path="patient-management"
             element={<AdminPatientManagementPage />}
           />
+
           <Route
             path="verification"
             element={<AdminDoctorVerificationPage />}
           />
+
           <Route
             path="doctor-verification"
             element={<AdminDoctorVerificationPage />}
           />
+
           <Route path="diseases" element={<AdminDiseasesPage />} />
           <Route path="content" element={<AdminContentPage />} />
           <Route path="reports" element={<AdminReportsPage />} />
           <Route path="analytics" element={<AdminPopulationAnalyticsPage />} />
           <Route path="feedback" element={<AdminFeedbackPage />} />
-          <Route path="medical-records" element={<DoctorMedicalRecordsPage />} />
-          <Route path="records" element={<DoctorMedicalRecordsPage />} />
+
+          {/* Admin-specific medical records and aggregate analytics */}
+          <Route
+            path="medical-records"
+            element={<AdminMedicalRecordsPage />}
+          />
+
+          <Route
+            path="records"
+            element={<AdminMedicalRecordsPage />}
+          />
+
           <Route path="settings" element={<AdminSettingsPage />} />
         </Route>
 
         {/* Global medical-records shortcuts */}
-        <Route path="/medical-records" element={<Navigate to="/doctor/medical-records" replace />} />
-        <Route path="/records" element={<Navigate to="/doctor/medical-records" replace />} />
+
+        <Route
+          path="/medical-records"
+          element={<Navigate to="/doctor/medical-records" replace />}
+        />
+
+        <Route
+          path="/records"
+          element={<Navigate to="/doctor/medical-records" replace />}
+        />
 
         {/* Unknown routes */}
 

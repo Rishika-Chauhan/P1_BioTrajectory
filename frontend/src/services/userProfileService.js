@@ -18,8 +18,29 @@ function requireDb() {
   return db;
 }
 
+function isValidName(value) {
+  if (typeof value !== 'string') return false;
+
+  const cleaned = value.trim();
+
+  if (!cleaned) return false;
+
+  const placeholders = [
+    'user',
+    'unknown',
+    'undefined',
+    'null',
+    'patient'
+  ];
+
+  return !placeholders.includes(cleaned.toLowerCase());
+}
+
+function resolveName(...values) {
+  return values.find(isValidName)?.trim() || '';
+}
+
 export const userProfileService = {
-  // Get a user's Firestore profile
   async get(uid) {
     if (!uid) {
       throw new Error('A Firebase UID is required.');
@@ -44,16 +65,24 @@ export const userProfileService = {
       : null;
   },
 
-  // Create profile only if it does not already exist
   async createIfMissing(firebaseUser) {
     if (!firebaseUser?.uid) {
       throw new Error('A valid authenticated user is required.');
     }
 
-    if (firebaseUser.isDemo || String(firebaseUser.uid).startsWith('demo-')) {
+    if (
+      firebaseUser.isDemo ||
+      String(firebaseUser.uid).startsWith('demo-')
+    ) {
+      const demoName = resolveName(
+        firebaseUser.name,
+        firebaseUser.displayName
+      ) || 'Alex Johnson';
+
       return {
         uid: firebaseUser.uid,
-        name: firebaseUser.name || firebaseUser.displayName || 'Alex Johnson',
+        name: demoName,
+        displayName: demoName,
         email: firebaseUser.email || '',
         photoURL: null,
         createdAt: new Date().toISOString(),
@@ -70,19 +99,70 @@ export const userProfileService = {
 
     const snapshot = await getDoc(reference);
 
+    const authName = resolveName(
+      firebaseUser.displayName
+    );
+
+    const emailName = resolveName(
+      firebaseUser.email?.split('@')[0]
+    );
+
     if (snapshot.exists()) {
+      const existing = snapshot.data();
+
+      const existingName = resolveName(
+        existing.name,
+        existing.fullName,
+        existing.displayName
+      );
+
+      const resolvedName =
+        existingName || authName || emailName || 'User';
+
+      const updates = {};
+
+      if (!existingName && resolvedName !== 'User') {
+        updates.name = resolvedName;
+        updates.displayName = resolvedName;
+      }
+
+      if (!existing.email && firebaseUser.email) {
+        updates.email = firebaseUser.email;
+      }
+
+      if (
+        !existing.photoURL &&
+        firebaseUser.photoURL
+      ) {
+        updates.photoURL = firebaseUser.photoURL;
+      }
+
+      if (Object.keys(updates).length > 0) {
+        await setDoc(
+          reference,
+          {
+            ...updates,
+            updatedAt: serverTimestamp()
+          },
+          { merge: true }
+        );
+      }
+
       return {
         uid: firebaseUser.uid,
-        ...snapshot.data()
+        ...existing,
+        ...updates,
+        name: resolvedName
       };
     }
 
+    const resolvedName =
+      authName || emailName || 'User';
+
     const profile = {
       uid: firebaseUser.uid,
-      name:
-        firebaseUser.displayName ||
-        firebaseUser.email?.split('@')[0] ||
-        'User',
+      name: resolvedName,
+      displayName: resolvedName,
       email: firebaseUser.email || '',
       photoURL: firebaseUser.photoURL || null,
       createdAt: serverTimestamp(),
@@ -98,7 +178,6 @@ export const userProfileService = {
     };
   },
 
-  // Update profile without allowing role or identity changes
   async update(uid, updates = {}) {
     if (!uid) {
       throw new Error('A Firebase UID is required.');
@@ -132,5 +211,3 @@ export const userProfileService = {
     return this.get(uid);
   }
 };
-
-export default userProfileService;
