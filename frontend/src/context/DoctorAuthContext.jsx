@@ -4,72 +4,27 @@ import React, {
   useContext,
   useState,
   useEffect,
-  useCallback
-} from 'react';
+  useCallback,
+} from "react";
 
-import { useAuth } from './AuthContext';
-import { doctorApi } from '../services/doctorApi';
+import { useAuth } from "./AuthContext";
+import { doctorApi } from "../services/doctorApi";
 
 const DoctorAuthContext = createContext(null);
 
 export const DOCTOR_ROLES = {
-  PENDING: 'DOCTOR_PENDING',
-  VERIFIED: 'DOCTOR',
-  SUSPENDED: 'DOCTOR_SUSPENDED'
+  PENDING: "DOCTOR_PENDING",
+  VERIFIED: "DOCTOR",
+  SUSPENDED: "DOCTOR_SUSPENDED",
 };
 
 const VALID_DOCTOR_ROLES = new Set(
   Object.values(DOCTOR_ROLES)
 );
 
-export const DEMO_DOCTOR_DATA = {
-  'demo-doctor-uid-002': {
-    id: 'demo-doctor-uid-002',
-    uid: 'demo-doctor-uid-002',
-    name: 'Dr. Sarah Mitchell, MD',
-    fullName: 'Sarah Mitchell',
-    email: 'doctor@biotrajectory.health',
-    phone: '+1 (555) 234-5678',
-    registrationNumber: 'MD-89241-US',
-    specialization: 'Cardiology & Preventive Medicine',
-    qualification: 'MD, FACP (Harvard Medical School)',
-    issuingCouncil: 'American Board of Internal Medicine (ABIM)',
-    clinic: 'BioTrajectory Clinical Research Center',
-    clinicName: 'BioTrajectory Clinical Research Center',
-    role: 'DOCTOR',
-    avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=250&q=80',
-    joinedDate: '2024-01-15',
-    bio: 'Cardiologist with 12+ years experience in cardiovascular health monitoring and metabolic health trajectories.',
-    consultationFee: '$120 / session',
-    applicationStatus: 'APPROVED',
-    applicationNote: 'Verified credentials and license in good standing.'
-  },
-  'demo-doctor-pending-004': {
-    id: 'demo-doctor-pending-004',
-    uid: 'demo-doctor-pending-004',
-    name: 'Dr. Robert Chen, MD',
-    fullName: 'Robert Chen',
-    email: 'doctor.pending@biotrajectory.health',
-    phone: '+1 (555) 345-6789',
-    registrationNumber: 'MCI-99214-B',
-    specialization: 'Neurology & Cognitive Health',
-    qualification: 'MD, DM Neurology (Johns Hopkins)',
-    issuingCouncil: 'Medical Council of India / ABMS',
-    clinic: 'Metro Neurology Center',
-    clinicName: 'Metro Neurology Center',
-    role: 'DOCTOR_PENDING',
-    avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=250&q=80',
-    joinedDate: '2024-03-01',
-    bio: 'Neurologist specializing in stroke recovery and neuro-rehabilitation.',
-    consultationFee: '$110 / session',
-    applicationStatus: 'PENDING',
-    applicationNote: 'Submitted application. Pending administrator review.'
-  }
-};
-
 function cleanDoctorName(value) {
-  return String(value || '')
-    .replace(/^(?:(Dr\.?|Doctor)\s*)+/gi, '')
+  return String(value || "")
+    .replace(/^(?:(?:Dr\.?|Doctor)\s*)+/i, "")
     .trim();
 }
 
@@ -87,36 +42,33 @@ function buildDoctorFromUser(user, application = null) {
     details.full_name ||
     user.name ||
     user.displayName ||
-    ''
+    ""
   );
 
   return {
     id: user.uid,
     uid: user.uid,
 
-    name: fullName ? `Dr. ${fullName}` : '',
-
+    name: fullName ? `Dr. ${fullName}` : "",
     fullName,
 
-    email: user.email || '',
-
-    phone: details.phone || '',
+    email: user.email || "",
+    phone: details.phone || "",
 
     registrationNumber:
-      details.registration_number || '',
+      details.registration_number || "",
 
     specialization:
-      details.specialization || '',
+      details.specialization || "",
 
     qualification:
-      details.qualification || '',
+      details.qualification || "",
 
     issuingCouncil:
-      details.issuing_council || '',
+      details.issuing_council || "",
 
-    clinic: details.clinic_name || '',
-
-    clinicName: details.clinic_name || '',
+    clinic: details.clinic_name || "",
+    clinicName: details.clinic_name || "",
 
     role: user.role,
 
@@ -125,24 +77,24 @@ function buildDoctorFromUser(user, application = null) {
     joinedDate:
       details.created_at ||
       details.submitted_at ||
-      '',
+      "",
 
-    bio: '',
-
-    consultationFee: '',
+    bio: "",
+    consultationFee: "",
 
     applicationStatus:
-      details.status || '',
+      details.status || "",
 
     applicationNote:
-      details.review_note || ''
+      details.review_note || "",
   };
 }
 
 function isNotFound(error) {
   return (
     error?.status === 404 ||
-    String(error?.message || '').includes('404')
+    error?.response?.status === 404 ||
+    String(error?.message || "").includes("404")
   );
 }
 
@@ -153,12 +105,12 @@ export function DoctorAuthProvider({ children }) {
   const [authError, setAuthError] = useState(null);
   const [loadingDoctor, setLoadingDoctor] = useState(true);
 
-  // Accept a user directly so login/register never reads stale React state.
+  // Load the authenticated doctor's real application/profile.
   const refreshDoctor = useCallback(
     async (userOverride = null) => {
       const user = userOverride || auth.currentUser;
 
-      if (!user || !VALID_DOCTOR_ROLES.has(user.role)) {
+      if (!user?.uid || !VALID_DOCTOR_ROLES.has(user.role)) {
         setCurrentDoctor(null);
         setLoadingDoctor(false);
         return null;
@@ -167,50 +119,42 @@ export function DoctorAuthProvider({ children }) {
       setLoadingDoctor(true);
       setAuthError(null);
 
-      if (user.isDemo || DEMO_DOCTOR_DATA[user.uid] || user.email?.includes('doctor@biotrajectory.health') || user.email?.includes('doctor.pending@biotrajectory.health')) {
-        const demoDoctor = DEMO_DOCTOR_DATA[user.uid] || {
-          ...buildDoctorFromUser(user),
-          applicationStatus: user.role === 'DOCTOR' ? 'APPROVED' : 'PENDING'
-        };
-        setCurrentDoctor(demoDoctor);
-        setLoadingDoctor(false);
-        return demoDoctor;
-      }
-
       try {
         let application = null;
 
         try {
           application = await doctorApi.getMyApplication();
         } catch (error) {
+          // A missing application can be valid for an account
+          // whose role has already been assigned by the backend.
           if (!isNotFound(error)) {
             throw error;
           }
         }
 
-        const doctor = buildDoctorFromUser(
-          user,
-          application
-        );
+        const doctor = buildDoctorFromUser(user, application);
 
         setCurrentDoctor(doctor);
+
         return doctor;
       } catch (error) {
         console.error(
-          '[DoctorAuth] Unable to load doctor:',
+          "[DoctorAuth] Unable to load doctor profile:",
           error
         );
 
         setAuthError(
-          error.message ||
-          'Unable to load doctor information.'
+          error?.message ||
+          "Unable to load doctor information."
         );
 
-        setCurrentDoctor(
-          buildDoctorFromUser(user)
-        );
+        // Keep only information supplied by the authenticated user.
+        // No demo profile or fictional doctor data is used.
+        const basicDoctor = buildDoctorFromUser(user);
 
-        return null;
+        setCurrentDoctor(basicDoctor);
+
+        return basicDoctor;
       } finally {
         setLoadingDoctor(false);
       }
@@ -218,43 +162,48 @@ export function DoctorAuthProvider({ children }) {
     [auth.currentUser]
   );
 
-  // Synchronize whenever Firebase authentication or role changes.
+  // Refresh doctor data when the authenticated user changes.
   useEffect(() => {
     refreshDoctor();
   }, [refreshDoctor]);
 
   const loginDoctor = async (email, password) => {
     setAuthError(null);
+    setLoadingDoctor(true);
 
     try {
       const user = await auth.login(email, password);
 
       if (!user) {
-        throw new Error('Login failed. Please try again.');
+        throw new Error("Login failed. Please try again.");
       }
 
       if (!VALID_DOCTOR_ROLES.has(user.role)) {
         await auth.logout();
 
         throw new Error(
-          'This account is not registered as a doctor. Use regular user login.'
+          "This account is not registered as a doctor. Use regular user login."
         );
       }
 
       return await refreshDoctor(user);
     } catch (error) {
-      setAuthError(error.message);
+      setAuthError(error?.message || "Doctor login failed.");
+      setCurrentDoctor(null);
       throw error;
+    } finally {
+      setLoadingDoctor(false);
     }
   };
 
   const registerDoctor = async (doctorData) => {
     setAuthError(null);
+    setLoadingDoctor(true);
 
     try {
       if (!doctorData) {
         throw new Error(
-          'Doctor registration details are required.'
+          "Doctor registration details are required."
         );
       }
 
@@ -262,17 +211,14 @@ export function DoctorAuthProvider({ children }) {
         fullName: doctorData.fullName,
         email: doctorData.email,
         password: doctorData.password,
-        privacyConsent: true
+        privacyConsent: true,
       });
 
       if (!user) {
-        throw new Error(
-          'Account registration failed.'
-        );
+        throw new Error("Account registration failed.");
       }
 
-      const refreshedUser =
-        await auth.refreshToken();
+      const refreshedUser = await auth.refreshToken();
 
       const emailVerified =
         refreshedUser?.emailVerified ??
@@ -281,7 +227,7 @@ export function DoctorAuthProvider({ children }) {
 
       if (!emailVerified) {
         throw new Error(
-          'Your account has been created. Verify your email, then sign in and submit your doctor application.'
+          "Your account has been created. Verify your email, then sign in and submit your doctor application."
         );
       }
 
@@ -297,18 +243,19 @@ export function DoctorAuthProvider({ children }) {
         specialization:
           doctorData.specialization,
         clinic_name:
-          doctorData.clinicName || ''
+          doctorData.clinicName || "",
       };
 
       await doctorApi.submitApplication(application);
 
-      const updatedUser =
-        await auth.refreshToken();
+      const updatedUser = await auth.refreshToken();
 
       return await refreshDoctor(updatedUser);
     } catch (error) {
-      setAuthError(error.message);
+      setAuthError(error?.message || "Doctor registration failed.");
       throw error;
+    } finally {
+      setLoadingDoctor(false);
     }
   };
 
@@ -317,10 +264,12 @@ export function DoctorAuthProvider({ children }) {
 
     try {
       await auth.logout();
+
       setCurrentDoctor(null);
+
       return true;
     } catch (error) {
-      setAuthError(error.message);
+      setAuthError(error?.message || "Logout failed.");
       throw error;
     }
   };
@@ -329,15 +278,16 @@ export function DoctorAuthProvider({ children }) {
     return refreshDoctor();
   };
 
+  // These actions must only be performed by trusted backend/admin code.
   const setVerificationStatus = () => {
     throw new Error(
-      'Only an administrator can change doctor verification status.'
+      "Only an administrator can change doctor verification status."
     );
   };
 
   const updateDoctorRole = () => {
     throw new Error(
-      'Doctor roles must be assigned by the trusted backend.'
+      "Doctor roles must be assigned by the trusted backend."
     );
   };
 
@@ -359,18 +309,19 @@ export function DoctorAuthProvider({ children }) {
     )
   );
 
+  const doctor = currentDoctor
+    ? {
+        ...currentDoctor,
+        fullName: currentDoctor.fullName,
+        regNumber: currentDoctor.registrationNumber,
+        clinicName: currentDoctor.clinic,
+        uid: currentDoctor.uid,
+      }
+    : null;
+
   const value = {
     currentDoctor,
-
-    doctor: currentDoctor
-      ? {
-          ...currentDoctor,
-          fullName: currentDoctor.fullName,
-          regNumber: currentDoctor.registrationNumber,
-          clinicName: currentDoctor.clinic,
-          uid: currentDoctor.uid
-        }
-      : null,
+    doctor,
 
     loadingDoctor,
     authError,
@@ -392,7 +343,7 @@ export function DoctorAuthProvider({ children }) {
     refreshDoctor,
 
     setVerificationStatus,
-    updateDoctorRole
+    updateDoctorRole,
   };
 
   return (
@@ -407,7 +358,7 @@ export function useDoctorAuth() {
 
   if (!context) {
     throw new Error(
-      'useDoctorAuth must be used within a DoctorAuthProvider'
+      "useDoctorAuth must be used within a DoctorAuthProvider"
     );
   }
 
